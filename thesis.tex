@@ -23,6 +23,7 @@
 \usepackage{listings}
 \usepackage{multicol}
 \usepackage{pdfpages}
+\usepackage{xcolor}
 
 \lstset{breaklines=true} 
 
@@ -121,10 +122,14 @@
 % \input{pustaka.bib}
 
 % Alternatif manajemen daftar pustaka dengan \bibliography
-\bibliographystyle{unsrt}
-\bibliography{pustaka}
+% \bibliographystyle{unsrt}
+% \bibliography{pustaka}
 
-%
+% Custom manajemen daftar pustaka dengan \biblatex
+\newpage
+\phantomsection
+\printbibliography[heading=bibintoc,title={\uppercase{Daftar Referensi}}]
+
 % Lampiran 
 %
 \begin{appendix}

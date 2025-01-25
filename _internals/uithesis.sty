@@ -44,16 +44,16 @@
 %		\nolinkurl{my_address@wikibooks.org}}
 % 
 \usepackage{hyperref}
-  \hypersetup{
-  	colorlinks=false,
-  	pdfborder=0 0 0,
-  	linkcolor=blue,
-  	citecolor=black,
-  	bookmarksopen=false,
-  	bookmarksnumbered=true,
-  	pdfstartview=FitH,
-  	pdfview=FitH
-	}
+\hypersetup{
+	colorlinks=false,
+	pdfborder=0 0 0,
+	linkcolor=blue,
+	citecolor=black,
+	bookmarksopen=false,
+	bookmarksnumbered=true,
+	pdfstartview=FitH,
+	pdfview=FitH
+}
 
 %
 % The url package allows spacing and line breaks that result in intelligent 
@@ -65,8 +65,8 @@
 % command.
 % 
 \usepackage{url}
-  \urlstyle{same}
-  
+\urlstyle{same}
+
 % 
 %  Agar tabel bisa menggunakan rowspan atau colspan. 
 % 
@@ -82,10 +82,10 @@
 % digunakan adalah 1.5. 
 % 
 \usepackage{setspace}
-  \onehalfspacing
-  %\doublespacing
-  %\singlespacing
-  
+\onehalfspacing
+%\doublespacing
+%\singlespacing
+
 %
 % From Rforge:
 % The geometry package controls the overall margins and text area of the 
@@ -132,15 +132,19 @@
 % 
 \usepackage{colortbl}
 
+\definecolor{LightGray}{gray}{0.9}
 % 
 % 
 % 
 \usepackage{float}
-  \floatplacement{figure}{H}
-  \floatplacement{table}{H}
+\floatplacement{figure}{H}
+\floatplacement{table}{H}
 
 % Bibliography
-\usepackage{natbib}
+% \usepackage{natbib}
+\usepackage[backend=biber,style=ieee,natbib=true]{biblatex} 
+\renewcommand{\bibfont}{\footnotesize} % for IEEE bibfont size
+\addbibresource{pustaka.bib}
 
 % Slanted fraction symbol
 \usepackage{nicefrac}
@@ -155,6 +159,10 @@
 	style=pastie,
 	autogobble,
 	% linenos,
+	frame=lines,
+	framesep=1mm,
+	bgcolor=LightGray,
+	baselinestretch=1.2,
 	fontsize=\footnotesize,
 	breaklines,
 	breakanywhere,
@@ -162,7 +170,7 @@
 }
 
 \renewcommand{\theFancyVerbLine}{{\tiny{\arabic{FancyVerbLine}}}}
-	
+
 % Set `listing` numbering to [chapter].[listing_num]
 \makeatletter
 \renewcommand*{\thelisting}{\thechapter.\arabic{listing}}
@@ -196,33 +204,33 @@
 
 \newif\ifpdf
 \ifx\pdfoutput\undefined
-   \pdffalse 
+	\pdffalse
 \else
-   \pdfoutput=1
-   \pdftrue
+	\pdfoutput=1
+	\pdftrue
 \fi
 
 
 % link page numbers in TOC 
 \makeatletter
 \def\contentsline#1#2#3#4{%
-  \ifx\\#4\\%
-    \csname l@#1\endcsname{#2}{#3}%
-  \else
-    \csname l@#1\endcsname{%
-      \hyper@linkstart{link}{#4}{#2}\hyper@linkend
-    }{%
-      % same link destination for the page:
-      \hyper@linkstart{link}{#4}{#3}\hyper@linkend
-      % link destination is the page itself:
-      % \hyperpage{#3}%
-    }%
-  \fi
+	\ifx\\#4\\%
+		\csname l@#1\endcsname{#2}{#3}%
+	\else
+		\csname l@#1\endcsname{%
+			\hyper@linkstart{link}{#4}{#2}\hyper@linkend
+		}{%
+			% same link destination for the page:
+			\hyper@linkstart{link}{#4}{#3}\hyper@linkend
+			% link destination is the page itself:
+			% \hyperpage{#3}%
+		}%
+	\fi
 }
 \renewcommand\section{\@startsection {section}{1}{\z@}%
-                                  {-3.5ex \@plus -1ex \@minus -.2ex}%
-                                  {2.3ex \@plus.2ex}%
-                                  {\large\bfseries}}
+  {-3.5ex \@plus -1ex \@minus -.2ex}%
+  {2.3ex \@plus.2ex}%
+  {\large\bfseries}}
 \makeatother
 
 \setcounter{secnumdepth}{3}
@@ -233,13 +241,13 @@
 % Atur header dan footer dalam dokumen.
 % 
 \renewcommand{\headrulewidth}{0.0pt}
-	\fancyhf{} 
-	\fancyhead[L]{} 
-	\fancyhead[C]{} 
-	\fancyhead[R]{\thepage} 
-	\renewcommand{\headrulewidth}{0.0pt} 
-	\fancyfoot[R]{\footnotesize \textsf{\bo{Universitas Indonesia}}}
-	\renewcommand{\footrulewidth}{0.0pt} 
+\fancyhf{}
+\fancyhead[L]{}
+\fancyhead[C]{}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.0pt}
+\fancyfoot[R]{\footnotesize \textsf{\bo{Universitas Indonesia}}}
+\renewcommand{\footrulewidth}{0.0pt}
 \pagestyle{fancy}
 
 
@@ -265,27 +273,27 @@
 % 
 % Buat catatan kecil. Catatan akan ditampilkan dalam tabel. 
 \newcommand{\todo}[1]{
-    \begin{tabular}{| p{13.5cm} |}
+	\begin{tabular}{| p{13.5cm} |}
 		\rowcolor[rgb]{.9,.6,.6}
 		\bo{@todo} \\
 		\rowcolor[gray]{1.}
-		 #1 \\
-		 \\
+		#1         \\
+		\\
 		\hline
 	\end{tabular}
-    }
+}
 % 
 % Buat catatan untuk menambahkan referensi. 
 \newcommand{\todoCite}{
 	\begin{tabular}{| l |}
 		\rowcolor[rgb]{.6,.9,.6}
 		\bo{@todo} \\
-		\rowcolor[gray]{1.} 
-		 Referensi \\
-		 \\
+		\rowcolor[gray]{1.}
+		Referensi  \\
+		\\
 		\hline
 	\end{tabular}
-    }
+}
 % 
 % Tambahkan berkas PDF ke dalam laporan dan gunakan style laporan  
 % terhadap berkas ini. 

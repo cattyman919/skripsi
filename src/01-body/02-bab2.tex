@@ -5,15 +5,15 @@
 %-----------------------------------------------------------------------------%
 \section{Perangkat Lunak (\f{Software})}
 %-----------------------------------------------------------------------------%
-Perangkat lunak adalah serangkaian instruksi, data, atau program yang digunakan untuk mengoperasikan komputer dan menjalankan tugas-tugas tertentu [3]. Perangkat lunak memberikan instruksi kepada perangkat keras (hardware) tentang apa yang harus dilakukan, bertindak sebagai perantara antara pengguna dan perangkat keras. Tanpa perangkat lunak, sebagian besar hardware komputer tidak akan berfungsi. Sebagai contoh, prosesor membutuhkan instruksi dari perangkat lunak untuk melakukan perhitungan, dan monitor membutuhkan driver perangkat lunak untuk menampilkan gambar. Perangkat lunak tidak memiliki wujud fisik dan bersifat intangible, berbeda dengan hardware yang dapat disentuh. Perangkat lunak didistribusikan dalam berbagai bentuk, seperti program yang diinstal pada komputer, aplikasi mobile, aplikasi web, dan embedded systems.
+Perangkat lunak adalah serangkaian instruksi, data, atau program yang digunakan untuk mengoperasikan komputer dan menjalankan tugas-tugas tertentu \cite{gee23}. Perangkat lunak memberikan instruksi kepada perangkat keras (hardware) tentang apa yang harus dilakukan, bertindak sebagai perantara antara pengguna dan perangkat keras. Tanpa perangkat lunak, sebagian besar hardware komputer tidak akan berfungsi. Sebagai contoh, prosesor membutuhkan instruksi dari perangkat lunak untuk melakukan perhitungan, dan monitor membutuhkan driver perangkat lunak untuk menampilkan gambar. Perangkat lunak tidak memiliki wujud fisik dan bersifat intangible, berbeda dengan hardware yang dapat disentuh. Perangkat lunak didistribusikan dalam berbagai bentuk, seperti program yang diinstal pada komputer, aplikasi mobile, aplikasi web, dan embedded systems.
 
 \subsection{Perangkat Lunak Sistem}
-Perangkat lunak sistem merupakan fondasi yang memungkinkan perangkat lunak aplikasi dan pengguna berinteraksi dengan perangkat keras [3]. Fungsinya antara lain mengelola sumber daya sistem seperti memori, prosesor, dan perangkat input/output. Perangkat lunak sistem juga menyediakan layanan dasar seperti sistem file, manajemen proses, dan antarmuka pengguna. Contoh perangkat lunak sistem meliputi:
+Perangkat lunak sistem merupakan fondasi yang memungkinkan perangkat lunak aplikasi dan pengguna berinteraksi dengan perangkat keras \cite{gee23}. Fungsinya antara lain mengelola sumber daya sistem seperti memori, prosesor, dan perangkat input/output. Perangkat lunak sistem juga menyediakan layanan dasar seperti sistem file, manajemen proses, dan antarmuka pengguna. Contoh perangkat lunak sistem meliputi:
 
 \begin{enumerate}
-	\item \bo{Sistem Operasi (\f{Operating System}):} Bertindak sebagai platform untuk menjalankan perangkat lunak aplikasi. Sistem operasi mengelola sumber daya hardware, menyediakan antarmuka pengguna, dan menjalankan layanan sistem. Contoh: Microsoft Windows, macOS, Linux, Android, iOS.
+	\item \bo{Sistem Operasi (\f{Operating System}):} Bertindak sebagai platform untuk menjalankan perangkat lunak aplikasi. Sistem operasi mengelola sumber daya hardware, menyediakan antarmuka pengguna, dan menjalankan layanan sistem. Contoh: Microsoft Windows, macOS, Linux, Android, iOS.
 
-	\item \bo{Driver Perangkat Keras (\f{Device Drivers}):} Program yang memungkinkan sistem operasi untuk berkomunikasi dengan perangkat keras tertentu, seperti printer, kartu grafis, kartu suara, webcam, dan mouse. Setiap perangkat keras membutuhkan driver khusus agar dapat berfungsi dengan baik.
+	\item \bo{Driver Perangkat Keras (\f{Device Drivers}):} Program yang memungkinkan sistem operasi untuk berkomunikasi dengan perangkat keras tertentu, seperti printer, kartu grafis, kartu suara, webcam, dan mouse. Setiap perangkat keras membutuhkan driver khusus agar dapat berfungsi dengan baik.
 
 \end{enumerate}
 
@@ -31,12 +31,12 @@ Perangkat lunak sistem merupakan fondasi yang memungkinkan perangkat lunak aplik
 \end{figure}
 
 \subsection{Perangkat Lunak Aplikasi}
-Perangkat lunak aplikasi dirancang untuk memenuhi kebutuhan spesifik pengguna [3]. Kategori perangkat lunak aplikasi sangat luas dan beragam, berfokus pada penyelesaian tugas-tugas tertentu untuk pengguna. Perangkat lunak aplikasi berjalan di atas sistem operasi dan memanfaatkan layanan yang disediakan oleh sistem operasi.
+Perangkat lunak aplikasi dirancang untuk memenuhi kebutuhan spesifik pengguna \cite{gee23}. Kategori perangkat lunak aplikasi sangat luas dan beragam, berfokus pada penyelesaian tugas-tugas tertentu untuk pengguna. Perangkat lunak aplikasi berjalan di atas sistem operasi dan memanfaatkan layanan yang disediakan oleh sistem operasi.
 
 \begin{itemize}
 
-	\item \bo{Pengolah Kata (\f{Word Processors}):} Digunakan untuk membuat dan mengedit dokumen teks, memformat teks, menambahkan gambar dan tabel, dan melakukan tugas-tugas pengolah kata lainnya. Contoh: Microsoft Word, Google Docs
-	\item \bo{Perangkat Lunak Desain Grafis:} Digunakan untuk membuat dan mengedit gambar, ilustrasi, dan desain visual lainnya. Contoh: Adobe Photoshop, GIMP, Inkscape.
+	\item \bo{Pengolah Kata (\f{Word Processors}):} Digunakan untuk membuat dan mengedit dokumen teks, memformat teks, menambahkan gambar dan tabel, dan melakukan tugas-tugas pengolah kata lainnya. Contoh: Microsoft Word, Google Docs
+	\item \bo{Perangkat Lunak Desain Grafis:} Digunakan untuk membuat dan mengedit gambar, ilustrasi, dan desain visual lainnya. Contoh: Adobe Photoshop, GIMP, Inkscape.
 
 \end{itemize}
 
@@ -50,121 +50,198 @@ Perangkat lunak aplikasi dirancang untuk memenuhi kebutuhan spesifik pengguna [3
 		\includegraphics[width=0.3\linewidth]
 		{assets/pics/photoshop.png}
 	\end{minipage}
-	\caption{Prangkat lunak aplikasi}
+	\caption{Perangkat lunak aplikasi}
 \end{figure}
 
 \subsection{Proses Kompilasi dan Eksekusi Perangkat Lunak}
 Proses menjalankan perangkat lunak melibatkan dua tahap utama: kompilasi dan eksekusi. Kedua tahap ini penting untuk mengubah kode sumber yang dapat dibaca manusia menjadi instruksi yang dapat dieksekusi oleh mesin. Berikut penjelasan lebih detail, dibagi menjadi dua sub-bagian:
 
 \subsubsection{Proses Kompilasi}
-Proses kompilasi mengubah kode sumber (source code) yang ditulis dalam bahasa pemrograman tingkat tinggi menjadi kode mesin (machine code) atau kode objek (object code) [4]. Proses ini melibatkan beberapa tahapan, yang masing-masing dilakukan oleh program utilitas yang berbeda:
+Proses kompilasi mengubah kode sumber (source code) yang ditulis dalam bahasa pemrograman tingkat tinggi menjadi kode mesin (machine code) atau kode objek (object code) \cite{tut24}. Proses ini melibatkan beberapa tahapan, yang masing-masing dilakukan oleh program utilitas yang berbeda:
 
 \begin{enumerate}
-	\item \bo{Preprocessing:} Tahap pertama dalam proses kompilasi adalah preprocessing. Preprocessor menangani direktif-direktif preprocessor yang dimulai dengan simbol \#, seperti \#include dan \#define dalam kode sumber.
-	\item \bo{Compilation:} Pada tahap ini, compiler menerjemahkan kode sumber yang telah diproses menjadi assembly code. Assembly code adalah representasi mnemonic dari kode mesin, yang lebih mudah dibaca oleh manusia. Kompiler melakukan analisis sintaks dan semantik untuk memastikan kode sumber valid dan sesuai dengan aturan bahasa pemrograman. Kompiler juga melakukan optimasi kode untuk meningkatkan kinerja program.
-	\item \bo{Assembly:} Assembler menerjemahkan assembly code menjadi kode objek (object code). Kode objek adalah representasi biner dari instruksi mesin, tetapi belum siap untuk dieksekusi. Kode objek berisi instruksi mesin dan data, tetapi belum terhubung dengan library eksternal.
-	\item \bo{Linking:} Linker menggabungkan kode objek dari berbagai file sumber dan library menjadi satu file executable. Linker menyelesaikan referensi eksternal, mengalokasikan alamat memori untuk variabel dan fungsi, dan menghubungkan kode objek dengan library yang dibutuhkan. Output dari tahap linking adalah file executable yang siap dieksekusi.
+	\item \bo{Preprocessing:} Tahap pertama dalam proses kompilasi adalah preprocessing. Preprocessor menangani direktif-direktif preprocessor yang dimulai dengan simbol \#, seperti \#include dan \#define dalam kode sumber.
+	\item \bo{Compilation:} Pada tahap ini, compiler menerjemahkan kode sumber yang telah diproses menjadi assembly code. Assembly code adalah representasi mnemonic dari kode mesin, yang lebih mudah dibaca oleh manusia. Kompiler melakukan analisis sintaks dan semantik untuk memastikan kode sumber valid dan sesuai dengan aturan bahasa pemrograman. Kompiler juga melakukan optimasi kode untuk meningkatkan kinerja program.
+	\item \bo{Assembly:} Assembler menerjemahkan assembly code menjadi kode objek (object code). Kode objek adalah representasi biner dari instruksi mesin, tetapi belum siap untuk dieksekusi. Kode objek berisi instruksi mesin dan data, tetapi belum terhubung dengan library eksternal.
+	\item \bo{Linking:} Linker menggabungkan kode objek dari berbagai file sumber dan library menjadi satu file executable. Linker menyelesaikan referensi eksternal, mengalokasikan alamat memori untuk variabel dan fungsi, dan menghubungkan kode objek dengan library yang dibutuhkan. Output dari tahap linking adalah file executable yang siap dieksekusi.
 \end{enumerate}
 
 \begin{figure}
 	\centering
 	\includegraphics[width=0.35\textheight]
 	{assets/pics/program_compile.png}
-	\caption{Alur kompilasi program}
+	\caption{Alur kompilasi program \cite{tut24}}
 \end{figure}
 
 \subsubsection{Proses Eksekusi}
-Setelah program dikompilasi menjadi file executable, proses eksekusi dimulai [5]. Proses eksekusi melibatkan beberapa tahapan yang dilakukan oleh sistem operasi:
+Setelah program dikompilasi menjadi file executable, proses eksekusi dimulai \cite{Dan24}. Proses eksekusi melibatkan beberapa tahapan yang dilakukan oleh sistem operasi:
 \begin{enumerate}
-	\item \bo{Loading:} Loader yaitu sebuah komponen dari sistem operasi, memuat file executable ke dalam memori utama (RAM). Loader mengalokasikan ruang memori yang dibutuhkan oleh program, memuat instruksi dan data ke dalam memori, dan menginisialisasi program untuk eksekusi.
-	\item \bo{Eksekusi:} Setelah program dimuat ke dalam memori, prosesor mulai mengeksekusi instruksi-instruksi yang terdapat dalam program. Prosesor mengambil instruksi satu per satu dari memori, mendekode instruksi, dan mengeksekusinya. Siklus ini berulang hingga program selesai dijalankan atau dihentikan.
-	\item \bo{Terminasi:} Program berakhir ketika mencapai instruksi terminasi atau ketika terjadi kesalahan yang menyebabkan program berhenti secara paksa. Sistem operasi kemudian membebaskan sumber daya yang digunakan oleh program, seperti memori dan file.
+	\item \bo{Loading:} Loader yaitu sebuah komponen dari sistem operasi, memuat file executable ke dalam memori utama (RAM). Loader mengalokasikan ruang memori yang dibutuhkan oleh program, memuat instruksi dan data ke dalam memori, dan menginisialisasi program untuk eksekusi.
+	\item \bo{Eksekusi:} Setelah program dimuat ke dalam memori, prosesor mulai mengeksekusi instruksi-instruksi yang terdapat dalam program. Prosesor mengambil instruksi satu per satu dari memori, mendekode instruksi, dan mengeksekusinya. Siklus ini berulang hingga program selesai dijalankan atau dihentikan.
+	\item \bo{Terminasi:} Program berakhir ketika mencapai instruksi terminasi atau ketika terjadi kesalahan yang menyebabkan program berhenti secara paksa. Sistem operasi kemudian membebaskan sumber daya yang digunakan oleh program, seperti memori dan file.
 \end{enumerate}
 
 \begin{figure}
 	\centering
-	\includegraphics[height=0.5\textheight]
+	\includegraphics[height=0.4\textheight]
 	{assets/pics/program_execution.png}
-	\caption{Alur eksekusi program}
+	\caption{Alur eksekusi program \cite{Dan24}}
 \end{figure}
 
-%-----------------------------------------------------------------------------%
+
 \section{\f{Software Control Flow}}
-%-----------------------------------------------------------------------------%
-Alur kendali perangkat lunak (software control flow) merupakan aspek fundamental dalam eksekusi program, merepresentasikan urutan instruksi yang dieksekusi oleh prosesor untuk mencapai tujuan fungsionalitas program [6]. Memahami  software control flow adalah krusial dalam analisis kode, terutama dalam reverse engineering karena memungkinkan pemetaan jalur eksekusi, identifikasi bottleneck, dan potensi kerentanan. Dalam konteks ini, control flow bukan hanya sekadar urutan instruksi, tetapi juga representasi logis dari bagaimana program merespons input, kondisi, dan interaksi dengan sistem operasi. Pemahaman yang komprehensif terhadap aspek ini memberikan dasar yang kuat dalam menganalisis perilaku program, baik secara statis melalui analisis kode sumber dan intermediate representation, maupun secara dinamis melalui observasi eksekusi runtime.
+Alur kendali perangkat lunak (software control flow) merupakan aspek fundamental dalam eksekusi program, merepresentasikan urutan instruksi yang dieksekusi oleh prosesor untuk mencapai tujuan fungsionalitas program \cite{cod23}. Memahami software control flow adalah krusial dalam analisis kode, terutama dalam reverse engineering karena memungkinkan pemetaan jalur eksekusi, identifikasi bottleneck, dan potensi kerentanan. Dalam konteks ini, control flow bukan hanya sekadar urutan instruksi, tetapi juga representasi logis dari bagaimana program merespons input, kondisi, dan interaksi dengan sistem operasi. Pemahaman yang komprehensif terhadap aspek ini memberikan dasar yang kuat dalam menganalisis perilaku program, baik secara statis melalui analisis kode sumber dan intermediate representation, maupun secara dinamis melalui observasi eksekusi runtime.
 
 \subsection{\f{Control Flow Instructions}}
-Instruksi alur kendali (control flow instructions) adalah mekanisme fundamental yang menentukan urutan eksekusi instruksi dalam suatu program [6]. Instruksi ini memungkinkan program untuk membuat keputusan, mengulang blok kode, dan melompat ke bagian kode yang berbeda. Cara instruksi-instruksi ini direpresentasikan dan diimplementasikan sangat bergantung pada tingkat bahasa pemrograman yang digunakan. Secara umum, kita membedakan antara bahasa tingkat tinggi dan bahasa tingkat rendah.
+Instruksi alur kendali (control flow instructions) adalah mekanisme fundamental yang menentukan urutan eksekusi instruksi dalam suatu program \cite{cod23}. Instruksi ini memungkinkan program untuk membuat keputusan, mengulang blok kode, dan melompat ke bagian kode yang berbeda. Cara instruksi-instruksi ini direpresentasikan dan diimplementasikan sangat bergantung pada tingkat bahasa pemrograman yang digunakan. Secara umum, kita membedakan antara bahasa tingkat tinggi dan bahasa tingkat rendah.
 
 \subsubsection{\f{High Level Languages}}
-Bahasa pemrograman tingkat tinggi (high-level languages), seperti Python, Java, C++, dan JavaScript, menyediakan abstraksi yang jauh dari detail hardware. Bahasa-bahasa ini fokus pada kemudahan penulisan dan pemahaman kode oleh programmer, dengan menggunakan sintaks yang lebih dekat dengan bahasa manusia. Instruksi control flow dalam bahasa tingkat tinggi diimplementasikan melalui konstruksi yang intuitif, seperti if, else, for, dan while.
+Bahasa pemrograman tingkat tinggi (high-level languages), seperti Python, Java, C++, dan JavaScript, menyediakan abstraksi yang jauh dari detail hardware. Bahasa-bahasa ini fokus pada kemudahan penulisan dan pemahaman kode oleh programmer, dengan menggunakan sintaks yang lebih dekat dengan bahasa manusia. Instruksi control flow dalam bahasa tingkat tinggi diimplementasikan melalui konstruksi yang intuitif, seperti \textit{if, else, for}, dan \textit{while}.
 
-\bi{Conditonal Instructions:}
-
+\paragraph{Conditional Instructions:}
 \begin{itemize}
 	\item \bi{if statement:} Memungkinkan program membuat keputusan berdasarkan kondisi.
-	\item \bi{if-else statement:} Menyediakan jalur alternatif jika kondisi if tidak terpenuhi.
+	      \begin{minted}
+{c}     
+if (x > 10) {
+ std::cout << "x lebih besar dari 10" << std::endl;
+}
+    \end{minted}
+
+	\item \bi{if-else statement:} Menyediakan jalur alternatif jika kondisi \textit{if} tidak terpenuhi.
+	      \begin{minted}
+{c}     
+if (score >= 70) {
+ std::cout << "Lulus" << std::endl;
+} else {
+ std::cout << "Tidak Lulus" << std::endl;
+}
+    \end{minted}
 	\item \bi{switch statement:} Memungkinkan percabangan ke banyak kasus.
+	      \begin{minted}
+{c}     
+int day = 2;
+switch (day) {
+ case 1:
+ std::cout << "Senin" << std::endl;
+ break;
+ case 2:
+ std::cout << "Selasa" << std::endl;
+ break;
+ default:
+ std::cout << "Hari lain" << std::endl;
+}
+    \end{minted}
 \end{itemize}
 
-\bi{Loop Instructions:}
-
+\paragraph{Loop Instructions:}
 \begin{itemize}
-	\item \bi{for loop:} Memungkinkan program membuat keputusan berdasarkan kondisi.
+	\item \bi{for loop:} Mengeksekusi blok kode sejumlah kali tertentu.
+	      \begin{minted}
+{c}     
+for (int i = 0; i < 5; i++) {
+ std::cout << i << std::endl;
+}
+    \end{minted}
 	\item \bi{while loop:} Mengeksekusi blok kode selama kondisi tertentu terpenuhi.
+	      \begin{minted}
+{c}     
+int count = 0;
+while (count < 5) {
+ std::cout << count << std::endl;
+ count++;
+}
+    \end{minted}
 \end{itemize}
 
-\bi{Jump Instructions (Indirect - Function Calls):}
-
+\paragraph{Jump Instructions (Indirect - Function Calls):}
 \begin{itemize}
 	\item \bi{Function call:} Memindahkan kontrol ke fungsi lain dan kembali setelah selesai.
+	      \begin{minted} {c}
+void myFunction() {
+ std::cout << "Hello" << std::endl;
+}
+int main() {
+ myFunction();
+ return 0;
+}
+    \end{minted}
 \end{itemize}
 
 \subsubsection{\f{Low Level Languages}}
-Bahasa pemrograman tingkat rendah (low-level languages), seperti Assembly language, bekerja lebih dekat dengan hardware. Instruksi-instruksinya langsung dikodekan ke dalam instruksi mesin yang dapat dieksekusi oleh prosesor. Bahasa tingkat rendah memberikan kontrol yang lebih besar atas hardware, tetapi seringkali lebih kompleks dan sulit untuk dipahami oleh manusia. Instruksi control flow pada tingkat ini melibatkan kode operasi (opcode) yang merepresentasikan operasi jump dan perbandingan secara langsung [7]. Dalam bagian ini, contoh akan difokuskan pada bahasa x86 Assembly.
+Bahasa pemrograman tingkat rendah (low-level languages), seperti Assembly language, bekerja lebih dekat dengan hardware. Instruksi-instruksinya langsung dikodekan ke dalam instruksi mesin yang dapat dieksekusi oleh prosesor. Bahasa tingkat rendah memberikan kontrol yang lebih besar atas hardware, tetapi seringkali lebih kompleks dan sulit untuk dipahami oleh manusia. Instruksi control flow pada tingkat ini melibatkan kode operasi (opcode) yang merepresentasikan operasi jump dan perbandingan secara langsung \cite{USC24}. Dalam bagian ini, contoh akan difokuskan pada bahasa x86 Assembly.
 
-\bi{Conditonal Instructions:}
-
+\paragraph{Conditional Instructions:}
 \begin{itemize}
 	\item \bi{cmp (compare):} Membandingkan dua nilai dan mengatur flags (bendera) kondisi.
+	      \begin{minted}
+{asm}     
+cmp eax, 10
+    \end{minted}
 	\item \bi{jle, jge, je, jne (conditional jumps):} Melompat ke label lain jika flags kondisi memenuhi syarat.
+	      \begin{minted}
+{asm}     
+jle less_or_equal ; Lompat jika kurang dari atau sama dengan
+jne not_equal ; Lompat jika tidak sama dengan
+    \end{minted}
 \end{itemize}
 
-\bi{Loop Instructions (Implementasi dengan Conditional Jumps)}
+\paragraph{Loop Instructions (Implementasi dengan Conditional Jumps):}
 \begin{itemize}
 	\item Menggunakan kombinasi instruksi perbandingan, pengurangan counter, dan conditional jump untuk membuat loop.
+	      \begin{minted}
+{asm}     
+mov ecx, 5 ; set counter loop
+loop_start:
+; instruksi dalam loop
+cmp ecx, 0
+jne loop_start
+    \end{minted}
 \end{itemize}
 
-\bi{Jump Instructions (Direct):}
+\paragraph{Jump Instructions (Direct):}
 \begin{itemize}
 	\item \bi{jmp (unconditional jump):} Lompat ke label tanpa syarat.
+	      \begin{minted}
+{asm}     
+jmp target_label
+    \end{minted}
 \end{itemize}
 
-\bi{Jump Instructions (Indirect - Function Calls):}
+\paragraph{Jump Instructions (Indirect - function calls):}
 \begin{itemize}
 	\item \bi{call:} Melompat ke alamat fungsi dan menyimpan alamat return.
-	\item \bi{ret:} Mengembalikan control dari fungsi.
+	      \begin{minted}
+{asm}     
+call function_address
+    \end{minted}
+	\item \bi{ret:} Mengembalikan kontrol dari fungsi.
+	      \begin{minted}
+{asm}     
+ret
+    \end{minted}
 \end{itemize}
 
 \subsection{Control Flow Graph}
-Graf Alur Kendali (Control Flow Graph atau CFG) adalah representasi grafis dari alur kendali suatu program. CFG memvisualisasikan bagaimana eksekusi program berjalan melalui berbagai blok kode, menggambarkan urutan eksekusi, percabangan, dan perulangan [8]. CFG sangat penting dalam analisis statis kode, reverse engineering, dan optimisasi kode [9]. Dalam CFG, blok dasar (basic blocks) direpresentasikan sebagai simpul (nodes) dan transisi antar blok dasar direpresentasikan sebagai sisi/garis (edges). Contohnya dapat dilihat pada Gambar BAB II TINJAUAN PUSTAKA.5.
+Graf Alur Kendali (Control Flow Graph atau CFG) adalah representasi grafis dari alur kendali suatu program. CFG memvisualisasikan bagaimana eksekusi program berjalan melalui berbagai blok kode, menggambarkan urutan eksekusi, percabangan, dan perulangan \cite{Myi19}. CFG sangat penting dalam analisis statis kode, reverse engineering, dan optimisasi kode \cite{Rou05}. Dalam CFG, blok dasar (basic blocks) direpresentasikan sebagai simpul (nodes) dan transisi antar blok dasar direpresentasikan sebagai sisi/garis (edges). Contohnya dapat dilihat pada Gambar \ref{F:graph}.
 
 \begin{figure}
 	\centering
 	\includegraphics[width=1\textwidth]
 	{assets/pics/control_flow_graph.png}
-	\caption{Control Flow Graph}
+	\caption{Contoh Control Flow Graph \cite{Gom}}
+	\label{F:graph}
 \end{figure}
 
 %-----------------------------------------------------------------------------%
 \section{Rekayasa balik (\f{Reverse Engineering})}
 %-----------------------------------------------------------------------------%
-Rekayasa balik (reverse engineering) adalah proses menganalisis suatu sistem, baik perangkat lunak, perangkat keras, atau sistem lainnya, untuk mengidentifikasi komponen-komponennya dan interaksi antar komponen, serta memahami cara kerja sistem tersebut tanpa akses ke dokumentasi asli atau kode sumber [11]. Tujuannya beragam, mulai dari pemahaman fungsionalitas, analisis keamanan untuk menemukan kerentanan, pemulihan desain, hingga modifikasi dan peningkatan sistem. Rekayasa balik dapat diterapkan pada berbagai skenario, misalnya untuk menganalisis malware, memahami format file yang tidak terdokumentasi, mempelajari teknik yang digunakan oleh pesaing atau modifikasi fungsionalitas perangkat lunak.
+Rekayasa balik (reverse engineering) adalah proses menganalisis suatu sistem, baik perangkat lunak, perangkat keras, atau sistem lainnya, untuk mengidentifikasi komponen-komponennya dan interaksi antar komponen, serta memahami cara kerja sistem tersebut tanpa akses ke dokumentasi asli atau kode sumber \cite{Has18}.  Tujuannya beragam, mulai dari pemahaman fungsionalitas, analisis keamanan untuk menemukan kerentanan, pemulihan desain, hingga modifikasi dan peningkatan sistem. Rekayasa balik dapat diterapkan pada berbagai skenario, misalnya untuk menganalisis malware, memahami format file yang tidak terdokumentasi, mempelajari teknik yang digunakan oleh pesaing atau modifikasi fungsionalitas perangkat lunak.
 
 \subsection{Jenis Analisis Rekayasa Balik}
 \begin{enumerate}
-	\item Analisis Statis
-	      Analisis statis melibatkan pemeriksaan kode tanpa menjalankannya. Analisis statis berfokus pada struktur dan logika kode, mencari pola dan kerentanan [12]. Alat yang digunakan dalam analisis statis meliputi:
+	\item \bo{Analisis Statis}\\
+	      Analisis statis melibatkan pemeriksaan kode tanpa menjalankannya. Analisis statis berfokus pada struktur dan logika kode, mencari pola dan kerentanan \cite{Sec19}. Alat yang digunakan dalam analisis statis meliputi:
 	      \begin{itemize}
 		      \item \bi{Disassembler:}  Menerjemahkan kode mesin menjadi assembly code, sebuah representasi kode yang lebih mudah dibaca oleh manusia. Contoh: IDA Pro, Ghidra, Radare2.
 		      \item \bi{Decompiler:}  Menerjemahkan kode mesin atau bytecode kembali ke kode sumber tingkat tinggi (misalnya, C++ atau Java). Decompiler membantu memahami logika program secara lebih mudah.
@@ -175,10 +252,10 @@ Rekayasa balik (reverse engineering) adalah proses menganalisis suatu sistem, ba
 		      \centering
 		      \includegraphics[width=.75\textwidth]
 		      {assets/pics/program_decompile.png}
-		      \caption{Dekompilasi Aplikasi}
+		      \caption{Dekompilasi Aplikasi \cite{Ore06}}
 	      \end{figure}
-	\item Analisis Dinamik
-	      Analisis dinamis melibatkan menjalankan program dan mengamati perilakunya. Analisis dinamis berfokus pada bagaimana program berinteraksi dengan lingkungannya, mencari kerentanan runtime dan memahami alur eksekusi [12]. Alat yang digunakan dalam analisis dinamis meliputi:
+	\item \bo{Analisis Dinamik} \\
+	      Analisis dinamis melibatkan menjalankan program dan mengamati perilakunya. Analisis dinamis berfokus pada bagaimana program berinteraksi dengan lingkungannya, mencari kerentanan runtime dan memahami alur eksekusi \cite{Sec19}.  Alat yang digunakan dalam analisis dinamis meliputi:
 	      \begin{itemize}
 		      \item \bi{Debugger:} Memungkinkan eksekusi program secara terkontrol, memeriksa nilai variabel, dan melacak alur eksekusi. Contoh: x64dbg, OllyDbg, GDB.
 		      \item \bi{Profiler:} Mengukur penggunaan sumber daya program, seperti waktu eksekusi, penggunaan memori, dan akses file. Profiler membantu mengidentifikasi bottleneck kinerja.
@@ -198,33 +275,33 @@ Rekayasa balik (reverse engineering) adalah proses menganalisis suatu sistem, ba
 
 \subsection{Alat-alat untuk Rekayasa Balik}
 \begin{itemize}
-	\item \bo{IDA Pro (Interactive Disassembler Pro):} Disassembler dan debugger komersial yang sangat populer dan powerful. IDA Pro mendukung berbagai arsitektur prosesor dan sistem operasi, menyediakan antarmuka yang canggih untuk analisis kode, dan mendukung plugin untuk ekstensibilitas [13].
+	\item \bo{IDA Pro (Interactive Disassembler Pro):} Disassembler dan debugger komersial yang sangat populer dan powerful. IDA Pro mendukung berbagai arsitektur prosesor dan sistem operasi, menyediakan antarmuka yang canggih untuk analisis kode, dan mendukung plugin untuk ekstensibilitas \cite{Hex91}.
 	      \begin{figure}
 		      \centering
 		      \includegraphics[width=.6\textwidth]
 		      {assets/pics/IDA_pro.png}
-		      \caption{IDA Pro}
+		      \caption{IDA Pro \cite{Hex91}}
 	      \end{figure}
-	\item \bo{Ghidra:} Framework reverse engineering open-source yang dikembangkan oleh NSA (National Security Agency). Ghidra menawarkan fitur yang setara dengan IDA Pro, termasuk disassembler, decompiler, dan debugger. Ghidra juga mendukung scripting dan ekstensibilitas melalui plugin [14].
+	\item \bo{Ghidra:} Framework reverse engineering open-source yang dikembangkan oleh NSA (National Security Agency). Ghidra menawarkan fitur yang setara dengan IDA Pro, termasuk disassembler, decompiler, dan debugger. Ghidra juga mendukung scripting dan ekstensibilitas melalui plugin \cite{Nat19}.
 	      \begin{figure}
 		      \centering
 		      \includegraphics[width=.4\textwidth]
 		      {assets/pics/Ghidra.png}
-		      \caption{Ghidra}
+		      \caption{Ghidra \cite{Nat19}}
 	      \end{figure}
-	\item \bo{x64dbg:} Debugger open-source untuk platform Windows. x64dbg menyediakan antarmuka yang modern dan user-friendly, serta mendukung plugin dan scripting. x64dbg fokus pada analisis malware dan reverse engineering aplikasi Windows. [15]
+	\item \bo{x64dbg:} Debugger open-source untuk platform Windows. x64dbg menyediakan antarmuka yang modern dan user-friendly, serta mendukung plugin dan scripting. x64dbg fokus pada analisis malware dan reverse engineering aplikasi Windows \cite{Dun14}.
 	      \begin{figure}
 		      \centering
 		      \includegraphics[width=.5\textwidth]
 		      {assets/pics/x64Dbg.png}
-		      \caption{x64dbg}
+		      \caption{x64dbg \cite{Dun14}}
 	      \end{figure}
 \end{itemize}
 
 %-----------------------------------------------------------------------------%
 \section{\f{Obfuscation}}
 %-----------------------------------------------------------------------------%
-Obfuscation adalah teknik yang digunakan untuk mengubah kode sumber atau kode mesin menjadi bentuk yang lebih sulit dipahami oleh manusia, tanpa mengubah fungsionalitas program. Tujuan utama obfuscation adalah untuk mempersulit analisis dan reverse engineering, melindungi kekayaan intelektual, dan meningkatkan keamanan aplikasi. Obfuscation tidak membuat kode menjadi tidak mungkin untuk di-reverse engineer, tetapi meningkatkan waktu dan usaha yang dibutuhkan untuk melakukannya, sehingga membuat reverse engineering menjadi kurang menarik bagi penyerang
+Obfuscation adalah teknik yang digunakan untuk mengubah kode sumber atau kode mesin menjadi bentuk yang lebih sulit dipahami oleh manusia, tanpa mengubah fungsionalitas program. Tujuan utama obfuscation adalah untuk mempersulit analisis dan reverse engineering, melindungi kekayaan intelektual, dan meningkatkan keamanan aplikasi. Obfuscation tidak membuat kode menjadi tidak mungkin untuk di-reverse engineer, tetapi meningkatkan waktu dan usaha yang dibutuhkan untuk melakukannya, sehingga membuat reverse engineering menjadi kurang menarik bagi penyerang \cite{Jin24}.
 
 \subsection{Manfaat \f{Obfuscation}}
 \begin{itemize}
@@ -235,70 +312,71 @@ Obfuscation adalah teknik yang digunakan untuk mengubah kode sumber atau kode me
 \subsection{Jenis-jenis \f{Obfuscation}}
 Obfuscation dapat dilakukan pada diterapkan pada kode sumber, bytecode, atau kode biner.
 \subsubsection{Kode Sumber \f{Obfuscation}}
-Teknik ini mengubah kode sumber yang dapat dibaca manusia, sehingga sulit dipahami tanpa memengaruhi fungsinya [16].
+Teknik ini mengubah kode sumber yang dapat dibaca manusia, sehingga sulit dipahami tanpa memengaruhi fungsinya \cite{Jin24}.
 \begin{itemize}
 	\item \bi{Layout obfuscation:} mengubah tampilan kode.
 	      \begin{itemize}
-		      \item \bi{Scrabling identifiers [17]:} mengubah nama fungsi dan variabel.
-		      \item \bi{Changing formatting [18]:} menambahkan atau menghapus spasi putih dan baris baru.
-		      \item \bi{Removing comments [18]:} menghapus komentar penjelasan.
+		      \item \bi{Scrabling identifiers \cite{Cha04}:} mengubah nama fungsi dan variabel.
+		      \item \bi{Changing formatting \cite{Bal11}:} menambahkan atau menghapus spasi putih dan baris baru.
+		      \item \bi{Removing comments \cite{Bal11}:} menghapus komentar penjelasan.
 	      \end{itemize}
 	\item \bi{Data obfuscation:} menyembunyikan cara data disimpan dan diproses.
 	      \begin{itemize}
-		      \item \bi{Data encocding [19] [20] [21]:} Mengubah representasi data, misalnya mengenkripsi string atau mengubah nilai numerik dengan operasi matematika. Ini membuat data asli sulit dikenali langsung.
-		      \item \bi{Instruction Substitution [22] [23]} Mengganti instruksi yang sederhana dengan instruksi yang lebih kompleks atau setara, tetapi lebih sulit dipahami.
-		      \item \bi{Mixed boolean arithmetic [24] [25] [26]} Menggunakan operasi boolean (AND, OR, XOR, NOT) yang dikombinasikan dengan operasi aritmatika untuk membuat logika program lebih kompleks dan sulit diurai.
+		      \item \bi{Data encocding \cite{Ert05,Fuk08,Kov13}:} Mengubah representasi data, misalnya mengenkripsi string atau mengubah nilai numerik dengan operasi matematika. Ini membuat data asli sulit dikenali langsung.
+		      \item \bi{Instruction Substitution \cite{LeD12,Dar10}} Mengganti instruksi yang sederhana dengan instruksi yang lebih kompleks atau setara, tetapi lebih sulit dipahami.
+		      \item \bi{Mixed boolean arithmetic \cite{Liu21,Sch22,Zho07}} Menggunakan operasi boolean (AND, OR, XOR, NOT) yang dikombinasikan dengan operasi aritmatika untuk membuat logika program lebih kompleks dan sulit diurai.
 	      \end{itemize}
 	\item \bi{Control flow obfuscation:} mempersulit logika program.
 	      \begin{itemize}
-		      \item \bi{Bogus control flow [27]:} menambahkan kode palsu yang memengaruhi alur kontrol.
-		      \item \bi{Opaque predicates [28]:} menyisipkan kode sampah ke dalam pernyataan kondisional.
-		      \item \bi{Control Flow flattening [29]:} mengubah struktur program menjadi pernyataan switch yang kompleks.
+		      \item \bi{Bogus control flow \cite{LiY211}:} menambahkan kode palsu yang memengaruhi alur kontrol.
+		      \item \bi{Opaque predicates \cite{XuD16}:} menyisipkan kode sampah ke dalam pernyataan kondisional.
+		      \item \bi{Control Flow flattening \cite{Lás09}:} mengubah struktur program menjadi pernyataan switch yang kompleks.
 	      \end{itemize}
 \end{itemize}
 
 \subsubsection{\f{Bytecode Obfuscation}}
-Bytecode Obfuscation beroperasi pada kode perantara yang dihasilkan setelah kompilasi kode sumber. Hal ini khususnya relevan untuk bahasa seperti Java, .NET, LLVM dimana kode dikompilasi menjadi bytecode dan kemudian dijalankan pada mesin virtual [30] [31]. Tujuannya adalah untuk mempersulit rekayasa balik bytecode menjadi kode sumber dengan mudah.\\
+Bytecode Obfuscation beroperasi pada kode perantara yang dihasilkan setelah kompilasi kode sumber. Hal ini khususnya relevan untuk bahasa seperti Java, .NET, LLVM dimana kode dikompilasi menjadi bytecode dan kemudian dijalankan pada mesin virtual \cite{Pie18} \cite{Yak20}. Tujuannya adalah untuk mempersulit rekayasa balik bytecode menjadi kode sumber dengan mudah.\\
 Berikut Teknik-teknik obfuscation pada bytecode :
 \begin{itemize}
-	\item \bi{Renaming [30] :} Mengubah nama kelas, metode, dan variabel dalam bytecode untuk membuat kode sumber yang didekompilasi lebih sulit dibaca. Misalnya, metode bernama calculateSalary dapat diubah namanya menjadi method1
-	\item \bi{Control Flow Obfucsation [30] :} Meggunakna  percabangan yang kompleks, kondisional, dan konstruksi berulang untuk membuat kode yang didekompilasi menjadi non-deterministik dan lebih sulit untuk diikuti
-	\item \bi{String Encryption [30] :} Mengenkripsi string yang tertanam dalam bytecode, yang hanya didekripsi saat dijalankan saat dibutuhkan. Hal ini mempersulit pencarian informasi atau data sensitif dengan menganalisis bytecode.
-	\item \bi{Dummy Code Insertion [30] :} Menambahkan kode yang tidak memengaruhi logika program, tetapi mempersulit dekompilasi dan analisis
+	\item \bi{Renaming \cite{Pie18} :} Mengubah nama kelas, metode, dan variabel dalam bytecode untuk membuat kode sumber yang didekompilasi lebih sulit dibaca. Misalnya, metode bernama calculateSalary dapat diubah namanya menjadi method1
+	\item \bi{Control Flow Obfucsation \cite{Pie18} :} Meggunakna  percabangan yang kompleks, kondisional, dan konstruksi berulang untuk membuat kode yang didekompilasi menjadi non-deterministik dan lebih sulit untuk diikuti
+	\item \bi{String Encryption \cite{Pie18} :} Mengenkripsi string yang tertanam dalam bytecode, yang hanya didekripsi saat dijalankan saat dibutuhkan. Hal ini mempersulit pencarian informasi atau data sensitif dengan menganalisis bytecode.
+	\item \bi{Dummy Code Insertion \cite{Pie18} :} Menambahkan kode yang tidak memengaruhi logika program, tetapi mempersulit dekompilasi dan analisis
 \end{itemize}
 
 \subsubsection{\f{Kode Biner Obfuscation}}
 Kode Biner Obfuscation diterapkan pada kode akhir yang dapat dieksekusi mesin. Ini berfokus pada upaya membuat biner sulit dianalisis, dibongkar, dan dipahami. Berikut beberapa teknik yang digunakna untuk obfuscation pada kode biner :
 \begin{itemize}
-	\item bi{Code Packing [32] :} kode asli yang dapat dieksekusi dikompresi atau dienkripsi menjadi biner yang dikemas, yang juga menyertakan kode bootstrap yang membongkar kode asli ke dalam memori saat runtime, sehingga melindungi kode asli dari analisis statis.
-	\item bi{Obfuscated Control Flow [32] :} Menggunakan inderect calls dan  jumps, dan memanipulasi instruksi panggilan dan ret untuk mempersulit mengikuti jalur eksekusi program.
-	\item bi{Chunked Control Flow [32] :} Membagi kode menjadi blok-blok yang sangat kecil dengan instruksi lompatan antar blok untuk mengganggu pembongkaran linear assembly.
-	\item bi{Obfuscated Constants [32] :} Menyembunyikan nilai konstan yang digunakan dalam kode melalui berbagai operasi aritmatika atau logika.
-	\item bi{Code Virtualization [32] :} Menerjemahkan kode mesin menjadi instruksi virtual yang dieksekusi oleh mesin virtual khusus yang tertanam dalam aplikasi.
+	\item \bi{Code Packing \cite{Rou13} :} kode asli yang dapat dieksekusi dikompresi atau dienkripsi menjadi biner yang dikemas, yang juga menyertakan kode bootstrap yang membongkar kode asli ke dalam memori saat runtime, sehingga melindungi kode asli dari analisis statis.
+	\item \bi{Obfuscated Control Flow \cite{Rou13} :} Menggunakan inderect calls dan  jumps, dan memanipulasi instruksi panggilan dan ret untuk mempersulit mengikuti jalur eksekusi program.
+	\item \bi{Chunked Control Flow \cite{Rou13} :} Membagi kode menjadi blok-blok yang sangat kecil dengan instruksi lompatan antar blok untuk mengganggu pembongkaran linear assembly.
+	\item \bi{Obfuscated Constants \cite{Rou13} :} Menyembunyikan nilai konstan yang digunakan dalam kode melalui berbagai operasi aritmatika atau logika.
+	\item \bi{Code Virtualization \cite{Ore06} :} Menerjemahkan kode mesin menjadi instruksi virtual yang dieksekusi oleh mesin virtual khusus yang tertanam dalam aplikasi.
 \end{itemize}
 
 \begin{figure}
 	\centering
 	\includegraphics[width=.8\textwidth]
 	{assets/pics/code_virtualization_process.png}
-	\caption{Prosess Code Virtualization [1]}
+	\caption{Prosess Code Virtualization \cite{Ore06}}
+	\label{F:virtualization_process}
 \end{figure}
 %-----------------------------------------------------------------------------%
 \section{\f{Code Virtualization}}
 %-----------------------------------------------------------------------------%
 
-Code Virtualization atau juga disebut dengan VM-Based Code Obfuscation menerupakan suatu teknik obfuscation dimana kita menerjemahkan kode biner orignal menjadi bytecode baru berdasarkan Instruction Set Architecture (ISA) khusus (Gambar BAB II TINJAUAN PUSTAKA.10). Bytecode ini dapat dijalankan secara run-time dengan mesin virtual (i.e. intrepreter) yang tertanam pada aplikasinya [33]. Teknik Code virtualization tidak akan mengembalikan sumber kode aslinya dalam memori sedangkan teknik Code Encryption tetap mengembalikan kodenya aslinya dalam memori saat dilakukan dekripsinya [34].
+Code Virtualization atau juga disebut dengan VM-Based Code Obfuscation menerupakan suatu teknik obfuscation dimana kita menerjemahkan kode biner orignal menjadi bytecode baru berdasarkan Instruction Set Architecture (ISA) khusus (Gambar \ref{F:virtualization_process}). Bytecode ini dapat dijalankan secara run-time dengan mesin virtual (i.e. intrepreter) yang tertanam pada aplikasinya \cite{Ore06,Zho24}. Teknik Code virtualization tidak akan mengembalikan sumber kode aslinya dalam memori sedangkan teknik Code Encryption tetap mengembalikan kodenya aslinya dalam memori saat dilakukan dekripsinya \cite{Don20}.
 
-Set instruksi virtual ini merupakan kunci dari obfuscationnya yang digunakan untuk mapping relasi antara intruksi lokal dan instruksi virtual [33]. Intruksi virtual ini membuat aliran kontrol dari original program untuk tidak dapat dibaca dan mempersulit reverse-engineer program. Code Virtualization dapat menghasilkan berbagai mesin virtual dengan set instruksi virtual masing-masing. Dengan ini, setiap copy dari program dapat memiliki instruksi virtual khusus agar mencegah penyerang untuk mengenali opcode mesin virtual menggunakan metode Frequency Analysis [1] [33].
+Set instruksi virtual ini merupakan kunci dari obfuscationnya yang digunakan untuk mapping relasi antara intruksi lokal dan instruksi virtual \cite{Zho24} . Intruksi virtual ini membuat aliran kontrol dari original program untuk tidak dapat dibaca dan mempersulit reverse-engineer program. Code Virtualization dapat menghasilkan berbagai mesin virtual dengan set instruksi virtual masing-masing. Dengan ini, setiap copy dari program dapat memiliki instruksi virtual khusus agar mencegah penyerang untuk mengenali opcode mesin virtual menggunakan metode Frequency Analysis \cite{Ore06,Zho24}.
 
 \begin{figure}
 	\centering
 	\includegraphics[width=1\textwidth]
 	{assets/pics/multiple_virtualization.jpg}
-	\caption{Transformasi ISA x86 menjadi berbagai messin virtual [1]}
+	\caption{Transformasi ISA x86 menjadi berbagai messin virtual \cite{Ore06}}
 \end{figure}
 
-Arsitektur umum mesin virtual untuk Code Virtualization memiliki komponen-komponen yang mirip dengan design CPU [35] [36]
+Arsitektur umum mesin virtual untuk Code Virtualization memiliki komponen-komponen yang mirip dengan design CPU \cite{Sal18, Hac24}.
 \begin{enumerate}
 	\item \bi{VM entry:} Perannya untuk simpan konteks eksekusi native (seperti register CPU atau flag) dan transisi ke konteks mesin virtual.
 	\item \bi{Fetch:} Perannya adalah untuk mengambil, dari memori internal VM, opcode (virtual) yang akan ditiru, berdasarkan nilai Virtual Program Counter (vpc).
@@ -308,27 +386,29 @@ Arsitektur umum mesin virtual untuk Code Virtualization memiliki komponen-kompon
 	\item \bi{VM exit:} Perannya untuk transisi dari konteks mesin virtual balik ke konteks eksekusi native.
 \end{enumerate}
 
-Proses eksekusi Code Virtualization pada program dapat dilihat pada Gambar BAB II TINJAUAN PUSTAKA.12 dan contoh code virtualization pada intel assembly dapat dilihat pada Gambar BAB II TINJAUAN PUSTAKA.13.
+Proses eksekusi Code Virtualization pada program dapat dilihat pada Gambar \ref{F:execution_virtualization} dan contoh code virtualization pada intel assembly dapat dilihat pada Gambar \ref{F:transformation_virtualization}.
 
 \begin{figure}
 	\centering
 	\includegraphics[width=0.7\textwidth]
 	{assets/pics/virtualization_execution.png}
-	\caption{Alur eksekusi Code Virtualization [34]}
+	\caption{Alur eksekusi Code Virtualization \cite{Don20}}
+	\label{F:execution_virtualization}
 \end{figure}
 
 \begin{figure}
 	\centering
 	\includegraphics[width=0.7\textwidth]
 	{assets/pics/code_to_virtualized.png}
-	\caption{Transformasi kode asli menjadi kode virtual [34]}
+	\caption{Transformasi kode asli menjadi kode virtual \cite{Don20}}
+	\label{F:transformation_virtualization}
 \end{figure}
 
 \subsection{EagleVM}
-EagleVM adalah implementasi code virtualization open-source untuk arsitektur x86-64 yang dirancang khusus untuk tujuan penelitian dan demonstrasi [2]. Proyek ini merupakan hasil kompilasi penelitian dari Code Virtualizer komersial seperti VMProtect, Themida, dan Enigma Protector [1] [37] [38]. Proyek ini berfokus pada transformasi biner-ke-biner (bin2bin), memungkinkan modifikasi langsung pada file executable tanpa memerlukan akses ke kode sumber. EagleVM menyediakan kerangka kerja yang fleksibel untuk mempelajari dan mengembangkan teknik virtualisasi kode, serta menawarkan kemampuan untuk melindungi bagian-bagian tertentu dari kode program dari analisis reverse-engineering. Meskipun bersifat open-source dan bermanfaat untuk riset, EagleVM tidak didesain untuk penggunaan produksi dan memiliki keterbatasan dalam hal stabilitas dan fitur.
+EagleVM adalah implementasi code virtualization open-source untuk arsitektur x86-64 yang dirancang khusus untuk tujuan penelitian dan demonstrasi \cite{Eag21}. Proyek ini merupakan hasil kompilasi penelitian dari Code Virtualizer komersial seperti VMProtect, Themida, dan Enigma Protector \cite{Ore06, Ore24, VMP24}. Proyek ini berfokus pada transformasi biner-ke-biner (bin2bin), memungkinkan modifikasi langsung pada file executable tanpa memerlukan akses ke kode sumber. EagleVM menyediakan kerangka kerja yang fleksibel untuk mempelajari dan mengembangkan teknik virtualisasi kode, serta menawarkan kemampuan untuk melindungi bagian-bagian tertentu dari kode program dari analisis reverse-engineering. Meskipun bersifat open-source dan bermanfaat untuk riset, EagleVM tidak didesain untuk penggunaan produksi dan memiliki keterbatasan dalam hal stabilitas dan fitur.
 
 \subsubsection{Komponen EagleVM}
-EagleVM memiliki arsitektur modular yang terdiri dari beberapa komponen yang bekerja sama [2]:
+EagleVM memiliki arsitektur modular yang terdiri dari beberapa komponen yang bekerja sama \cite{Eag21}:
 \begin{itemize}
 	\item \bo{EagleVM (Core):} Inti dari EagleVM, berisi logika utama untuk memproses biner input, melakukan disassembly, menerjemahkan instruksi x86-64 ke bytecode, dan menghasilkan biner output yang mengandung mesin virtual dan bytecode. Komponen ini juga bertanggung jawab untuk mengelola konteks eksekusi, termasuk pemetaan register dan stack.
 	\item \bo{EagleVM.Stub:} Dynamic Link Library (DLL) yang berperan penting dalam proses penandaan kode yang akan divirtualisasi. DLL ini mengekspor dua fungsi utama, yaitu fnEagleVMBegin dan fnEagleVMEnd. Pengembang menggunakan fungsi-fungsi ini di dalam kode sumber mereka untuk menandai awal dan akhir blok kode yang akan dilindungi dengan virtualisasi. EagleVM kemudian akan mencari panggilan ke fungsi-fungsi ini dalam biner input untuk mengidentifikasi bagian kode yang harus divirtualisasi.
