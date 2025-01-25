@@ -451,7 +451,7 @@ Perintah tersebut bertujuan untuk mengonfigurasi aturan firewall pada sistem men
 
 Aturan-aturan tersebut dirancang untuk membuka akses ke port-port yang umum digunakan oleh layanan-layanan seperti NFS, RPC, dan layanan manajemen tertentu. Setelah semua aturan ditambahkan, perintah \texttt{apt-get install iptables-persistent} digunakan untuk menginstal paket \texttt{iptables-persistent}, yang bertujuan agar konfigurasi aturan firewall yang telah dibuat akan dipertahankan dan diterapkan secara otomatis setiap kali sistem di-boot. Dengan demikian, langkah-langkah ini membantu menjaga keamanan sistem dengan memperbolehkan akses hanya ke port-port yang diperlukan dan memastikan bahwa aturan firewall tidak hilang setelah reboot.
 
-Setelah itu kita harus menonaktifkan \texttt{apparmor} pada \texttt{libvirtd}, dikarenakan CloudStack melakukan berbagai macam hal yang memungkinkan bisa terblokir oleh mekanisme pertahanan seperti \texttt{apparmor} \cite{apacheHostInstallation}. Untuk mematikan apparmor \saya\ melakukan perintah:
+Setelah itu kita harus menonaktifkan \texttt{apparmor} pada \texttt{libvirtd}, dikarenakan CloudStack melakukan berbagai macam hal yang memungkinkan bisa terblokir oleh mekanisme pertahanan seperti \texttt{apparmor} Untuk mematikan apparmor \saya\ melakukan perintah:
 
 \begin{listing}[H]
     \begin{minted}{bash}   
