@@ -92,7 +92,7 @@
 % document. The package must be called in the preamble of the document and 
 % specified when called.
 % 
-\usepackage[paper=a4paper,headheight=0pt,left=4cm,top=3cm,right=3cm,bottom=3cm]{geometry}
+\usepackage[paper=a4paper,headheight=0pt,left=3cm,top=3cm,right=3cm,bottom=3cm, footnotesep=2.5cm]{geometry}
 
 % 
 % Digunakan untuk mengatur caption dalam dokumen.
@@ -240,16 +240,17 @@
 %
 % Atur header dan footer dalam dokumen.
 % 
-\renewcommand{\headrulewidth}{0.0pt}
 \fancyhf{}
-\fancyhead[L]{}
-\fancyhead[C]{}
-\fancyhead[R]{\thepage}
-\renewcommand{\headrulewidth}{0.0pt}
-\fancyfoot[R]{\footnotesize \textsf{\bo{Universitas Indonesia}}}
-\renewcommand{\footrulewidth}{0.0pt}
 \pagestyle{fancy}
 
+\renewcommand{\footrulewidth}{0.0pt}
+\renewcommand{\headrulewidth}{0.0pt}
+\fancyhead[L]{}
+\fancyhead[C]{}
+\fancyhead[R]{}
+
+\fancyfoot[C]{\thepage}
+\fancyfoot[R]{\footnotesize \textsf{\bo{Universitas Indonesia}}} 
 
 %-----------------------------------------------------------------------------%
 % Perintah Baru
