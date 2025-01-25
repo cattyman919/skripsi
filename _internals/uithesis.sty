@@ -92,10 +92,10 @@
 % document. The package must be called in the preamble of the document and 
 % specified when called.
 % 
-\usepackage[paper=a4paper,headheight=0pt,left=3cm,top=3cm,right=3cm,bottom=3cm, footnotesep=2.5cm]{geometry}
+\usepackage[paper=a4paper,headheight=0pt,left=3cm,top=3cm,right=3cm,bottom=3cm]{geometry}
 
 % 
-% Digunakan untuk mengatur caption dalam dokumen.
+% Digunakan untuk mengatur caption dalam dokumen
 % 
 \usepackage[font=footnotesize,format=plain,labelfont=bf,up,textfont=up]{caption}
 
@@ -142,7 +142,7 @@
 
 % Bibliography
 % \usepackage{natbib}
-\usepackage[backend=biber,style=ieee,natbib=true]{biblatex} 
+\usepackage[backend=biber,style=ieee,natbib=true]{biblatex}
 \renewcommand{\bibfont}{\footnotesize} % for IEEE bibfont size
 \addbibresource{pustaka.bib}
 
@@ -240,17 +240,13 @@
 %
 % Atur header dan footer dalam dokumen.
 % 
-\fancyhf{}
 \pagestyle{fancy}
+\fancyhf{}
 
-\renewcommand{\footrulewidth}{0.0pt}
+\fancyhead[R]{\thepage}
 \renewcommand{\headrulewidth}{0.0pt}
-\fancyhead[L]{}
-\fancyhead[C]{}
-\fancyhead[R]{}
-
-\fancyfoot[C]{\thepage}
-\fancyfoot[R]{\footnotesize \textsf{\bo{Universitas Indonesia}}} 
+\fancyfoot[R]{\footnotesize \textsf{\bo{Universitas Indonesia}}}
+\renewcommand{\footrulewidth}{0.0pt}
 
 %-----------------------------------------------------------------------------%
 % Perintah Baru
