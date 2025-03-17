@@ -5,10 +5,16 @@
 %-----------------------------------------------------------------------------%
 \section{Desain Penelitian}
 %-----------------------------------------------------------------------------%
-Penelitian ini menggunakan pendekatan eksperimental untuk mengevaluasi efektivitas dan dampak code virtualization menggunakan VxLang. Dua percobaan utama akan dilakukan:
+Penelitian ini menggunakan pendekatan eksperimental untuk menganalisis efektivitas code virtualization menggunakan VxLang dalam meningkatkan keamanan perangkat lunak dengan mempersulit reverse engineering. Fokus utama dari eksperimen ini adalah pada pengujian fungsionalitas autentikasi dan analisis performance overhead yang disebabkan oleh penerapan VxLang pada berbagai jenis aplikasi. Dua percobaan utama akan dilakukan:
 
 \begin{enumerate}
-	\item \bo{Pengujian Autentikasi - Analisis Statis dan Dinamis:} Percobaan ini bertujuan untuk menganalisis kompleksitas control flow program sebelum dan sesudah di-obfuscate menggunakan VxLang. Analisis dilakukan melalui dua pendekatan: analisis statis menggunakan Ghidra dan analisis dinamis menggunakan x64Dbg. Selain itu, percobaan ini juga akan mencakup upaya untuk melewati pengujian autentikasi dengan memanipulasi control flow menggunakan Ghidra dan x64dbg.
+	\item \bo{Pengujian Autentikasi - Analisis Statis dan Dinamis:} Percobaan ini bertujuan untuk menganalisis kompleksitas control flow program sebelum dan sesudah di-obfuscate menggunakan VxLang pada tiga jenis aplikasi yang berbeda:
+	      \begin{itemize}
+		      \item \bo{Aplikasi Konsol (Tanpa GUI) :} Aplikasi sederhana yang berinteraksi melalui command line.
+		      \item \bo{Aplikasi Qt :} Aplikasi dengan antarmuka pengguna grafis yang dibangun menggunakan Qt Framework.
+		      \item \bo{Aplikasi ImGUI :} Aplikasi dengan antarmuka pengguna grafis yang menggunakan library Dear ImGUI.
+	      \end{itemize}
+	      Analisis akan dilakukan melalui dua pendekatan: analisis statis menggunakan Ghidra dan analisis dinamis menggunakan x64Dbg. Selain itu, percobaan ini juga akan mencakup upaya untuk melewati pengujian autentikasi dengan memanipulasi control flow menggunakan Ghidra dan x64dbg pada ketiga jenis aplikasi tersebut. Tujuan dari pengujian pada berbagai aplikasi ini adalah untuk menunjukkan bahwa VxLang dapat diterapkan pada berbagai framework dan jenis kode sumber yang berbeda.
 	\item \bo{Pengujian Performa - Waktu Eksekusi dan Ukuran File:} Percobaan ini bertujuan untuk mengukur performa waktu eksekusi program dengan algoritma sorting sebelum dan sesudah di-obfuscate, serta membandingkan ukuran file executable. Waktu eksekusi diukur menggunakan library chrono::high\_resolution\_clock.
 \end{enumerate}
 %-----------------------------------------------------------------------------%
@@ -21,6 +27,7 @@ Perangkat lunak dan perangkat keras yang digunakan dalam penelitian ini adalah:
 	      \begin{itemize}
 		      \item \bo{Sistem Operasi:} Windows 11 akan digunakan sebagai lingkungan operasi utama untuk melakukan semua percobaan.
 		      \item \bo{Kompiler:} Kompiler Clang (clang-cl) akan digunakan untuk mengkompilasi kode sumber
+		      \item \bo{Framwork GUI:} Qt Framework dan Dear ImGUI
 		      \item \bo{Alat Virtualisasi Kode:} VxLang akan digunakan sebagai alat utama untuk mengimplementasikan virtualisasi kode.
 		      \item \bo{Alat Analisis Statis:} Ghidra, sebuah framework reverse engineering yang dikembangkan oleh NSA, akan digunakan untuk melakukan analisis statis.
 		      \item \bo{Alat Analisis Dinamis:} x64dbg, sebuah debugger sumber terbuka untuk Windows, akan digunakan untuk analisis dinamis
@@ -41,8 +48,8 @@ Pengujian autentikasi bertujuan untuk mengevaluasi efektivitas virtualisasi kode
 
 Berikut persiapan yang akan dilakukan :
 \begin{enumerate}
-	\item \bo{Pengaturan Lingkungan:} Lingkungan perangkat lunak diatur untuk memastikan bahwa semua alat (Windows 11, Clang, VxLang, Ghidra, dan x64dbg) terinstal dan terkonfigurasi dengan benar. Kode sumber aplikasi studi kasus disiapkan untuk kompilasi.
-	\item \bo{Kompilasi Aplikasi Asli:} Aplikasi studi kasus dikompilasi tanpa menerapkan teknik obfuscation apa pun menggunakan kompiler Clang. Hasilnya adalah file executable asli.
+	\item \bo{Pengaturan Lingkungan:} Lingkungan perangkat lunak diatur untuk memastikan bahwa semua alat (Windows 11, Clang, VxLang, Ghidra, dan x64dbg) serta framework dan library GUI (Qt dan Dear ImGUI) terinstal dan terkonfigurasi dengan benar. Kode sumber aplikasi studi kasus (konsol, Qt, dan Dear ImGUI) disiapkan untuk kompilasi.
+	\item \bo{Kompilasi Aplikasi Asli:} Setiap aplikasi studi kasus (konsol, Qt, dan Dear ImGUI) dikompilasi tanpa menerapkan teknik obfuscation apa pun menggunakan kompiler Clang. Hasilnya adalah file executable asli untuk setiap jenis aplikasi.
 	\item \bo{Kompilasi Aplikasi yang di-Obfuscate:} Kode sumber aplikasi studi kasus dimodifikasi untuk menyertakan penanda VL\_VIRTUALIZATION\_BEGIN dan VL\_VIRTUALIZATION\_END untuk menunjukkan blok kode yang akan divirtualisasikan. Kode sumber yang dimodifikasi dikompilasi dengan kompiler Clang, dan selanjutnya, executable diproses dengan VxLang untuk menghasilkan versi yang di-obfuscate yang menyertakan mesin virtual dan bytecode yang sesuai.
 \end{enumerate}
 
@@ -56,9 +63,9 @@ Berikut persiapan yang akan dilakukan :
 \subsubsection{Analisis Statis (Ghidra)}
 Fase ini bertujuan untuk menganalisis struktur dan kompleksitas kode tanpa menjalankannya.
 \begin{enumerate}
-	\item \bo{Peluncuran Ghidra:} Framework Ghidra diluncurkan, dan proyek baru dibuat untuk menampung analisis.
+	\item \bo{Peluncuran Ghidra:} Framework Ghidra diluncurkan, dan proyek baru dibuat untuk menampung analisis setiap versi aplikasi (asli dan di-obfuscate untuk konsol, Qt, dan Dear ImGUI).
 	\item \bo{Mengimpor Executable:} Baik file executable asli maupun yang di-obfuscate diimpor ke dalam proyek Ghidra.
-	\item \bo{Analisis Fungsi:} Sebuah fungsi target dalam aplikasi dipilih untuk analisis terfokus. Alat analisis Ghidra digunakan untuk membongkar fungsi target dan menghasilkan Control Flow Graph (CFG) untuk kedua versi executable.
+	\item \bo{Analisis Fungsi:} Fungsi yang menangani proses autentikasi dalam setiap aplikasi dipilih untuk analisis terfokus. Alat analisis Ghidra digunakan untuk membongkar fungsi target dan menghasilkan Control Flow Graph (CFG) untuk kedua versi (obfuscated dan non-obfuscated) dari setiap jenis aplikasi.
 	\item \bo{Perbandingan CFG:} CFG dari versi asli dan yang di-obfuscate dibandingkan dengan mendokumentasikan jumlah basic block, edge, dan kompleksitas siklomatik. Kompleksitas siklomatik yang lebih tinggi berkorelasi dengan peningkatan kesulitan dalam pemahaman kode dan reverse engineering. Dokumentasi untuk setiap versi akan mencakup yang berikut:
 	      \begin{itemize}
 		      \item \bo{Jumlah Basic Block:} Ini menunjukkan jumlah total urutan kode non-percabangan dalam alur kontrol fungsi.
@@ -79,18 +86,20 @@ Fase ini bertujuan untuk menganalisis struktur dan kompleksitas kode tanpa menja
 \begin{enumerate}
 	\item \bo{Identifikasi Mekanisme Autentikasi:} Menggunakan Ghidra, identifikasi bagian kode yang menangani proses autentikasi. Ini melibatkan pencarian fungsi yang memvalidasi kredensial atau memeriksa lisensi.
 	\item \bo{Analisis Control Flow:} Analisis control flow dari fungsi autentikasi untuk memahami bagaimana keputusan autentikasi dibuat.
-	\item \bo{Modifikasi Control Flow:} Menggunakan Ghidra, modifikasi kode assembly untuk mengubah alur kendali agar melewati pemeriksaan autentikasi. Ini bisa melibatkan perubahan conditional jump atau patching instruksi.
-	\item \bo{Penyimpanan Perubahan:} Setelah modifikasi dilakukan, simpan perubahan pada file executable yang telah di-patch.
-	\item \bo{Pengujian:} Jalankan file executable yang telah dimodifikasi dan verifikasi apakah modifikasi control flow berhasil melewati mekanisme autentikasi.
+	\item \bo{Identifikasi Peluang Manipulasi:} Cari peluang untuk memodifikasi control flow (misalnya, mengubah jump kondisional) yang dapat menyebabkan aplikasi selalu menganggap autentikasi berhasil.
+	\item \bi{Patching Executable:} Jika memungkinkan, coba patch executable asli menggunakan Ghidra untuk melewati mekanisme autentikasi pada setiap jenis aplikasi.
+	\item \bo{Uji Coba Aplikasi yang di-Patch:} Jalankan aplikasi yang di-patch untuk memverifikasi apakah upaya melewati autentikasi berhasil.
+	\item \bo{Ulangi pada Aplikasi yang di-Obfuscate:} Lakukan langkah yang sama pada versi aplikasi yang di-obfuscate untuk melihat apakah virtualisasi kode mempersulit upaya manipulasi control flow untuk melewati autentikasi pada setiap jenis aplikasi.
 \end{enumerate}
 
 \subsubsection{Analisis Dinamis (x64dbg)}
 Analisis dinamis melibatkan pengamatan perilaku program saat dijalankan.
 \begin{enumerate}
-	\item \bo{Peluncuran x64Dbg:} Debugger x64dbg diluncurkan, dan baik executable asli maupun yang di-obfuscate dimuat.
-	\item \bo{Pengaturan Breakpoint:} Breakpoint ditempatkan di awal fungsi target dalam setiap versi aplikasi untuk mengontrol eksekusi selama analisis.
-	\item \bo{Menjalankan dan Mengamati:} Aplikasi dijalankan, dan eksekusi dilacak. Ini termasuk mengamati alur eksekusi, perilaku program, dan mencatat setiap perbedaan dalam jalur eksekusi.
-	\item \bo{Mendokumentasikan Temuan:} Catatan terperinci dibuat tentang perbedaan yang diamati dalam alur eksekusi dan kesulitan yang dihadapi dalam memahami perilaku versi yang di-obfuscate.
+	\item \bo{Peluncuran x64Dbg:} Debugger x64dbg diluncurkan, dan executable asli dan yang di-obfuscate (untuk konsol, Qt, dan Dear ImGUI) dimuat untuk analisis.
+	\item \bo{Pengamatan Alur Eksekusi Autentikasi:} Breakpoint diatur pada fungsi autentikasi untuk mengamati alur eksekusi dan nilai variabel yang relevan selama proses autentikasi pada setiap jenis aplikasi.
+	\item \bo{Analisis Perbedaan Alur Kontrol:} Bandingkan alur kontrol eksekusi fungsi autentikasi antara versi asli dan yang di-obfuscate untuk setiap jenis aplikasi. Perhatikan bagaimana virtualisasi kode mengubah urutan instruksi dan mempersulit pemahaman alur kontrol yang sebenarnya.
+	\item \bo{Upaya Melewati Autentikasi:} Gunakan x64dbg untuk mencoba memanipulasi alur eksekusi atau nilai variabel selama runtime dengan tujuan untuk melewati mekanisme autentikasi pada setiap jenis aplikasi. Misalnya, coba ubah hasil perbandingan password agar selalu bernilai benar.
+	\item \bo{Dokumentasi Temuan:} Catat semua observasi, termasuk kesulitan dalam memahami alur kontrol dan keberhasilan atau kegagalan upaya melewati autentikasi pada setiap jenis aplikasi.
 \end{enumerate}
 
 \begin{figure}
@@ -110,9 +119,16 @@ Berikut persiapan yang akan dilakukan :
 	\item \bo{Integrasi Benchmark:} Fungsi benchmark diintegrasikan ke dalam kedua versi aplikasi (asli dan yang di-obfuscate). Hal ini memungkinkan kita untuk mengukur waktu eksekusi dari algoritma pengurutan pada kedua versi aplikasi secara terpisah.
 \end{enumerate}
 
-\subsubsection{Pengukuran Waktu Eksekusi}
+\subsubsection{Pengukuran Waktu Eksekusi Enskripsi AES}
 \begin{enumerate}
-	\item \bo{Eksekusi Benchmark:} Fungsi benchmark (algoritma pengurutan) akan dieksekusi beberapa kali (misalnya, N=10) pada setiap ukuran array untuk mendapatkan data yang cukup.
+	\item \bo{Benchmark:} Fungsi benchmark akan melakukan enkripsi AES-CBC-256 pada 1 Gigabyte blok.
+	\item \bo{Pengukuran Waktu:} Pustaka chrono::high\_resolution\_clock dari C++ akan digunakan untuk mengukur secara akurat waktu yang dibutuhkan untuk setiap eksekusi benchmark.
+	\item \bo{Pencatatan Data:} Waktu eksekusi setiap run (dalam milidetik atau mikrosekon) dicatat untuk setiap ukuran array pada kedua versi aplikasi.
+\end{enumerate}
+
+\subsubsection{Pengukuran Waktu Eksekusi Quick Sort}
+\begin{enumerate}
+	\item \bo{Eksekusi Benchmark:} Fungsi benchmark (algoritma pengurutan) akan dieksekusi beberapa kali (misalnya, N=100) pada setiap ukuran array untuk mendapatkan data yang cukup.
 	\item \bo{Pengukuran Waktu:} Pustaka chrono::high\_resolution\_clock dari C++ akan digunakan untuk mengukur secara akurat waktu yang dibutuhkan untuk setiap eksekusi benchmark.
 	\item \bo{Pencatatan Data:} Waktu eksekusi setiap run (dalam milidetik atau mikrosekon) dicatat untuk setiap ukuran array pada kedua versi aplikasi.
 	\item \bo{Perhitungan Rata-Rata:} Waktu eksekusi rata-rata dihitung untuk setiap versi dan setiap ukuran array dengan menjumlahkan semua waktu eksekusi dan membaginya dengan jumlah run (N).
@@ -139,7 +155,7 @@ Data yang dikumpulkan dari kedua rangkaian percobaan akan dianalisis menggunakan
 	\item \bo{Evaluasi Efektivitas Keamanan:} Hasil dari analisis dinamis, termasuk alur eksekusi yang diamati dan kesulitan dalam analisis kode, akan dianalisis.
 \end{itemize}
 
-\subsection{Analisis Data Pengujian Autentikasi}
+\subsection{Analisis Data Pengujian Performa}
 \begin{itemize}
 	\item \bo{Perbandingan Waktu Eksekusi:} Waktu eksekusi rata-rata antara aplikasi asli dan yang di-obfuscate dibandingkan untuk menilai potensi overhead kinerja yang diperkenalkan oleh VxLang.
 	\item \bo{Perbandingan Ukuran File:} Ukuran file dari kedua versi dibandingkan untuk menilai dampak ukuran file dari virtualisasi kode.
