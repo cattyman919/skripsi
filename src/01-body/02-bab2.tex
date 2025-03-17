@@ -404,43 +404,187 @@ Proses eksekusi Code Virtualization pada program dapat dilihat pada Gambar \ref{
 	\label{F:transformation_virtualization}
 \end{figure}
 
-\subsection{EagleVM}
-EagleVM adalah implementasi code virtualization open-source untuk arsitektur x86-64 yang dirancang khusus untuk tujuan penelitian dan demonstrasi \cite{Eag21}. Proyek ini merupakan hasil kompilasi penelitian dari Code Virtualizer komersial seperti VMProtect, Themida, dan Enigma Protector \cite{Ore06, Ore24, VMP24}. Proyek ini berfokus pada transformasi biner-ke-biner (bin2bin), memungkinkan modifikasi langsung pada file executable tanpa memerlukan akses ke kode sumber. EagleVM menyediakan kerangka kerja yang fleksibel untuk mempelajari dan mengembangkan teknik virtualisasi kode, serta menawarkan kemampuan untuk melindungi bagian-bagian tertentu dari kode program dari analisis reverse-engineering. Meskipun bersifat open-source dan bermanfaat untuk riset, EagleVM tidak didesain untuk penggunaan produksi dan memiliki keterbatasan dalam hal stabilitas dan fitur.
-
-\subsubsection{Komponen EagleVM}
-EagleVM memiliki arsitektur modular yang terdiri dari beberapa komponen yang bekerja sama \cite{Eag21}:
+\subsection{VxLang}
+VxLang adalah sebuah proyek obfuscation kode atau biner yang bertujuan untuk mencegah attacker melakukan tindakan reverse engineering, seperti analisis statis atau dinamis, perusakan file, dan akses ilegal ke memori. VxLang ini merupakan sebuah perangkat komprehensif yang terdiri dari packer/protector, alat obfuscation kode, dan alat virtualisasi kode. Proyek ini saat ini menargetkan executable Microsoft Windows PE (.exe/.dll/*.sys dan UEFI) pada x86-64, dengan dukungan untuk Linux ELF dan ARM yang direncanakan di masa mendatang.
+\subsubsection{Komponen-Komponen Utama VxLang}
+VxLang terdiri dari beberapa komponen utama yang bekerja sama untuk melindungi kode:
 \begin{itemize}
-	\item \bo{EagleVM (Core):} Inti dari EagleVM, berisi logika utama untuk memproses biner input, melakukan disassembly, menerjemahkan instruksi x86-64 ke bytecode, dan menghasilkan biner output yang mengandung mesin virtual dan bytecode. Komponen ini juga bertanggung jawab untuk mengelola konteks eksekusi, termasuk pemetaan register dan stack.
-	\item \bo{EagleVM.Stub:} Dynamic Link Library (DLL) yang berperan penting dalam proses penandaan kode yang akan divirtualisasi. DLL ini mengekspor dua fungsi utama, yaitu fnEagleVMBegin dan fnEagleVMEnd. Pengembang menggunakan fungsi-fungsi ini di dalam kode sumber mereka untuk menandai awal dan akhir blok kode yang akan dilindungi dengan virtualisasi. EagleVM kemudian akan mencari panggilan ke fungsi-fungsi ini dalam biner input untuk mengidentifikasi bagian kode yang harus divirtualisasi.
-	\item \bo{EagleVM.Sandbox:} Sebuah aplikasi contoh yang berfungsi sebagai sandbox untuk mendemonstrasikan cara menggunakan EagleVM dan EagleVM.Stub. Proyek ini memberikan contoh konkret tentang bagaimana mengintegrasikan EagleVM ke dalam alur kerja pengembangan perangkat lunak dan bagaimana memanfaatkan fitur-fitur yang disediakan oleh EagleVM.Stub untuk menandai kode yang akan divirtualisasi.
+	\item \bi{Binary Protector:} Komponen ini memodifikasi, mengompresi, dan mengenkripsi executable asli menjadi format file yang digunakan secara internal oleh VxLang. Binary Protector juga menggabungkan kode inti VxLang, yang dapat diperkuat dan diperluas dengan modul tambahan. Struktur fleksibel ini memungkinkan pengguna untuk dengan bebas memperluas fungsionalitas dan mengontrol inti VxLang.
+	\item \bi{Code Obfuscator:} Alat Obfuscation Kode ini mengubah kode native untuk menghalangi analisis, baik dengan memecah blok kode atau meratakan kode ke kedalaman yang sama. Metode obfuscation tambahan akan ditambahkan di masa mendatang. Obfuscation bertujuan untuk membuat kode lebih sulit dipahami tanpa mengubah fungsionalitasnya.
+	\item \bi{Code Virtualizer:} Alat Virtualisasi Kode ini mengubah kode menjadi bahasa assembly internal. Bahasa ini kemudian dikonversi menjadi bytecode dan dieksekusi oleh compiler internal. Virtualisasi kode menambahkan lapisan abstraksi yang signifikan, sehingga mempersulit reverse engineering karena attacker harus memahami mesin virtual VxLang untuk dapat memahami kode yang dilindungi.
 \end{itemize}
 
-\subsubsection{Arsitektur Mesin Virtual EagleVM}
-Mesin virtual EagleVM didesain dengan mempertimbangkan kesederhanaan dan kemudahan implementasi, sambil tetap memberikan perlindungan yang memadai terhadap reverse engineering. Arsitekturnya menyerupai arsitektur CPU sederhana, dengan komponen-komponen utama sebagai berikut:
+\subsubsection{Arsitektur dan Cara Kerja VxLang}
+
 \begin{itemize}
-	\item \bo{Konteks x86-64 dan VM:} Saat memasuki mesin virtual, konteks x86-64 asli (nilai register dan stack pointer) disimpan di stack. EagleVM kemudian mengalokasikan ruang di stack untuk konteks mesin virtual, termasuk register virtual dan virtual call stack. Register R0-R15 x86-64 kemudian dapat digunakan oleh mesin virtual. Dokumentasi EagleVM menyebutkan bahwa register RFLAGS selalu disimpan pertama di stack karena otomatisasi dalam pembuatan VMENTER dan VMEXIT.
-	\item \bo{Register Virtual} EagleVM menggunakan sejumlah register virtual untuk eksekusi bytecode. Beberapa register virtual yang penting meliputi:
+	\item \bo{Proteksi Biner:} Binary Protector mengambil executable asli dan mengubahnya menjadi format internal VxLang. Proses ini dapat mencakup kompresi untuk mengurangi ukuran file, enkripsi untuk melindungi konten, dan modifikasi struktur file untuk mempersulit analisis statis. Dengan mengubah format file, VxLang mempersulit alat reverse engineering standar untuk memproses dan menganalisis executable.
+	\item \bo{Obfuscation Kode:} Code Obfuscator mengubah kode native untuk membuatnya lebih sulit dipahami. Teknik-teknik yang digunakan dapat mencakup:
 	      \begin{itemize}
-		      \item VIP (Virtual Instruction Pointer): Analog dengan RIP pada x86-64, menunjuk ke instruksi virtual selanjutnya yang akan dieksekusi.
-		      \item VSP (Virtual Stack Pointer): Analog dengan RSP pada x86-64, menunjuk ke puncak stack virtual.
-		      \item VREGS: Penunjuk ke awal area di stack yang menyimpan nilai register x86-64 yang disimpan.
-		      \item VCS (Virtual Call Stack): Digunakan untuk menyimpan alamat kembali (return address) saat panggilan fungsi virtual.
-		      \item VTEMP dan VTEMP2: Register sementara untuk perhitungan.
-		      \item VCSRET: Menyimpan RVA yang digunakan dalam perhitungan VIP. Pemetaan register virtual ke register x86-64 dilakukan secara acak untuk mempersulit analisis.
+		      \item \bo{Memecah blok kode:} Ini melibatkan pemisahan blok kode yang berurutan menjadi bagian-bagian yang lebih kecil dan menyisipkan lompatan di antara bagian-bagian tersebut. Hal ini mengganggu alur kontrol program dan mempersulit reverse engineer untuk mengikuti logika program.
+		      \item \bo{Meratakan kode ke kedalaman yang sama (Code Flattening):} Ini melibatkan pengubahan struktur alur kontrol bersarang (misalnya, loop dan percabangan) menjadi urutan instruksi yang lebih datar. Hal ini menghilangkan hierarki dalam kode dan membuatnya lebih sulit untuk dipahami.
 	      \end{itemize}
-	\item \bo{Virtual Call Stack (VCS):} EagleVM menggunakan virtual call stack untuk mendukung panggilan fungsi di dalam kode yang divirtualisasi. VCS menyimpan alamat kembali ke instruksi setelah panggilan fungsi, memungkinkan mesin virtual untuk melanjutkan eksekusi dengan benar setelah fungsi selesai.
-	\item \bo{Handler Instruksi:} Setiap instruksi virtual memiliki handler yang berisi kode x86-64 untuk mengeksekusi instruksi tersebut. Handler inilah yang sebenarnya melakukan operasi yang ditentukan oleh instruksi virtual. EagleVM menyediakan handler untuk berbagai instruksi x86-64, dan pengembang dapat menambahkan handler baru untuk mendukung instruksi lain atau mengimplementasikan perilaku khusus.
-	\item \bo{VMENTER dan VMEXIT:} VMENTER bertanggung jawab untuk memasuki lingkungan mesin virtual, menyimpan konteks x86-64, menginisialisasi konteks VM, dan memulai eksekusi bytecode. VMEXIT bertanggung jawab untuk keluar dari lingkungan mesin virtual, memulihkan konteks x86-64, dan mengembalikan kontrol ke kode asli.
+	      \begin{figure}[!htb]
+		      \begin{minipage}{0.5\textwidth}
+			      \centering
+			      \includegraphics[width=0.8\linewidth]
+			      {assets/pics/vxlang_before_flattening.PNG}
+		      \end{minipage}\hfill
+		      \begin{minipage}{0.5\textwidth}
+			      \includegraphics[width=1.0\linewidth]
+			      {assets/pics/vxlang_after_flattening.png}
+		      \end{minipage}
+		      \caption{Sebelum dan Sesudah \textit{Obfuscation} \cite{VxLang}}
+	      \end{figure}
+	\item \bo{Virtualisasi kode:} Code Virtualizer mengubah kode native menjadi bytecode untuk mesin virtual VxLang. Bytecode ini kemudian dieksekusi oleh interpreter mesin virtual. Virtualisasi kode menambahkan lapisan abstraksi yang signifikan, karena attacker tidak lagi dapat menganalisis kode native secara langsung. Sebaliknya, mereka harus memahami arsitektur dan set instruksi mesin virtual VxLang, yang tidak terdokumentasi dan dapat dikustomisasi.
+	      \begin{figure}
+		      \centering
+		      \includegraphics[width=0.55\textheight]
+		      {assets/pics/vxlang_virtualizer.png}
+		      \caption{VxLang \textit{Code Virtualizer} \cite{VxLang}}
+	      \end{figure}
 \end{itemize}
 
-\subsubsection{Alur Kerja Virtualisasi dengan EagleVM}
-Proses virtualisasi kode dengan EagleVM melibatkan langkah-langkah berikut:
-\begin{enumerate}
-	\item \bo{Penandaan Kode Target:} Pengembang memasukkan panggilan ke fungsi fnEagleVMBegin dan fnEagleVMEnd dari EagleVM.Stub di dalam kode sumber mereka untuk menandai blok kode yang akan divirtualisasi.
-	\item \bo{Kompilasi dan Linking:} Kode sumber dikompilasi dan di-link untuk menghasilkan file executable.
-	\item \bo{Pemrosesan oleh EagleVM:} File executable yang dihasilkan kemudian diproses oleh EagleVM. EagleVM akan memparsing file executable, mencari panggilan ke fungsi penanda dari EagleVM.Stub, dan mengekstrak kode yang ditandai untuk divirtualisasi.
-	\item \bo{Disassembly dan Analisis Alur Kontrol:} EagleVM melakukan disassembly pada kode yang akan divirtualisasi dan membangun representasi alur kontrol program dalam bentuk basic blocks. Analisis ini penting untuk memastikan bahwa alur eksekusi kode yang divirtualisasi tetap sama dengan kode aslinya.
-	\item \bo{Transformasi ke Bytecode dan Pembuatan VM:} EagleVM menerjemahkan instruksi x86-64 asli ke dalam bytecode khusus untuk mesin virtualnya. EagleVM juga menghasilkan kode untuk mesin virtual yang akan mengeksekusi bytecode tersebut.
-	\item \bo{Pembuatan Biner Output:} EagleVM menghasilkan biner output yang telah dimodifikasi, mengandung bytecode dan mesin virtual.
-	\item \bo{Eksekusi:} Saat program dijalankan, mesin virtual yang tertanam dalam biner akan mengambil dan mengeksekusi bytecode, mereplikasi fungsionalitas dari kode asli.
-\end{enumerate}
+\subsubsection{VxLang SDK dan API untuk Obfuscation}
+Untuk menggunakan VxLang, pengembang dapat menggunakan Software Development Kit (SDK) yang tersedia. SDK ini dapat diperoleh dengan mengunduh library yang telah dikompilasi atau dengan mendapatkan kode sumber dari GitHub dan membangunnya sendiri. Setelah mendapatkan SDK, langkah selanjutnya adalah mengatur header dan library links dalam kode proyek. \\
+
+Di dalam header SDK, terdapat beberapa Application Programming Interfaces (API) yang berperan penting dalam melakukan obfuscation kode. API-API ini memungkinkan pengembang untuk menerapkan berbagai teknik obfuscation secara terarah pada kode sumber. Berikut adalah penjelasan mengenai API-API tersebut:
+
+\begin{itemize}
+	\item \bo{VL\_OBFUSCATION\_BEGIN/END:} API ini digunakan untuk menambahkan kode dummy (kode palsu) di antara kode asli. Penambahan kode dummy ini bertujuan untuk mengganggu proses disassembly dan decompilation. Disassembly adalah proses menerjemahkan kode mesin kembali ke dalam bentuk assembly, sedangkan decompilation adalah proses menerjemahkan kode mesin atau bytecode ke dalam bahasa pemrograman tingkat tinggi. Dengan adanya kode dummy, reverse engineer akan kesulitan untuk memahami alur eksekusi program yang sebenarnya karena kode dummy tersebut akan muncul dalam hasil disassembly dan decompilation, sehingga mengaburkan kode asli.
+	      \begin{minted}
+{cpp}     
+          void obfuscation_test(int x) {
+
+            VL_OBFUSCATION_BEGIN;
+
+            printf("Obfuscation Test!")
+
+            VL_OBFUSCATION_END;
+
+          }
+    \end{minted}
+	\item \bo{VL\_CODE\_FLATTENING\_BEGIN/END:} API ini digunakan untuk mengacak urutan kode pada tingkat kedalaman yang sama. Proses ini juga melibatkan penambahan kode dummy dan membuat kode menjadi lebih sulit diinterpretasikan. Code flattening adalah teknik obfuscation yang mengubah struktur alur kontrol program menjadi lebih datar dan kompleks. Dengan mengacak urutan kode dan menambahkan kode dummy, reverse engineer akan kesulitan untuk merekonstruksi alur logika program yang sebenarnya.
+	      \begin{minted}
+{cpp}     
+          void code_flattening_test(int x) {
+
+            VL_CODE_FLATTENING_BEGIN;
+
+            printf("Code Flattening Test!")
+
+            VL_CODE_FLATTENING_END;
+
+          }
+    \end{minted}
+	\item \bo{VL\_VIRTUALIZATION\_BEGIN/END:} API ini digunakan untuk mengubah kode native yang ditentukan menjadi bytecode yang hanya dapat diinterpretasikan oleh Central Processing Unit (CPU) internal VxLang. Ini adalah inti dari teknik virtualisasi kode yang ditawarkan oleh VxLang. Kode native yang telah diubah menjadi bytecode tidak lagi dapat dieksekusi secara langsung oleh prosesor fisik, melainkan harus melalui interpreter mesin virtual VxLang. Ini secara signifikan meningkatkan kesulitan reverse engineering karena attacker harus memahami arsitektur dan set instruksi mesin virtual VxLang untuk dapat memahami kode yang dilindungi.
+	      \begin{minted}
+{cpp}     
+          void virtualization_test(int x) {
+
+            VL_VIRTUALIZATION_BEGIN;
+
+            printf("Virtualization Test!")
+
+            VL_VIRTUALIZATION_END;
+
+          }
+    \end{minted}
+
+\end{itemize}
+
+API-API ini dapat diterapkan pada kode sumber dengan cara menandai bagian-bagian kode yang ingin diobfuskasi atau divirtualisasi dengan menggunakan API BEGIN dan END yang sesuai.
+
+\subsubsection{Konfigurasi Obfuscation VxLang}
+VxLang menawarkan dua mode penggunaan: Command Line Mode dan Project Mode. Command Line Mode relatif sederhana, sedangkan Project Mode memungkinkan pengembang untuk mengatur proyek mereka melalui file JSON. Dalam penjelasan ini, kita akan fokus pada Project Mode.
+
+Project Mode menggunakan file JSON untuk mengkonfigurasi berbagai aspek dari proses obfuscation dan virtualisasi.
+\begin{figure}
+	\centering
+	\includegraphics[width=0.55\textheight]
+	{assets/pics/vxlang_json.png}
+	\caption{VxLang konfigurasi JSON \cite{VxLang}}
+\end{figure}
+Berikut adalah penjelasan mengenai pengaturan-pengaturan yang terdapat dalam file JSON konfigurasi:
+\begin{itemize}
+	\item \bo{Input :} Menentukan path (jalur) ke file kode sumber yang akan diproses.
+	\item \bo{Output :} Menentukan path ke file keluaran (output) yang telah diobfuskasi.
+	\item \bo{Backup :} Flag (bendera) yang menentukan apakah file kode sumber asli perlu di-backup (dicadangkan).
+	\item \bo{BaseSectionName :} Nama bagian (section) yang menjadi dasar. Jika diatur ke ".base", nama bagian VxLang akan ditulis sebagai ".base0"/".base1". Section adalah bagian-bagian dalam file executable yang menyimpan kode, data, dan informasi lainnya.
+	\item \bo{MapFilePath :} Path ke file map. File map berisi informasi mengenai alamat dan simbol dalam program, yang dapat digunakan untuk debugging atau analisis.
+	\item \bo{SignatureMode :} Kemampuan untuk melakukan obfuscation dengan menambahkan tanda tangan (signature) dalam lingkungan di mana SDK tidak dapat ditemukan (misalnya, bahasa native yang berbeda). Signature dapat digunakan untuk memverifikasi integritas kode atau untuk keperluan lisensi.
+	\item \bo{Virtualizer :} Pengaturan untuk fitur virtualisasi.
+	      \begin{itemize}
+		      \item \bo{EntryPoint :} Memvirtualisasi entry point program. Entry point adalah alamat memori tempat eksekusi program dimulai. Memvirtualisasi entry point dapat mempersulit attacker untuk memahami bagaimana program dimulai dan bagaimana alur kontrol program diinisialisasi.
+	      \end{itemize}
+	\item \bo{Obfuscator :} Pengaturan untuk code flattening atau obfuscation umum.
+	      \begin{itemize}
+		      \item \bo{EntryPoint :} Meng-obfuscasi entry point program.
+		      \item \bo{Function :} Meng-obfuscasi fungsi-fungsi tertentu yang dipilih dalam file map.
+	      \end{itemize}
+	\item \bo{Packer :} Pengaturan untuk kompresi dan obfuscation biner. Packer adalah program yang mengompresi dan/atau meng-obfuscasi file executable untuk mempersulit reverse engineering.
+	      \begin{itemize}
+		      \item \bo{Enable :} Flag yang menentukan apakah biner perlu dikompresi.
+	      \end{itemize}
+	\item \bo{SymbolData :} Flag yang menentukan apakah simbol-simbol debugging perlu dicatat (logged). Simbol-simbol debugging berisi informasi yang berguna untuk debugging, tetapi juga dapat membantu reverse engineer dalam memahami kode.
+	\item \bo{UseAntiTemper :} Pengaturan untuk fitur anti-tamper. Anti-tamper adalah teknik untuk mencegah atau mendeteksi modifikasi yang tidak sah pada kode.
+	      \begin{itemize}
+		      \item \bo{Enable :} Nilai yang menentukan apakah fitur anti-tamper diaktifkan.
+		      \item \bo{Message :} Pesan deteksi yang akan ditampilkan ketika deteksi oleh fitur deteksi tertentu.
+	      \end{itemize}
+	\item \bo{extension :} Daftar modul ekstensi VxLang. Modul ekstensi dapat digunakan untuk menambahkan fungsionalitas tambahan ke VxLang.
+	\item \bo{RawData :} Daftar data yang menyertai modul ekstensi. Daftar ini tersedia dalam modul ekstensi.
+\end{itemize}
+
+\section{\textit{Graphical User Interface Frameworks}}
+Dalam pengembangan aplikasi autentikasi sebagai bagian dari demonstrasi pada penelitian ini, digunakan dua framework antarmuka pengguna grafis (GUI) yang berbeda, yaitu Qt Framework dan Dear ImGUI.
+
+\subsection{\textit{Qt Framework}}
+Qt Framework adalah sebuah framework pengembangan aplikasi lintas platform yang sangat populer dan komprehensif. Berdasarkan dokumentasi \cite{Qt}, Qt menyediakan berbagai macam tool dan library yang diperlukan untuk mengembangkan aplikasi dengan antarmuka pengguna yang kaya dan interaktif, serta fungsionalitas non-GUI seperti akses database, jaringan, dan lainnya.
+
+\noindent{\bo{Karakteristik \textit{Qt Framework}:}}
+\begin{itemize}
+	\item \bi{Cross Platform :} Salah satu keunggulan utama Qt adalah kemampuannya untuk berjalan di berbagai sistem operasi seperti Windows, Linux, macOS, Android, iOS, dan bahkan sistem embedded. Ini memungkinkan pengembang untuk menulis kode sekali dan menjalankannya di berbagai platform tanpa perlu modifikasi signifikan.
+	\item \bo{Fitur yang Kaya :} Qt menyediakan berbagai macam widget dan layout untuk membangun antarmuka pengguna yang kompleks dan menarik. Selain itu, Qt juga menawarkan dukungan yang kuat untuk grafik 2D dan 3D, animasi, multimedia, dan integrasi dengan teknologi web.
+	\item \bo{Bahasa Pemrograman Utama :} Qt umumnya digunakan dengan bahasa pemrograman C++, namun juga memiliki binding untuk bahasa lain seperti Python (melalui PyQt atau PySide).
+\end{itemize}
+
+Dalam konteks ini, Qt Framework digunakan untuk membangun antarmuka pengguna yang lebih tradisional dan mungkin lebih kompleks untuk aplikasi autentikasi. Ini memungkinkan visualisasi alur kerja autentikasi, input pengguna (seperti username dan password), dan tampilan hasil autentikasi dengan cara yang terstruktur dan mudah dipahami.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.25\textheight]
+	{assets/pics/Qt_logo.png}
+	\caption{Qt Logo \cite{Qt}}
+\end{figure}
+
+\subsection{\textit{Dear ImGUI}}
+Dear ImGUI adalah sebuah library antarmuka pengguna grafis (GUI) immediate mode yang ringan dan tidak memerlukan banyak boilerplate untuk digunakan. Berdasarkan repositori GitHub-nya \cite{ImGui}, Dear ImGUI dirancang untuk fokus pada kesederhanaan dan kemudahan integrasi ke dalam aplikasi yang sudah ada, terutama untuk keperluan debugging, tooling, atau prototipe cepat.
+
+\noindent{\bo{Karakteristik \textit{Dear ImGUI}:}}
+\begin{itemize}
+	\item \bi{Immediate Mode GUI :} Berbeda dengan retained mode GUI seperti Qt, di mana widget dibuat dan dikelola secara eksplisit, Dear ImGUI bekerja dengan cara menggambar ulang seluruh antarmuka pada setiap frame. Ini membuat pengembangan UI menjadi lebih intuitif dan stateful secara implisit.
+	\item \bo{Ringan dan Cepat :} Dear ImGUI memiliki ukuran library yang kecil dan performa yang baik, sehingga cocok untuk aplikasi yang membutuhkan sumber daya minimal atau yang sudah memiliki rendering engine sendiri.
+	\item \bo{Fokus pada Fungsionalitas Inti :} Dear ImGUI menyediakan berbagai widget dasar seperti tombol, slider, teks input, dan window, yang cukup untuk membangun antarmuka pengguna yang fungsional untuk keperluan demonstrasi atau tooling.
+\end{itemize}
+
+Dear ImGUI digunakan untuk menampilkan informasi atau kontrol yang lebih teknis atau diagnostik terkait dengan proses autentikasi yang dilindungi oleh VxLang. Sifatnya yang ringan dan mudah diintegrasikan mungkin menjadikannya pilihan yang baik untuk menampilkan proses autentikasi.
+
+\section{OpenSSL}
+OpenSSL adalah sebuah toolkit yang kuat, berkualitas komersial, dan kaya fitur untuk protokol Transport Layer Security (TLS) dan Secure Sockets Layer (SSL). OpenSSL merupakan fondasi kriptografi open-source yang banyak digunakan dalam berbagai aplikasi dan sistem untuk mengamankan komunikasi melalui jaringan \cite{OpenSSL}.
+
+\noindent{\bo{Karakteristik OpenSSL:}}
+\begin{itemize}
+	\item \bo{Toolkit Kriptograf :} OpenSSL menyediakan implementasi dari berbagai algoritma kriptografi, termasuk algoritma simetris (seperti AES), algoritma asimetris (seperti RSA dan ECC), fungsi hash kriptografi (seperti SHA-256), dan banyak lagi. Ini menjadikannya pilihan yang fleksibel untuk berbagai kebutuhan keamanan.
+	\item \bo{Implementasi Standar Keamanan  :} OpenSSL mengimplementasikan protokol keamanan standar seperti TLS dan SSL, yang digunakan untuk mengenkripsi komunikasi antara klien dan server di internet, seperti pada protokol HTTPS.
+\end{itemize}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.35\textheight]
+	{assets/pics/OpenSSL_logo.png}
+	\caption{OpenSSL Logo \cite{OpenSSL}}
+\end{figure}
+
+OpenSSL dalam penelitian digunakan untuk menjalankan algoritma enkripsi AES (Advanced Encryption Standard) dengan mode CBC (Cipher Block Chaining) dan panjang kunci 256-bit digunakan dari library OpenSSL. AES adalah algoritma enkripsi simetris yang sangat aman dan banyak digunakan. Mode CBC merupakan salah satu mode operasi blok cipher yang umum digunakan dan memerlukan Initialization Vector (IV) acak untuk setiap proses enkripsi guna meningkatkan keamanan. Panjang kunci 256-bit memberikan tingkat keamanan yang sangat tinggi terhadap serangan brute-force.
+
+Penggunaan enkripsi AES-CBC-256 dari OpenSSL dalam percobaan ini bertujuan untuk mengukur performance overhead (beban kinerja) yang mungkin ditimbulkan oleh penerapan VxLang. Dengan membandingkan waktu eksekusi operasi enkripsi yang sama sebelum dan sesudah kode dilindungi oleh VxLang, dapat dianalisis dampak virtualisasi kode terhadap kinerja aplikasi. Pemilihan algoritma AES-CBC-256 sebagai tolok ukur kemungkinan didasarkan pada popularitasnya, tingkat keamanannya, dan ketersediaannya dalam library OpenSSL yang banyak digunakan.

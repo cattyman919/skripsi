@@ -5,10 +5,10 @@
 %-----------------------------------------------------------------------------%
 \section{Desain Penelitian}
 %-----------------------------------------------------------------------------%
-Penelitian ini menggunakan pendekatan eksperimental untuk mengevaluasi efektivitas dan dampak code virtualization menggunakan EagleVM. Dua percobaan utama akan dilakukan:
+Penelitian ini menggunakan pendekatan eksperimental untuk mengevaluasi efektivitas dan dampak code virtualization menggunakan VxLang. Dua percobaan utama akan dilakukan:
 
 \begin{enumerate}
-	\item \bo{Pengujian Autentikasi - Analisis Statis dan Dinamis:} Percobaan ini bertujuan untuk menganalisis kompleksitas control flow program sebelum dan sesudah di-obfuscate menggunakan EagleVM. Analisis dilakukan melalui dua pendekatan: analisis statis menggunakan Ghidra dan analisis dinamis menggunakan x64Dbg. Selain itu, percobaan ini juga akan mencakup upaya untuk melewati pengujian autentikasi dengan memanipulasi control flow menggunakan Ghidra dan x64dbg.
+	\item \bo{Pengujian Autentikasi - Analisis Statis dan Dinamis:} Percobaan ini bertujuan untuk menganalisis kompleksitas control flow program sebelum dan sesudah di-obfuscate menggunakan VxLang. Analisis dilakukan melalui dua pendekatan: analisis statis menggunakan Ghidra dan analisis dinamis menggunakan x64Dbg. Selain itu, percobaan ini juga akan mencakup upaya untuk melewati pengujian autentikasi dengan memanipulasi control flow menggunakan Ghidra dan x64dbg.
 	\item \bo{Pengujian Performa - Waktu Eksekusi dan Ukuran File:} Percobaan ini bertujuan untuk mengukur performa waktu eksekusi program dengan algoritma sorting sebelum dan sesudah di-obfuscate, serta membandingkan ukuran file executable. Waktu eksekusi diukur menggunakan library chrono::high\_resolution\_clock.
 \end{enumerate}
 %-----------------------------------------------------------------------------%
@@ -20,16 +20,16 @@ Perangkat lunak dan perangkat keras yang digunakan dalam penelitian ini adalah:
 	\item \bo{Perangkat Lunak:}
 	      \begin{itemize}
 		      \item \bo{Sistem Operasi:} Windows 11 akan digunakan sebagai lingkungan operasi utama untuk melakukan semua percobaan.
-		      \item \bo{Kompiler:} Kompiler MSVC akan digunakan untuk mengkompilasi kode sumber.EagleVM
-		      \item \bo{Alat Virtualisasi Kode:} EagleVM akan digunakan sebagai alat utama untuk mengimplementasikan virtualisasi kode.
+		      \item \bo{Kompiler:} Kompiler Clang (clang-cl) akan digunakan untuk mengkompilasi kode sumber
+		      \item \bo{Alat Virtualisasi Kode:} VxLang akan digunakan sebagai alat utama untuk mengimplementasikan virtualisasi kode.
 		      \item \bo{Alat Analisis Statis:} Ghidra, sebuah framework reverse engineering yang dikembangkan oleh NSA, akan digunakan untuk melakukan analisis statis.
 		      \item \bo{Alat Analisis Dinamis:} x64dbg, sebuah debugger sumber terbuka untuk Windows, akan digunakan untuk analisis dinamis
-		      \item \bo{Pustaka C++:} Pustaka chrono akan digunakan untuk mengukur waktu eksekusi.
+		      \item \bo{Pustaka C++:} Pustaka chrono akan digunakan untuk mengukur waktu eksekusi dan OpenSSL untuk melakukan enkripsi AES.
 	      \end{itemize}
 	\item \bo{Perangkat Lunak:}
 	      \begin{itemize}
 		      \item \bo{Prosesor:} Intel Core i7-12700H
-		      \item \bo{RAM:} 16 GB
+		      \item \bo{RAM:} 32 GB
 	      \end{itemize}
 \end{itemize}
 
@@ -41,9 +41,9 @@ Pengujian autentikasi bertujuan untuk mengevaluasi efektivitas virtualisasi kode
 
 Berikut persiapan yang akan dilakukan :
 \begin{enumerate}
-	\item \bo{Pengaturan Lingkungan:} Lingkungan perangkat lunak diatur untuk memastikan bahwa semua alat (Windows 11, MSVC, EagleVM, Ghidra, dan x64dbg) terinstal dan terkonfigurasi dengan benar. Kode sumber aplikasi studi kasus disiapkan untuk kompilasi.
-	\item \bo{Kompilasi Aplikasi Asli:} Aplikasi studi kasus dikompilasi tanpa menerapkan teknik obfuscation apa pun menggunakan kompiler MSVC. Hasilnya adalah file executable asli.
-	\item \bo{Kompilasi Aplikasi yang di-Obfuscate:} Kode sumber aplikasi studi kasus dimodifikasi untuk menyertakan penanda fnEagleVMBegin dan fnEagleVMEnd dari EagleVM.Stub, untuk menunjukkan blok kode yang akan divirtualisasikan. Kode sumber yang dimodifikasi dikompilasi dengan kompiler MSVC, dan selanjutnya, executable diproses dengan EagleVM untuk menghasilkan versi yang di-obfuscate yang menyertakan mesin virtual dan bytecode yang sesuai.
+	\item \bo{Pengaturan Lingkungan:} Lingkungan perangkat lunak diatur untuk memastikan bahwa semua alat (Windows 11, Clang, VxLang, Ghidra, dan x64dbg) terinstal dan terkonfigurasi dengan benar. Kode sumber aplikasi studi kasus disiapkan untuk kompilasi.
+	\item \bo{Kompilasi Aplikasi Asli:} Aplikasi studi kasus dikompilasi tanpa menerapkan teknik obfuscation apa pun menggunakan kompiler Clang. Hasilnya adalah file executable asli.
+	\item \bo{Kompilasi Aplikasi yang di-Obfuscate:} Kode sumber aplikasi studi kasus dimodifikasi untuk menyertakan penanda VL\_VIRTUALIZATION\_BEGIN dan VL\_VIRTUALIZATION\_END untuk menunjukkan blok kode yang akan divirtualisasikan. Kode sumber yang dimodifikasi dikompilasi dengan kompiler Clang, dan selanjutnya, executable diproses dengan VxLang untuk menghasilkan versi yang di-obfuscate yang menyertakan mesin virtual dan bytecode yang sesuai.
 \end{enumerate}
 
 \begin{figure}
@@ -134,14 +134,14 @@ Berikut persiapan yang akan dilakukan :
 Data yang dikumpulkan dari kedua rangkaian percobaan akan dianalisis menggunakan teknik deskriptif dan komparatif.
 \subsection{Analisis Data Pengujian Autentikasi}
 \begin{itemize}
-  \item \bo{Analisis Data Statis:} Metrik kompleksitas yang diperoleh dari analisis statis (yaitu, jumlah basic block, edge, dan kompleksitas siklomatik) akan dievaluasi. Perbedaan akan digunakan untuk menilai efektivitas virtualisasi kode.
-  \item \bo{Analisis Data Dinamis:} Hasil dari analisis dinamis, termasuk alur eksekusi yang diamati dan kesulitan dalam analisis kode, akan dianalisis.
-  \item \bo{Evaluasi Efektivitas Keamanan:} Hasil dari analisis dinamis, termasuk alur eksekusi yang diamati dan kesulitan dalam analisis kode, akan dianalisis.
+	\item \bo{Analisis Data Statis:} Metrik kompleksitas yang diperoleh dari analisis statis (yaitu, jumlah basic block, edge, dan kompleksitas siklomatik) akan dievaluasi. Perbedaan akan digunakan untuk menilai efektivitas virtualisasi kode.
+	\item \bo{Analisis Data Dinamis:} Hasil dari analisis dinamis, termasuk alur eksekusi yang diamati dan kesulitan dalam analisis kode, akan dianalisis.
+	\item \bo{Evaluasi Efektivitas Keamanan:} Hasil dari analisis dinamis, termasuk alur eksekusi yang diamati dan kesulitan dalam analisis kode, akan dianalisis.
 \end{itemize}
 
 \subsection{Analisis Data Pengujian Autentikasi}
 \begin{itemize}
-  \item \bo{Perbandingan Waktu Eksekusi:} Waktu eksekusi rata-rata antara aplikasi asli dan yang di-obfuscate dibandingkan untuk menilai potensi overhead kinerja yang diperkenalkan oleh EagleVM.
-  \item \bo{Perbandingan Ukuran File:} Ukuran file dari kedua versi dibandingkan untuk menilai dampak ukuran file dari virtualisasi kode.
-  \item \bo{Analisis Trade-off:} Analisis komprehensif dilakukan untuk mengevaluasi trade-off antara keamanan dan kinerja, berdasarkan temuan.
+	\item \bo{Perbandingan Waktu Eksekusi:} Waktu eksekusi rata-rata antara aplikasi asli dan yang di-obfuscate dibandingkan untuk menilai potensi overhead kinerja yang diperkenalkan oleh VxLang.
+	\item \bo{Perbandingan Ukuran File:} Ukuran file dari kedua versi dibandingkan untuk menilai dampak ukuran file dari virtualisasi kode.
+	\item \bo{Analisis Trade-off:} Analisis komprehensif dilakukan untuk mengevaluasi trade-off antara keamanan dan kinerja, berdasarkan temuan.
 \end{itemize}

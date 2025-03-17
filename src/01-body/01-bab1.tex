@@ -15,16 +15,16 @@ Oleh karena itu, dibutuhkan teknik perlindungan yang lebih robust dan proaktif u
 
 Di antara berbagai teknik obfuscation, code virtualization dianggap sebagai salah satu yang paling efektif. Code virtualization bekerja dengan menerjemahkan kode mesin asli (native code) menjadi instruksi virtual (bytecode) yang dieksekusi oleh mesin virtual (VM) khusus yang tertanam dalam aplikasi \cite{Ore06}. VM ini memiliki Instruction Set Architecture (ISA) yang unik dan berbeda dari ISA prosesor standar. Dengan demikian, tools reverse engineering konvensional seperti disassembler dan debugger tidak dapat langsung digunakan untuk menganalisis kode yang divirtualisasi. Penyerang harus terlebih dahulu memahami ISA dan implementasi VM untuk dapat menganalisis bytecode, yang secara signifikan meningkatkan kompleksitas dan waktu yang dibutuhkan untuk melakukan reverse engineering. \\
 
-EagleVM merupakan salah satu platform code virtualization open-source yang menarik untuk dikaji. EagleVM menyediakan framework untuk melakukan code virtualization pada berbagai platform dan arsitektur prosesor \cite{Eag21}. Penelitian ini akan mengkaji implementasi dan efektivitas EagleVM dalam melindungi perangkat lunak dari rekayasa balik. Dengan menganalisis tingkat kesulitan reverse engineering pada kode yang dilindungi oleh EagleVM, ditinjau dari segi analisis statis dan dinamis, penelitian ini diharapkan dapat memberikan kontribusi dalam pengembangan teknik perlindungan perangkat lunak yang lebih aman, handal, dan efektif dalam menghadapi ancaman reverse engineering. Hasil penelitian ini juga diharapkan dapat memberikan informasi berharga bagi para pengembang perangkat lunak dalam memilih dan mengimplementasikan teknik perlindungan yang tepat untuk aplikasi mereka.
+VxLang merupakan salah satu platform code virtualization yang menarik untuk dikaji. VxLang menyediakan framework untuk melakukan code virtualization pada berbagai platform dan arsitektur prosesor \cite{VxLang}. Penelitian ini akan mengkaji implementasi dan efektivitas VxLang dalam melindungi perangkat lunak dari rekayasa balik. Dengan menganalisis tingkat kesulitan reverse engineering pada kode yang dilindungi oleh VxLang, ditinjau dari segi analisis statis dan dinamis, penelitian ini diharapkan dapat memberikan kontribusi dalam pengembangan teknik perlindungan perangkat lunak yang lebih aman, handal, dan efektif dalam menghadapi ancaman reverse engineering. Hasil penelitian ini juga diharapkan dapat memberikan informasi berharga bagi para pengembang perangkat lunak dalam memilih dan mengimplementasikan teknik perlindungan yang tepat untuk aplikasi mereka.
 %-----------------------------------------------------------------------------%
 \section{Rumusan Masalah}
 %-----------------------------------------------------------------------------%
 Berdasarkan latar belakang di atas, rumusan masalah dalam penelitian ini dirumuskan sebagai berikut:
 \begin{enumerate}
-	\item Bagaimana implementasi code virtualization menggunakan EagleVM pada perangkat lunak, termasuk tahapan-tahapan yang terlibat dan konfigurasi yang diperlukan?
-	\item Seberapa efektifkah code virtualization menggunakan EagleVM dalam meningkatkan keamanan perangkat lunak terhadap rekayasa balik, diukur dari segi kompleksitas analisis kode menggunakan teknik analisis statis dan dinamis?
+	\item Bagaimana implementasi code virtualization menggunakan VxLang pada perangkat lunak, termasuk tahapan-tahapan yang terlibat dan konfigurasi yang diperlukan?
+	\item Seberapa efektifkah code virtualization menggunakan VxLang dalam meningkatkan keamanan perangkat lunak terhadap rekayasa balik, diukur dari segi kompleksitas analisis kode menggunakan teknik analisis statis dan dinamis?
 
-	\item Bagaimana pengaruh code virtualization menggunakan EagleVM terhadap performa perangkat lunak, ditinjau dari waktu eksekusi, ukuran file program dan apa trade-off antara keamanan dan performa?
+	\item Bagaimana pengaruh code virtualization menggunakan VxLang terhadap performa perangkat lunak, ditinjau dari waktu eksekusi, ukuran file program dan apa trade-off antara keamanan dan performa?
 
 \end{enumerate}
 
@@ -34,10 +34,10 @@ Berdasarkan latar belakang di atas, rumusan masalah dalam penelitian ini dirumus
 Tujuan dari penelitian ini adalah:
 
 \begin{enumerate}
-	\item Mengimplementasikan code virtualization menggunakan EagleVM pada sebuah aplikasi studi kasus, mencakup seluruh tahapan implementasi dan konfigurasi.
-	\item Menganalisis efektivitas code virtualization menggunakan EagleVM dalam meningkatkan keamanan perangkat lunak terhadap reverse engineering melalui analisis statis dan dinamis, membandingkan tingkat kesulitan analisis kode sebelum dan sesudah di-obfuscate.
+	\item Mengimplementasikan code virtualization menggunakan VxLang pada sebuah aplikasi studi kasus, mencakup seluruh tahapan implementasi dan konfigurasi.
+	\item Menganalisis efektivitas code virtualization menggunakan VxLang dalam meningkatkan keamanan perangkat lunak terhadap reverse engineering melalui analisis statis dan dinamis, membandingkan tingkat kesulitan analisis kode sebelum dan sesudah di-obfuscate.
 
-	\item Mengevaluasi pengaruh code virtualization menggunakan EagleVM terhadap performa perangkat lunak dengan mengukur waktu eksekusi, ukuran file program, dan menganalisis trade-off antara keamanan dan performa.
+	\item Mengevaluasi pengaruh code virtualization menggunakan VxLang terhadap performa perangkat lunak dengan mengukur waktu eksekusi, ukuran file program, dan menganalisis trade-off antara keamanan dan performa.
 
 \end{enumerate}
 
@@ -47,13 +47,11 @@ Tujuan dari penelitian ini adalah:
 Untuk menjaga fokus dan kedalaman penelitian, batasan masalah dalam penelitian ini adalah:
 \begin{enumerate}
 
-	\item Platform code virtualization yang digunakan hanya EagleVM
+	\item Platform code virtualization yang digunakan hanya VxLang
 
 	\item Analisis reverse engineering dibatasi pada analisis statis menggunakan disassembler dan decompiler (Ghidra), serta analisis dinamis menggunakan debugger (x64dbg).
 
 	\item Pengujian performa perangkat lunak dibatasi pada pengukuran waktu eksekusi, dan ukuran file program.
-
-	\item Penelitian ini hanya berfokus pada teknik code virtualization dan tidak membahas teknik obfuscation lainnya.
 
 \end{enumerate}
 %-----------------------------------------------------------------------------%
@@ -62,13 +60,13 @@ Untuk menjaga fokus dan kedalaman penelitian, batasan masalah dalam penelitian i
 Metode penelitian yang digunakan dalam penelitian ini adalah metode eksperimental kuantitatif. Langkah-langkah penelitian meliputi:
 \begin{enumerate}
 	\item Studi Literatur
-	      Mencakup peninjauan sumber-sumber seperti jurnal, artikel, buku, dan dokumentasi terkait perangkat lunak, rekayasa balik, obfuscation, code virtualization, dan EagleVM. Studi literatur ini bertujuan untuk membangun landasan teori yang kuat dan memahami penelitian terdahulu yang relevan.
+	      Mencakup peninjauan sumber-sumber seperti jurnal, artikel, buku, dan dokumentasi terkait perangkat lunak, rekayasa balik, obfuscation, code virtualization, dan VxLang. Studi literatur ini bertujuan untuk membangun landasan teori yang kuat dan memahami penelitian terdahulu yang relevan.
 	\item Konsultasi
 	      Melibatkan diskusi berkala dengan dosen pembimbing untuk mendapatkan bimbingan, arahan, dan masukan terkait perkembangan penelitian.
 	\item Pengujian Perangkat Lunak
-	      Tahap ini meliputi implementasi code virtualization menggunakan EagleVM pada aplikasi serta pengujian perangkat lunak untuk mengevaluasi efektivitas dan dampaknya. Pengujian ini dilakukan dengan nmenguji tingkat kesulitan reverse engineering pada aplikasi sebelum dan sesudah di-obfuscate, baik melalui analisis statis (disassembler, decompiler) maupun analisis dinamis (debugger).
+	      Tahap ini meliputi implementasi code virtualization menggunakan VxLang pada aplikasi serta pengujian perangkat lunak untuk mengevaluasi efektivitas dan dampaknya. Pengujian ini dilakukan dengan nmenguji tingkat kesulitan reverse engineering pada aplikasi sebelum dan sesudah di-obfuscate, baik melalui analisis statis (disassembler, decompiler) maupun analisis dinamis (debugger).
 	\item Analisis
-	      Menganalisis data yang diperoleh dari tahap pengujian perangkat lunak untuk mengevaluasi efektivitas EagleVM dalam mempersulit  rekayasa balik dan mengukur dampaknya terhadap performa aplikasi. Analisis ini meliputi perbandingan hasil pengujian antara aplikasi sebelum dan sesudah di-obfuscate.
+	      Menganalisis data yang diperoleh dari tahap pengujian perangkat lunak untuk mengevaluasi efektivitas VxLang dalam mempersulit  rekayasa balik dan mengukur dampaknya terhadap performa aplikasi. Analisis ini meliputi perbandingan hasil pengujian antara aplikasi sebelum dan sesudah di-obfuscate.
 	\item Kesimpulan
 	      Merumuskan kesimpulan akhir dari penelitian berdasarkan hasil analisis data. Kesimpulan harus menjawab rumusan masalah dan tujuan penelitian.
 \end{enumerate}
@@ -82,7 +80,7 @@ BAB 1 – PENDAHULUAN \\
 Bab ini berisi latar belakang, rumusan masalah, tujuan penelitian, batasan masalah, metodologi penelitian, dan sistematika penulisan.
 
 BAB 2 – TINJAUAN PUSTAKA \\
-Bab ini membahas teori-teori dasar tentang perangkat lunak, rekayasa balik, obfuscation, code virtualization, dan EagleVM.
+Bab ini membahas teori-teori dasar tentang perangkat lunak, rekayasa balik, obfuscation, code virtualization, dan VxLang.
 
 BAB 3 – METODE PENELITIAN \\
 Bab ini menjelaskan langkah-langkah penelitian, desain eksperimen, alat dan bahan, serta teknik analisis data.
