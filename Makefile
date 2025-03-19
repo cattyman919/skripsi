@@ -1,6 +1,6 @@
 # Tools
 LATEXMK = latexmk
-RM = rm -fr	
+RM = deltree
 
 # Project-specific settings
 DOCNAME = thesis
