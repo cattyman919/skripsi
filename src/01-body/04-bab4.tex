@@ -1,150 +1,305 @@
+%-----------------------------------------------------------------------------%
 \chapter{\babEmpat}
+%-----------------------------------------------------------------------------%
+Bab ini menyajikan penjabaran mendalam mengenai realisasi teknis dari metodologi penelitian yang telah diuraikan pada Bab 3. Fokus utama adalah pada langkah-langkah konkret yang diambil untuk membangun lingkungan eksperimen, mengembangkan artefak perangkat lunak yang diuji, dan mengaplikasikan teknik \f{code virtualization} menggunakan platform VxLang. Pembahasan mencakup detail penyiapan lingkungan, arsitektur aplikasi studi kasus, implementasi \f{benchmark} performa, dan proses integrasi VxLang itu sendiri.
 
+%-----------------------------------------------------------------------------%
+\section{Penyiapan Lingkungan Pengembangan}
+%-----------------------------------------------------------------------------%
+Fondasi dari penelitian eksperimental ini adalah lingkungan pengembangan yang konsisten dan terdefinisi dengan baik. Hal ini krusial untuk memastikan reliabilitas dan reproduktifitas hasil. Komponen-komponen kunci yang dikonfigurasi adalah sebagai berikut:
+
+\begin{itemize}
+    \item \bo{Sistem Operasi:} Seluruh proses pengembangan, kompilasi, dan eksekusi pengujian dilakukan pada \bo{Microsoft Windows 11 (64-bit)}. Pemilihan Windows sebagai platform utama didasarkan pada target \f{executable} PE (Portable Executable) yang umum didukung oleh \f{tool} proteksi perangkat lunak seperti VxLang.
+    \item \bo{Compiler:} \bo{Clang} (versi 19.1.3), diakses melalui antarmuka \bo{\code{clang-cl}}, dipilih sebagai \f{compiler} C++. Penggunaan \code{clang-cl} memastikan kompatibilitas biner dengan toolchain Microsoft Visual C++ (MSVC), yang seringkali menjadi prasyarat atau lingkungan yang didukung optimal oleh VxLang, sambil tetap memanfaatkan kemampuan analisis dan optimasi modern dari Clang. Proyek ini dikompilasi dengan standar bahasa \bo{C++17}.
+    \item \bo{Build System \& Generator:} \bo{CMake} (versi 3.31) digunakan sebagai \f{meta-build system} untuk mengelola kompleksitas \f{build} lintas target dan dependensi. File \code{CMakeLists.txt} mendefinisikan target-target \f{build}, dependensi, dan opsi kompilasi. \bo{Ninja} (versi 1.12.1) digunakan sebagai \f{build generator} di bawah CMake untuk mempercepat proses kompilasi paralel. Konfigurasi \code{CMAKE\_EXPORT\_COMPILE\_COMMANDS} diaktifkan untuk memfasilitasi integrasi dengan \f{tool} analisis kode.
+    \item \bo{Integrated Development Environment (IDE):} Neovim dengan LSP Clangd digunakan untuk efisiensi dalam penulisan kode, navigasi, dan \f{debugging} awal.
+    \item \bo{Manajemen Dependensi \& Library Pihak Ketiga:} Library eksternal dikelola secara manual dengan menempatkan \f{header} di direktori \code{includes} dan \code{deps}, serta file library (\code{.lib}) di direktori \code{lib}. Library utama yang digunakan meliputi:
+          \begin{itemize}
+              \item \bo{VxLang SDK:} Terdiri dari file \f{header} (\code{includes/vxlang/vxlib.h}) yang mendefinisikan makro penanda virtualisasi (\code{VL\_VIRTUALIZATION\_BEGIN}, \code{VL\_VIRTUALIZATION\_END}) dan library statis (\code{lib/vxlib64.lib}) yang diperlukan oleh proses virtualisasi.
+              \item \bo{Qt Framework:} Versi \bo{6.\textit{x}} (MSVC 2022 64-bit) diintegrasikan menggunakan \code{find\_package(Qt6)} CMake. Modul \code{Widgets} digunakan untuk komponen GUI.
+              \item \bo{Dear ImGui:} Library Dear ImGui beserta \f{backend} \bo{GLFW} dan \bo{OpenGL3} di-\f{compile} sebagai bagian dari proyek (\code{deps/*.cpp}).
+              \item \bo{libcurl:} Digunakan untuk komunikasi HTTP pada aplikasi autentikasi varian \f{cloud}.
+              \item \bo{OpenSSL:} Versi \bo{3.\textit{x}} (\code{libssl}, \code{libcrypto}) digunakan untuk implementasi enkripsi AES pada \f{benchmark} performa.
+              \item \bo{nlohmann/json:} Library C++ \f{header-only} untuk menangani data JSON pada varian \f{cloud}.
+          \end{itemize}
+\end{itemize}
+
+%-----------------------------------------------------------------------------%
 \section{Implementasi Pengujian Autentikasi}
+%-----------------------------------------------------------------------------%
+Bagian ini berfokus pada pengembangan aplikasi yang mensimulasikan proses login pengguna, yang kemudian menjadi subjek analisis \f{reverse engineering} sebelum dan sesudah penerapan VxLang. Pendekatan analisis mencakup analisis statis menggunakan Ghidra dan analisis dinamis menggunakan x64dbg, keduanya bertujuan mengidentifikasi dan mencoba mem-\textit{bypass} logika autentikasi.
 
-\section{Implementasi Pengujian Performa}
+Diagram alur persiapan \f{executable} disajikan pada Gambar \ref{fig:flow_auth_prep_rev}. Proses analisis statis dan dinamis, termasuk upaya \textit{bypass}, diilustrasikan pada Gambar \ref{fig:flow_auth_analysis_rev}. Analisis dinamis dimulai dengan langkah serupa analisis statis, yaitu mencari \textit{string} atau pola kode yang relevan di dalam \textit{debugger} (x64dbg) untuk membantu menemukan lokasi logika autentikasi. Setelah lokasi potensial ditemukan, \textit{breakpoint} dipasang. Upaya \textit{bypass} kemudian dilakukan baik secara statis (mem-\textit{patch} file \textit{executable} menggunakan Ghidra) maupun secara dinamis (mem-\textit{patch} instruksi \textit{jump} kondisional atau memanipulasi register/memori secara langsung di x64dbg saat program berjalan).
 
-\section{Implementasi Integrasi VxLang}
-
-\section{Analisis Pengujian Autentikasi  VxLang}
-\subsection{Analisis Statis}
-\subsection{Analisis Dinamis}
-
-\section{Analisis Performa \f{Overhead} VxLang}
-Hasil dari percobaan performa overhead dan perubahan ukuran file setelah penerapan virtualisasi kode menggunakan VxLang. Percobaan ini dilakukan pada algoritma Quick Sort dan enkripsi AES-CBC-256.
-
-\subsection{Hasil Pengujian Performa \f{Quick Sort}}
-Tabel \ref{tab:quick_sort_performance} menyajikan hasil pengukuran waktu rata-rata dan standar deviasi dari algoritma Quick Sort yang dijalankan sebanyak 100 kali untuk setiap ukuran array, baik sebelum maupun sesudah virtualisasi menggunakan VxLang.
-
-\begin{table}[htbp]
-    \centering
-    \caption{Hasil Pengujian Waktu Eksekusi Quick Sort (ms)}
-    \label{tab:quick_sort_performance}
-    \begin{tabularx}{\textwidth}{@{}|X|X|X|X|X|@{}}
-    \hline
-        \multirow{2}{*}{\textbf{Ukuran Array}} & \multicolumn{2}{c|}{\textbf{Tanpa Virtualisasi}} & \multicolumn{2}{c|}{\textbf{Virtualisasi}}\\
-        \cline{2-5}
-        & \textbf{Rata-rata Waktu (ms)} & \textbf{Standar Deviasi (ms)} & \textbf{Rata-rata Waktu (ms)} & \textbf{Standar Deviasi (ms)}\\
-        \hline
-        100                     & 0.01 & 0.00 & 5.15 & 0.42 \\
-        \hline
-        1000                    & 0.09 & 0.00 & 53.08 & 5.52 \\
-        \hline
-        5000                    & 0.61 & 0.09 & 300.64 & 26.13 \\
-        \hline
-        10000                   & 1.38 & 0.22 & 585.70 & 79.88 \\
-        \hline
-        50000                   & 8.45 & 0.73 & 3,434.32 & 592.92 \\
-        \hline
-        100000                  & 17.86 & 1.42 & 6,771.09 & 553.09 \\
-        \hline
-        500000                  & 106.16 & 5.61 & 29,698.73 & 3,518.63 \\
-        \hline
-        1000000                 & 216.59 & 9.49 & 45,186.90 & 6,198.38 \\
-        \hline
-    \end{tabularx}
-\end{table}
-
+%--- DIAGRAM PERSIAPAN AUTH ---
 \begin{figure}[htbp]
     \centering
-    \begin{tikzpicture}
-        \begin{axis}[
-            xlabel={Ukuran Array},
-            ylabel={Rata-rata Waktu Eksekusi (ms)},
-            xmode=log,
-            log basis x={10},
-            ymode=log,
-            log basis y={10},
-            legend pos=north west,
-            title={Perbandingan Waktu Eksekusi Quick Sort},
-            grid=major,
-        ]
-        \addplot coordinates {
-            (100, 0.01)
-            (1000, 0.09)
-            (5000, 0.61)
-            (10000, 1.38)
-            (50000, 8.45)
-            (100000, 17.86)
-            (500000, 106.16)
-            (1000000, 216.59)
-        };
-        \addlegendentry{Tanpa Virtualisasi};
+    % Menggunakan scale daripada resizebox
+    \begin{tikzpicture}[
+        scale=0.85, transform shape, % Skala diagram & teks
+        node distance=3cm and 2.2cm, % Jarak antar node
+        >=latex,
+        block/.style={rectangle, draw, fill=blue!10, text width=9em, text centered, rounded corners, minimum height=3em},
+        line/.style={draw, -latex'},
+        io/.style={trapezium, trapezium left angle=70, trapezium right angle=110, draw, fill=orange!10, text centered, minimum height=2em}
+    ]
+        % Nodes
+        \node [block] (start) {Mulai};
+        \node [block, below of=start, text width=10em] (prep_code) {Siapkan Kode Sumber Aplikasi (Console/Qt/ImGui)};
+        \node [block, below left=1cm and 0.5cm of prep_code, text width=10em] (build_no_vm) {Build Tanpa VM (`cmake`, `ninja`)};
+        \node [block, below right=1cm and 0.5cm of prep_code, text width=10em] (add_macro) {Tambah Makro VxLang (`VL\_...\_BEGIN/END`)};
+        \node [block, below of=add_macro, text width=10em] (build_with_vm) {Build Dengan Penanda VM (`cmake -D...`, `ninja`)};
+        \node [io, below of=build_with_vm, text width=10em] (vx_tool) {Proses dengan VxLang Tool (Input: JSON Config)};
+        \node [block, below of=build_no_vm, yshift=-2cm] (exe_asli) {Executable Asli};
+        \node [block, below of=vx_tool] (exe_vm) {Executable Virtualized};
 
-        \addplot coordinates {
-            (100, 5.15)
-            (1000, 53.08)
-            (5000, 300.64)
-            (10000, 585.70)
-            (50000, 3434.32)
-            (100000, 6771.09)
-            (500000, 29698.73)
-            (1000000, 45186.90)
-        };
-        \addlegendentry{Dengan Virtualisasi};
-        \end{axis}
+        % Paths
+        \path [line] (start) -- (prep_code);
+        \path [line] (prep_code) |- (build_no_vm);
+        \path [line] (prep_code) |- (add_macro);
+        \path [line] (add_macro) -- (build_with_vm);
+        \path [line] (build_with_vm) -- (vx_tool);
+        \path [line] (build_no_vm) -- (exe_asli);
+        \path [line] (vx_tool) -- (exe_vm);
+
+        % Grouping Preparation
+        \node [draw, dashed, inner sep=6pt, fit=(prep_code) (build_no_vm) (add_macro) (build_with_vm) (vx_tool) (exe_asli) (exe_vm)] {};
     \end{tikzpicture}
-    \caption{Perbandingan Waktu Eksekusi Algoritma Quick Sort antara Versi Tanpa dan Dengan Virtualisasi VxLang.}
-    \label{fig:quick_sort_performance}
+    \caption{Diagram Alur Persiapan Executable untuk Pengujian Autentikasi.}
+    \label{fig:flow_auth_prep_rev} % Label SETELAH caption
+\end{figure}
+%--- AKHIR DIAGRAM PERSIAPAN AUTH ---
+
+%--- DIAGRAM ANALISIS AUTH ---
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        scale=0.8, transform shape,
+        node distance=1.5cm and 1cm,
+        >=latex,
+        block/.style={rectangle, draw, fill=blue!10, text width=8em, text centered, rounded corners, minimum height=3em},
+        proc/.style={rectangle, draw, fill=purple!10, text width=11em, text centered, rounded corners, minimum height=3em},
+        test/.style={rectangle, draw, fill=orange!10, text width=10em, text centered, rounded corners, minimum height=3em},
+        result/.style={ellipse, draw, fill=yellow!10, text centered, minimum height=3em, text width=15em},
+        line/.style={draw, -latex'}
+    ]
+        % Input Executables
+        \node [block] (exe_asli) {Executable Asli};
+        \node [block, right=8cm of exe_asli] (exe_vm) {Executable Virtualized};
+
+        % Static Analysis / Patching Path
+        \node [proc, below=1cm of exe_asli] (static_ghidra_asli) {Ghidra: Cari String, Identifikasi Logika/Jump Auth};
+        \node [proc, below=1cm of exe_vm] (static_ghidra_vm) {Ghidra: Cari String (jika ada), Identifikasi Operasi VM};
+        \node [proc, below=1cm of static_ghidra_asli] (static_patch_asli) {Ghidra: Patch Instruksi Jump Kondisional};
+        \node [proc, below=1cm of static_ghidra_vm] (static_patch_vm) {Ghidra: Coba Patch Operasi VM (jika mungkin)};
+        \node [test, below=1cm of static_patch_asli] (static_test_asli) {Uji Aplikasi Hasil Patch Statis};
+        \node [test, below=1cm of static_patch_vm] (static_test_vm) {Uji Aplikasi Hasil Patch Statis};
+
+        % Dynamic Analysis / Manipulation Path
+        \node [proc, below=1cm of static_test_asli] (dynamic_x64_asli) {x64dbg: Run, Cari String, Breakpoint di Logika Auth};
+        \node [proc, below=1cm of static_test_vm] (dynamic_x64_vm) {x64dbg: Run, Coba Cari String/Op VM, Breakpoint};
+        \node [proc, below=1cm of dynamic_x64_asli] (dynamic_manip_asli) {x64dbg: Manipulasi Runtime (Patch Jump, Ubah Register/Memory)};
+        \node [proc, below=1cm of dynamic_x64_vm] (dynamic_manip_vm) {x64dbg: Coba Manipulasi State VM};
+        \node [test, below=1cm of dynamic_manip_asli] (dynamic_test_asli) {Uji Hasil Manipulasi/Patch Dinamis};
+        \node [test, below=1cm of dynamic_manip_vm] (dynamic_test_vm) {Uji Hasil Manipulasi Dinamis};
+
+        % Evaluation
+        \node [result, below=2cm of $(dynamic_test_asli)!0.5!(dynamic_test_vm)$] (eval_result) {Evaluasi: Perbandingan Tingkat Kesulitan \& Keberhasilan Bypass (Asli vs VM, Statis vs Dinamis)};
+
+        % Paths
+        % Static
+        \path [line] (exe_asli) -- (static_ghidra_asli);
+        \path [line] (exe_vm) -- (static_ghidra_vm);
+        \path [line] (static_ghidra_asli) -- (static_patch_asli);
+        \path [line] (static_ghidra_vm) -- (static_patch_vm);
+        \path [line] (static_patch_asli) -- (static_test_asli);
+        \path [line] (static_patch_vm) -- (static_test_vm);
+        % Dynamic
+        \path [line] (static_test_asli) -- (dynamic_x64_asli);
+        \path [line] (static_test_vm) -- (dynamic_x64_vm);
+        \path [line] (dynamic_x64_asli) -- (dynamic_manip_asli);
+        \path [line] (dynamic_x64_vm) -- (dynamic_manip_vm);
+        \path [line] (dynamic_manip_asli) -- (dynamic_test_asli);
+        \path [line] (dynamic_manip_vm) -- (dynamic_test_vm);
+        % Evaluation
+        \path [line] (dynamic_test_asli) |- (eval_result);
+        \path [line] (dynamic_test_vm) |- (eval_result);
+
+        % Optional Grouping
+         \node [draw, dashed, inner sep=6pt, fit=(static_ghidra_asli)(static_patch_asli)(static_test_asli)(dynamic_x64_asli)(dynamic_manip_asli)(dynamic_test_asli)] {};
+        \node [draw, dashed, inner sep=6pt, fit=(static_ghidra_vm)(static_patch_vm)(static_test_vm)(dynamic_x64_vm)(dynamic_manip_vm)(dynamic_test_vm)] {};
+
+    \end{tikzpicture}
+    \caption{Diagram Alur Analisis Upaya Bypass Autentikasi.}
+    \label{fig:flow_auth_analysis_rev} % Label SETELAH caption
+\end{figure}
+%--- AKHIR DIAGRAM ANALISIS AUTH ---
+
+\subsection{Aplikasi Studi Kasus Autentikasi}
+Tiga jenis aplikasi dengan dua varian mekanisme autentikasi dikembangkan:
+
+\begin{enumerate}
+    \item \bo{Aplikasi Konsol (\code{console}, \code{console\_cloud}):} Aplikasi CLI sederhana.
+        \begin{itemize}
+            \item \bo{Varian Hardcoded (\code{src/console/console.cpp}):} Membandingkan input \code{std::cin} dengan \f{string} literal (\f{"seno"}, \f{"rahman"}) menggunakan \code{std::string::compare()}.
+            \item \bo{Varian Cloud (\code{src/console/console\_cloud.cpp}):} Menggunakan \code{send\_login\_request} dari \code{includes/cloud.hpp} untuk mengirim kredensial via HTTP POST ke \code{http://localhost:9090/login}.
+        \end{itemize}
+    \item \bo{Aplikasi Qt (\code{app\_qt}, \code{app\_qt\_cloud}):} Aplikasi GUI menggunakan Qt Widgets. UI dari \code{src/app\_qt/forms/todo\_auth.ui}.
+        \begin{itemize}
+            \item \bo{Varian Hardcoded (\code{src/app\_qt/src/todo\_auth.cpp}):} Logika perbandingan \f{hardcoded} dalam \f{slot} \code{on\_button\_login\_clicked()} menggunakan \code{QLineEdit::text()}. Menampilkan hasil via \code{QMessageBox}.
+            \item \bo{Varian Cloud (\code{src/app\_qt/src/todo\_auth\_cloud.cpp}):} \f{Slot} memanggil \code{send\_login\_request} dan menampilkan \code{QMessageBox} berdasarkan respons.
+        \end{itemize}
+    \item \bo{Aplikasi Dear ImGui (\code{app\_imgui}, \code{app\_imgui\_cloud}):} Aplikasi GUI \f{immediate mode} menggunakan Dear ImGui, GLFW, OpenGL.
+        \begin{itemize}
+            \item \bo{Varian Hardcoded (\code{src/app\_imgui/login.cpp}):} Logika perbandingan dalam \code{Login::LoginWindow} saat \code{ImGui::Button("Login")} ditekan. Hasil ditampilkan via \code{MessageBoxW}.
+            \item \bo{Varian Cloud (\code{src/app\_imgui/login\_cloud.cpp}):} Memanggil \code{send\_login\_request} saat tombol login ditekan, menampilkan hasil via \code{MessageBoxW}.
+        \end{itemize}
+\end{enumerate}
+
+\subsection{Integrasi VxLang pada Aplikasi Autentikasi}
+Integrasi VxLang dilakukan secara selektif pada logika autentikasi:
+
+\begin{enumerate}
+    \item \bo{Penyertaan Header:} \code{\#include "vxlang/vxlib.h"} ditambahkan pada file \code{.cpp} yang relevan.
+    \item \bo{Penautan Library:} \code{vxlib64.lib} ditautkan ke target via \code{target\_link\_libraries} di \code{CMakeLists.txt}.
+    \item \bo{Penempatan Makro Penanda:} \code{VL\_VIRTUALIZATION\_BEGIN} dan \code{VL\_VIRTUALIZATION\_END} membungkus blok kode autentikasi. Contoh pada \code{src/console/console.cpp}:
+          \begin{minted}{cpp}
+int main(int, char *[]) {
+  // ... input username/password ...
+
+  VL_VIRTUALIZATION_BEGIN; // <-- Makro awal
+
+  if (inputUsername.compare("seno") == 0 &&
+      inputPassword.compare("rahman") == 0) {
+    std::cout << "Authorized!" << std::endl;
+  } else {
+    std::cout << "Not authorized." << std::endl;
+  }
+
+  VL_VIRTUALIZATION_END; // <-- Makro akhir
+
+  system("pause");
+  return 0;
+}
+          \end{minted}
+          Pada varian \f{cloud}, makro membungkus pemanggilan \code{send\_login\_request} dan penanganan responsnya.
+    \item \bo{Manajemen Build via CMake:} Opsi CMake \code{USE\_VL\_MACRO} mengontrol aktivasi makro.
+        \begin{itemize}
+            \item Jika aktif (\code{-DUSE\_VL\_MACRO=1}): Definisi \code{USE\_VL\_MACRO} ditambahkan, mengaktifkan fungsi makro di \code{vxlib.h}. Nama output diubah menjadi \code{*\_vm.exe}.
+            \item Jika tidak aktif: Makro menjadi kosong. Nama output standar.
+        \end{itemize}
+\end{enumerate}
+
+\subsection{Implementasi Sisi Server (Varian Cloud)}
+\f{Backend} API lokal untuk varian \f{cloud} diimplementasikan sebagai berikut:
+
+\begin{itemize}
+    \item \bo{Teknologi:} Go (Golang) untuk API (\code{server/backend/main.go}), PostgreSQL 15 untuk database, Docker dan Docker Compose untuk \f{deployment} (\code{server/docker-compose.yml}).
+    \item \bo{API Endpoint \code{/login} (POST):} Menerima JSON, mengambil \f{salt/hash} dari DB, menghitung ulang \f{hash} input menggunakan PBKDF2-SHA256 (100k iterasi), membandingkan \f{hash} (\f{constant time}), mengembalikan \code{{"success": true/false}}.
+    \item \bo{API Endpoint \code{/register} (POST):} Menerima JSON, generate \f{salt}, hitung \f{hash} PBKDF2, simpan ke DB.
+    \item \bo{Database Schema (\code{server/postgres/init.sql}):} Tabel \code{users(username, password\_hash, salt)}. Menyisipkan user \f{default} (\f{seno}/rahman) dengan \f{hash/salt} precomputed.
+\end{itemize}
+
+%-----------------------------------------------------------------------------%
+\section{Implementasi Pengujian Performa}
+%-----------------------------------------------------------------------------%
+Pengujian ini mengukur dampak kuantitatif VxLang pada kecepatan eksekusi dan ukuran \f{executable}. Diagram alur untuk persiapan dan pelaksanaan pengujian performa disajikan pada Gambar \ref{fig:flow_perf_rev}.
+
+%--- DIAGRAM PERF ---
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+scale=0.8, transform shape, % <<-- Skala lebih kecil
+node distance=3cm and 1.5cm, % <<-- Kurangi jarak horizontal
+>=latex,
+block/.style={rectangle, draw, fill=blue!10, text width=8em, text centered, rounded corners, minimum height=3em},
+proc/.style={rectangle, draw, fill=purple!10, text width=10em, text centered, rounded corners, minimum height=3em},
+result/.style={ellipse, draw, fill=yellow!10, text centered, minimum height=3em},
+io/.style={trapezium, trapezium left angle=70, trapezium right angle=110, draw, fill=orange!10, text centered, minimum height=2em},
+line/.style={draw, -latex'}
+]
+  % Nodes
+  \node [block] (start) {Mulai};
+  \node [block, below of=start, text width=10em] (prep_code) {Siapkan Kode Benchmark (QuickSort/AES/Size)};
+    % Kolom Kiri (Asli)
+    \node [block, below left=1cm and 0.3cm of prep_code, text width=10em] (build_no_vm) {Build Tanpa VM (`cmake`, `ninja`)}; % Geser lebih dekat
+    \node [block, below of=build_no_vm, yshift=-1cm] (exe_asli) {Executable Asli}; % Sesuaikan posisi vertikal jika perlu
+    \node [proc, below of=exe_asli, yshift=-0.5cm] (run_bench_asli) {Jalankan Benchmark Asli (Variasi Input/Ukuran)};
+    \node [io, below of=run_bench_asli] (measure_asli) {Ukur Waktu/Ukuran};
+
+    % Kolom Kanan (VM)
+    \node [block, below right=1cm and 0.3cm of prep_code, text width=10em] (add_macro) {Tambah Makro VxLang (`VL\_...\_BEGIN/END`)}; % Geser lebih dekat
+    \node [block, below of=add_macro, text width=10em] (build_with_vm) {Build Dengan Penanda VM (`cmake -D...`, `ninja`)};
+    \node [io, below of=build_with_vm, text width=10em] (vx_tool) {Proses dengan VxLang Tool (Input: JSON Config)};
+    \node [block, below of=vx_tool] (exe_vm) {Executable Virtualized};
+    \node [proc, below of=exe_vm, yshift=-0.5cm] (run_bench_vm) {Jalankan Benchmark VM (Variasi Input/Ukuran)};
+    \node [io, below of=run_bench_vm] (measure_vm) {Ukur Waktu/Ukuran};
+
+    % Nodes Tengah Bawah
+    \node [result, below=3.5cm of $(measure_asli)!0.5!(measure_vm)$] (analyze_data) {Analisis Data (Rata-rata, StdDev, Perbandingan)}; % Geser ke tengah
+    \node [result, below=1.5cm of analyze_data] (eval_overhead) {Evaluasi Overhead Performa \& Trade-off};
+
+    % Paths
+    \path [line] (start) -- (prep_code);
+    \path [line] (prep_code) |- (build_no_vm);
+    \path [line] (prep_code) |- (add_macro);
+    \path [line] (add_macro) -- (build_with_vm);
+    \path [line] (build_with_vm) -- (vx_tool);
+    \path [line] (build_no_vm) -- (exe_asli);
+    \path [line] (vx_tool) -- (exe_vm);
+
+    \path [line] (exe_asli) -- (run_bench_asli);
+    \path [line] (exe_vm) -- (run_bench_vm);
+    \path [line] (run_bench_asli) -- (measure_asli);
+    \path [line] (run_bench_vm) -- (measure_vm);
+    \path [line] (measure_asli) -- (analyze_data);
+    \path [line] (measure_vm) -- (analyze_data);
+    \path [line] (analyze_data) -- (eval_overhead);
+
+    % Grouping (Optional) - Mungkin hapus jika terlalu lebar
+    % \node [draw, dashed, inner sep=6pt, fit=(prep_code) (build_no_vm) (add_macro) (build_with_vm) (vx_tool) (exe_asli) (exe_vm)] {};
+    % \node [draw, dashed, inner sep=6pt, fit=(run_bench_asli) (run_bench_vm) (measure_asli) (measure_vm) (analyze_data) (eval_overhead)] {};
+\end{tikzpicture}
+\caption{Diagram Alur Persiapan dan Pengujian Performa.}
+\label{fig:flow_perf_rev} % Label SETELAH caption
 \end{figure}
 
-Berdasarkan Tabel \ref{tab:quick_sort_performance} ,terlihat adanya peningkatan waktu eksekusi yang signifikan pada algoritma Quick Sort setelah divirtualisasi menggunakan VxLang. Peningkatan ini terlihat semakin besar seiring dengan bertambahnya ukuran array. Sebagai contoh, untuk array berukuran 100, waktu eksekusi rata-rata meningkat dari 0.01 ms menjadi 5.15 ms, yang menunjukkan overhead sekitar 51400\%. Untuk array yang lebih besar seperti 1.000.000 elemen, waktu eksekusi meningkat dari 216.59 ms menjadi 45186.90 ms, dengan overhead sekitar 20860\%. Peningkatan standar deviasi juga menunjukkan bahwa waktu eksekusi menjadi lebih bervariasi setelah virtualisasi. Hal ini mengindikasikan adanya overhead yang substansial yang diperkenalkan oleh mesin virtual VxLang dalam mengeksekusi instruksi virtual dibandingkan dengan eksekusi kode native.
+%--- AKHIR DIAGRAM PERF ---
 
-\subsection{Hasil Pengujian Performa Enkripsi AES-CBC-256}
-Tabel \ref{tab:aes_performance} menyajikan hasil benchmarking enkripsi AES-CBC-256 dengan 1.000.000 blok data, di mana setiap blok berukuran 1024 bytes, sebelum dan sesudah virtualisasi menggunakan VxLang.
+\subsection{Benchmark Algoritma Quick Sort (\code{QuickSort})}
+\begin{itemize}
+    \item \bo{Implementasi (\code{src/performance/quick\_sort.cpp}):} Menggunakan \code{std::vector<int>}, fungsi rekursif \code{quickSort}, dan \code{partition}.
+    \item \bo{Data:} Vektor acak (1-1.000.000) ukuran bervariasi (100 s/d 3.000.000 elemen).
+    \item \bo{Pengukuran:} \code{std::chrono::high\_resolution\_clock} mengukur waktu eksekusi \code{quickSort}. Diulang 100 kali per ukuran data. Rata-rata dan standar deviasi dihitung.
+    \item \bo{Integrasi VxLang:} \code{VL\_VIRTUALIZATION\_BEGIN/END} membungkus \textit{seluruh isi} fungsi rekursif \code{quickSort}.
+\end{itemize}
 
-\begin{table}[htbp]
-  \centering
-  \caption{Hasil Pengujian Performa Enkripsi AES-CBC-256}
-  \label{tab:aes_performance}
-  \begin{tabular}{|l|c|c|}
-    \hline
-    \bo{Metrik}                                     & \bo{Tanpa Virtualisasi} & \bo{Virtualisasi} \\
-    \hline
-    Total Waktu Enkripsi (ms)                  & 2,722.96            & 13,193.51            \\
-    \hline
-    Total Waktu Dekripsi (ms)                  & 2,055.01            & 12,529.90            \\
-    \hline
-    Rata-rata Waktu per Blok Enkripsi (ms)     & 0.00272            & 0.01319             \\
-    \hline
-    Rata-rata Waktu per Blok Dekripsi (ms)     & 0.00206            & 0.01253             \\
-    \hline
-    \textit{Throughput} Enkripsi (MB/s)               & 358.64             & 74.02               \\
-    \hline
-    \textit{Throughput} Dekripsi (MB/s)               & 475.21             & 77.94               \\
-    \hline
-    \textit{Throughput} Gabungan (MB/s)               & 416.92             & 75.98               \\
-    \hline
-  \end{tabular}
-\end{table}
+\subsection{Benchmark Enkripsi AES-CBC-256 (\code{Encryption})}
+\begin{itemize}
+    \item \bo{Implementasi:} Kelas \code{AESCipher} (\code{aes.h}, \code{aes.cpp}) menggunakan API \code{EVP} OpenSSL untuk AES-256-CBC.
+    \item \bo{Data:} 1 GB data acak (1 juta blok @ 1024 byte), diproses per \f{batch} (misal, 10.000 blok/batch).
+    \item \bo{Pengukuran:} \code{chrono} mengukur total waktu enkripsi/dekripsi seluruh \f{batch}. \f{Throughput} (MB/s) dihitung.
+    \item \bo{Integrasi VxLang:} \code{VL\_VIRTUALIZATION\_BEGIN/END} membungkus \f{looping} pemanggilan \code{aes.encrypt()}/\code{decrypt()} di dalam fungsi \code{measureBatch...Time}.
+\end{itemize}
 
-Hasil pengujian enkripsi AES-CBC-256 menunjukkan overhead performa yang signifikan setelah penerapan VxLang. Total waktu enkripsi meningkat dari 2,722.96 ms menjadi 13,193.51 ms, yang merupakan peningkatan sekitar 384\%. Total waktu dekripsi juga mengalami peningkatan yang serupa, dari 2,055.01 ms menjadi 12,529.90 ms (sekitar 510\%). Peningkatan ini juga tercermin pada penurunan throughput (kecepatan pemrosesan data). Throughput enkripsi menurun dari 358.64 MB/s menjadi 74.02 MB/s, dan throughput dekripsi menurun dari 475.21 MB/s menjadi 77.94 MB/s. Penurunan throughput gabungan juga signifikan, dari 416.92 MB/s menjadi 75.98 MB/s. Hasil ini mengkonfirmasi bahwa virtualisasi kode dengan VxLang memperkenalkan overhead yang cukup besar pada operasi komputasi intensif seperti enkripsi.
+\subsection{Pengukuran Ukuran File}
+\begin{itemize}
+    \item \bo{Implementasi:} Ukuran file \f{executable} diukur menggunakan fungsi \code{std::filesystem::file\_size} atau melalui \f{file explorer} Windows. Aplikasi \code{Size} (\code{src/performance/size.cpp}) dibuat khusus dengan data \textit{dummy} tersemat (\code{dummy.bin} via \code{dummy.rc}) untuk mensimulasikan aplikasi dengan aset data internal yang besar.
+    \item \bo{Target Pengukuran:} Pengukuran ukuran file dilakukan pada \textbf{semua} target \f{executable} yang dihasilkan, baik versi asli maupun versi \textit{virtualized} (\code{*\_vm.exe}), termasuk \code{QuickSort}, \code{Encryption}, \code{Size}, \code{console}, \code{app\_imgui}, dan \code{app\_qt}, sesuai data pada Tabel \ref{tab:file_size}.
+    \item \bo{Integrasi VxLang pada Target \code{Size}:} Makro \code{VL\_VIRTUALIZATION\_BEGIN/END} tetap disertakan dalam \code{main} pada target \code{Size} untuk memastikan \f{runtime} VxLang disertakan pada versi \code{size\_vm.exe}, sehingga memungkinkan perbandingan ukuran yang fokus pada \textit{overhead} \textit{runtime} itu sendiri.
+\end{itemize}
 
-\subsection{Hasil Pengujian Ukuran File}
-Tabel \ref{tab:file_size} menyajikan ukuran file executable (dalam KB) untuk berbagai program sebelum dan sesudah virtualisasi menggunakan VxLang.
+%-----------------------------------------------------------------------------%
+\section{Proses Kompilasi dan Virtualisasi}
+%-----------------------------------------------------------------------------%
+Alur kerja untuk menghasilkan \f{executable} asli dan yang tervirtualisasi adalah:
 
-\begin{table}[htbp]
-  \centering
-  \caption{Hasil Pengujian Ukuran File (KB)}
-  \label{tab:file_size}
-  \begin{tabular}{@{}|l|c|c|@{}}
-    \hline
-    \multirow{2}{*}{\textbf{Program}} & \multicolumn{2}{c|}{\textbf{Ukuran File}} \\
-    \cline{2-3} & \bo{Tanpa Virtualisasi} & \bo{Virtualiasi} \\
-    \hline
-    quick\_sort  & 119                                  & 1,951                               \\
-    \hline
-    encryption   & 131                                  & 1,834                               \\
-    \hline
-    size         & 97,802                               & 112,716                             \\
-    \hline
-    console      & 105                                  & 1,942                               \\
-    \hline
-    app\_imgui   & 1,773                                & 2,753                               \\
-    \hline
-    app\_qt      & 145                                  & 1,954                               \\
-    \hline
-  \end{tabular}
-\end{table}
+\begin{enumerate}
+    \item \bo{Konfigurasi CMake:} Menjalankan \code{cmake -G Ninja -B build [-DUSE\_VL\_MACRO=1] ..}. Opsi \code{-DUSE\_VL\_MACRO=1} ditambahkan jika membangun untuk virtualisasi.
+    \item \bo{Kompilasi Awal:} Menjalankan \code{ninja -C build}. Menghasilkan \code{*.exe} (jika \code{USE\_VL\_MACRO} nonaktif) atau \code{*\_vm.exe} (jika \code{USE\_VL\_MACRO} aktif, berisi penanda).
+    \item \bo{Proses Virtualisasi Eksternal:} \f{Executable} \code{*\_vm.exe} dari langkah 2 diproses oleh \textbf{tool eksternal VxLang} (tidak ada dalam repositori ini). Tool ini, dikonfigurasi via file JSON, membaca penanda, menerjemahkan kode menjadi \f{bytecode}, dan menyematkan \f{interpreter} VM ke \f{executable} output.
+    \item \bo{Hasil Akhir:} Direktori \code{bin} berisi \f{executable} asli (\code{*.exe}) dan \f{executable} yang telah divirtualisasi (\code{*\_vm.exe}), siap untuk dianalisis.
+\end{enumerate}
 
-Hasil pengukuran ukuran file menunjukkan bahwa penerapan virtualisasi kode menggunakan VxLang secara umum meningkatkan ukuran file executable. Peningkatan ukuran file sangat signifikan untuk program-program kecil seperti quick\_sort, encryption, dan console, di mana ukurannya meningkat lebih dari sepuluh kali lipat. Untuk aplikasi GUI yang lebih besar seperti app\_imgui dan app\_qt, peningkatan ukuran file juga terlihat, meskipun persentasenya mungkin lebih kecil dibandingkan dengan program yang lebih kecil. Peningkatan ukuran file size relatif lebih kecil, namun tetap signifikan. Peningkatan ukuran ini kemungkinan disebabkan oleh penambahan interpreter mesin virtual VxLang dan bytecode yang dihasilkan ke dalam executable yang dilindungi.
+Implementasi yang sistematis ini memastikan bahwa artefak yang dihasilkan cocok untuk perbandingan dan analisis yang valid sesuai dengan tujuan penelitian.

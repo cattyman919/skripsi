@@ -1,7 +1,9 @@
 .DS_Store
 **/.DS_Store
-out/
+out/*
+thesis.pdf
 
+latex-skripsi.xml
 _minted_*/
 ## Core latex/pdflatex auxiliary files:
 *.aux
