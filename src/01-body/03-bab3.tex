@@ -1,163 +1,197 @@
 %-----------------------------------------------------------------------------%
 \chapter{\babTiga}
 %-----------------------------------------------------------------------------%
+Bab ini menyajikan kerangka kerja metodologis yang digunakan untuk mencapai tujuan penelitian, yaitu mengimplementasikan dan menganalisis efektivitas \f{code virtualization} menggunakan VxLang dalam meningkatkan keamanan perangkat lunak terhadap \f{reverse engineering}. Pembahasan mencakup pendekatan penelitian, desain eksperimen, objek studi, instrumen dan bahan penelitian, prosedur pengumpulan data yang direncanakan termasuk ilustrasi alur kerja, serta teknik analisis data.
 
 %-----------------------------------------------------------------------------%
-\section{Desain Penelitian}
+\section{Pendekatan Penelitian}
 %-----------------------------------------------------------------------------%
-Penelitian ini menggunakan pendekatan eksperimental untuk menganalisis efektivitas code virtualization menggunakan VxLang dalam meningkatkan keamanan perangkat lunak dengan mempersulit reverse engineering. Fokus utama dari eksperimen ini adalah pada pengujian fungsionalitas autentikasi dan analisis performance overhead yang disebabkan oleh penerapan VxLang pada berbagai jenis aplikasi. Dua percobaan utama akan dilakukan:
-
-\begin{enumerate}
-	\item \bo{Pengujian Autentikasi - Analisis Statis dan Dinamis:} Percobaan ini bertujuan untuk menganalisis kompleksitas control flow program sebelum dan sesudah di-obfuscate menggunakan VxLang pada tiga jenis aplikasi yang berbeda:
-	      \begin{itemize}
-		      \item \bo{Aplikasi Konsol (Tanpa GUI) :} Aplikasi sederhana yang berinteraksi melalui command line.
-		      \item \bo{Aplikasi Qt :} Aplikasi dengan antarmuka pengguna grafis yang dibangun menggunakan Qt Framework.
-		      \item \bo{Aplikasi ImGUI :} Aplikasi dengan antarmuka pengguna grafis yang menggunakan library Dear ImGUI.
-	      \end{itemize}
-	      Analisis akan dilakukan melalui dua pendekatan: analisis statis menggunakan Ghidra dan analisis dinamis menggunakan x64Dbg. Selain itu, percobaan ini juga akan mencakup upaya untuk melewati pengujian autentikasi dengan memanipulasi control flow menggunakan Ghidra dan x64dbg pada ketiga jenis aplikasi tersebut. Tujuan dari pengujian pada berbagai aplikasi ini adalah untuk menunjukkan bahwa VxLang dapat diterapkan pada berbagai framework dan jenis kode sumber yang berbeda.
-	\item \bo{Pengujian Performa - Waktu Eksekusi dan Ukuran File:} Percobaan ini bertujuan untuk mengukur performa waktu eksekusi program dengan algoritma sorting sebelum dan sesudah di-obfuscate, serta membandingkan ukuran file executable. Waktu eksekusi diukur menggunakan library chrono::high\_resolution\_clock.
-\end{enumerate}
-%-----------------------------------------------------------------------------%
-\section{Alat dan Bahan}
-%-----------------------------------------------------------------------------%
-Perangkat lunak dan perangkat keras yang digunakan dalam penelitian ini adalah:
-
+Penelitian ini menggunakan pendekatan \bo{eksperimental} dengan kombinasi metode \bo{kuantitatif} dan \bo{kualitatif}. Pendekatan eksperimental dipilih karena penelitian ini bertujuan untuk mengukur dan membandingkan efek dari suatu perlakuan (intervensi), yaitu penerapan \f{code virtualization} menggunakan VxLang, terhadap variabel dependen (tingkat kesulitan \f{reverse engineering} dan performa perangkat lunak).
 \begin{itemize}
-	\item \bo{Perangkat Lunak:}
-	      \begin{itemize}
-		      \item \bo{Sistem Operasi:} Windows 11 akan digunakan sebagai lingkungan operasi utama untuk melakukan semua percobaan.
-		      \item \bo{Kompiler:} Kompiler Clang (clang-cl) akan digunakan untuk mengkompilasi kode sumber
-		      \item \bo{Framwork GUI:} Qt Framework dan Dear ImGUI
-		      \item \bo{Alat Virtualisasi Kode:} VxLang akan digunakan sebagai alat utama untuk mengimplementasikan virtualisasi kode.
-		      \item \bo{Alat Analisis Statis:} Ghidra, sebuah framework reverse engineering yang dikembangkan oleh NSA, akan digunakan untuk melakukan analisis statis.
-		      \item \bo{Alat Analisis Dinamis:} x64dbg, sebuah debugger sumber terbuka untuk Windows, akan digunakan untuk analisis dinamis
-		      \item \bo{Pustaka C++:} Pustaka chrono akan digunakan untuk mengukur waktu eksekusi dan OpenSSL untuk melakukan enkripsi AES.
-	      \end{itemize}
-	\item \bo{Perangkat Lunak:}
-	      \begin{itemize}
-		      \item \bo{Prosesor:} Intel Core i7-12700H
-		      \item \bo{RAM:} 32 GB
-	      \end{itemize}
+    \item Metode \bo{kuantitatif} akan digunakan untuk mengukur dampak virtualisasi pada performa perangkat lunak (waktu eksekusi dan ukuran file) serta mencatat keberhasilan/kegagalan upaya \textit{bypass} autentikasi sebagai indikator.
+    \item Metode \bo{kualitatif} akan digunakan untuk menganalisis dan mendeskripsikan tingkat kesulitan dalam melakukan \f{reverse engineering} (analisis statis dan dinamis) pada kode sebelum dan sesudah virtualisasi, berdasarkan observasi dan interpretasi peneliti.
 \end{itemize}
 
 %-----------------------------------------------------------------------------%
-\section{Prosedur Penelitian}
+\section{Desain Eksperimen}
 %-----------------------------------------------------------------------------%
-\subsection{Pengujian Autentikasi: Analisis Statis dan Dinamis}
-Pengujian autentikasi bertujuan untuk mengevaluasi efektivitas virtualisasi kode dalam menghambat upaya reverse engineering dengan menganalisis aspek statis dan dinamis dari perangkat lunak sebelum dan sesudah obfuscation, serta mencoba untuk melewati mekanisme autentikasi.
+Desain eksperimen yang digunakan adalah \bo{perbandingan antara kelompok kontrol dan kelompok eksperimen} pada serangkaian objek studi.
+\begin{itemize}
+    \item \bo{Kelompok Kontrol:} Aplikasi studi kasus dan \f{benchmark} yang dikompilasi secara normal tanpa penerapan \f{code virtualization} VxLang.
+    \item \bo{Kelompok Eksperimen:} Aplikasi studi kasus dan \f{benchmark} yang sama, namun bagian kode kritikalnya telah diproses menggunakan \f{code virtualization} VxLang.
+\end{itemize}
+Variabel dalam penelitian ini adalah:
+\begin{itemize}
+    \item \bo{Variabel Independen:} Penerapan \f{code virtualization} VxLang (diterapkan vs tidak diterapkan).
+    \item \bo{Variabel Dependen:}
+        \begin{itemize}
+            \item Tingkat kesulitan \f{reverse engineering} logika autentikasi.
+            \item Performa perangkat lunak (waktu eksekusi dan ukuran file).
+        \end{itemize}
+\end{itemize}
+Eksperimen akan difokuskan pada dua aspek utama: analisis keamanan pada fungsi autentikasi dan analisis \f{overhead} performa pada tugas komputasi spesifik.
 
-Berikut persiapan yang akan dilakukan :
+%-----------------------------------------------------------------------------%
+\section{Objek Studi}
+%-----------------------------------------------------------------------------%
+Objek studi yang akan dikembangkan dan dianalisis dalam penelitian ini meliputi:
 \begin{enumerate}
-	\item \bo{Pengaturan Lingkungan:} Lingkungan perangkat lunak diatur untuk memastikan bahwa semua alat (Windows 11, Clang, VxLang, Ghidra, dan x64dbg) serta framework dan library GUI (Qt dan Dear ImGUI) terinstal dan terkonfigurasi dengan benar. Kode sumber aplikasi studi kasus (konsol, Qt, dan Dear ImGUI) disiapkan untuk kompilasi.
-	\item \bo{Kompilasi Aplikasi Asli:} Setiap aplikasi studi kasus (konsol, Qt, dan Dear ImGUI) dikompilasi tanpa menerapkan teknik obfuscation apa pun menggunakan kompiler Clang. Hasilnya adalah file executable asli untuk setiap jenis aplikasi.
-	\item \bo{Kompilasi Aplikasi yang di-Obfuscate:} Kode sumber aplikasi studi kasus dimodifikasi untuk menyertakan penanda VL\_VIRTUALIZATION\_BEGIN dan VL\_VIRTUALIZATION\_END untuk menunjukkan blok kode yang akan divirtualisasikan. Kode sumber yang dimodifikasi dikompilasi dengan kompiler Clang, dan selanjutnya, executable diproses dengan VxLang untuk menghasilkan versi yang di-obfuscate yang menyertakan mesin virtual dan bytecode yang sesuai.
+    \item \bo{Aplikasi Studi Kasus Autentikasi:} Aplikasi simulasi login dalam tiga varian antarmuka (Konsol, Qt, Dear ImGui) dan dua mekanisme autentikasi (Kredensial \textit{hardcoded}, Kredensial via \textit{backend cloud}).
+    \item \bo{Aplikasi Benchmark Performa:} Aplikasi untuk mengukur \textit{overhead} pada tugas spesifik (Algoritma QuickSort, Enkripsi AES-CBC-256, Ukuran File Dasar).
 \end{enumerate}
+Setiap objek studi akan dibuat dalam versi asli (non-\textit{virtualized}) dan versi \textit{virtualized} oleh VxLang untuk perbandingan.
 
-\begin{figure}
-	\centering
-	\includegraphics[width=1\textwidth]
-	{assets/pics/Persiapan.png}
-	\caption{Flow Diagram Persiapan Penelitian}
+%-----------------------------------------------------------------------------%
+\section{Instrumen dan Bahan Penelitian}
+%-----------------------------------------------------------------------------%
+Penelitian ini direncanakan menggunakan instrumen dan bahan berikut:
+\begin{itemize}
+    \item \bo{Perangkat Keras:} Komputer berbasis Windows.
+    \item \bo{Perangkat Lunak Pengembangan:} Compiler C++ (Clang/clang-cl), Build System (CMake, Ninja), Library/Framework (Qt, Dear ImGui, OpenSSL, libcurl, dll.), VxLang SDK, Teknologi Backend (Go, PostgreSQL, Docker).
+    \item \bo{Instrumen Analisis Keamanan:} Alat Analisis Statis (Ghidra), Alat Analisis Dinamis (x64dbg).
+    \item \bo{Instrumen Pengukuran Performa:} Library C++ (\code{std::chrono}, \code{std::filesystem}).
+    \item \bo{Lembar Observasi:} Untuk pencatatan kualitatif.
+\end{itemize}
+
+%-----------------------------------------------------------------------------%
+\section{Prosedur Pengumpulan Data}
+%-----------------------------------------------------------------------------%
+Pengumpulan data akan mengikuti prosedur terstruktur yang mencakup studi literatur, persiapan artefak, pelaksanaan pengujian, dan pencatatan hasil. Alur kerja umum penelitian ini diilustrasikan pada Gambar \ref{fig:flow_research_steps}.
+
+% --- TikZ Diagram: Alur Penelitian Umum ---
+\begin{figure}[H] % Menggunakan [H] dari paket float (via uithesis.sty)
+    \centering
+    \begin{tikzpicture}[
+        scale=0.85, transform shape,
+        node distance=3cm and 1cm,
+        >=latex,
+        block/.style={rectangle, draw, thick, fill=blue!10, text width=9em, text centered, rounded corners, minimum height=3em},
+        proc/.style={rectangle, draw, thick, fill=purple!10, text width=10em, text centered, rounded corners, minimum height=3em},
+        io/.style={trapezium, trapezium left angle=70, trapezium right angle=110, draw, thick, fill=orange!10, text centered, minimum height=2.5em, text width=10em},
+        term/.style={ellipse, draw, thick, fill=gray!20, text centered, minimum height=3em},
+        line/.style={draw, thick, -latex'}
+    ]
+        % Nodes
+        \node [block] (start) {Mulai: Studi Literatur \& Perumusan Masalah};
+        \node [block, below of=start] (design) {Desain Penelitian (Eksperimen, Objek Studi, Instrumen)};
+        \node [proc, below of=design] (develop) {Pengembangan Artefak (Aplikasi Asli \& VM)};
+        \node [io, below left=0.8cm and 1.5cm of develop] (test_sec) {Pengujian Keamanan (Analisis Statis \& Dinamis, Upaya Bypass)};
+        \node [io, below right=0.8cm and 1.5cm of develop] (test_perf) {Pengujian Performa (Waktu Eksekusi \& Ukuran File)};
+        \node [proc, below=3cm of develop] (analyze) {Analisis Data (Kualitatif \& Kuantitatif, Perbandingan, Trade-off)};
+        \node [term, below of=analyze] (conclude) {Kesimpulan \& Saran};
+
+        % Paths
+        \path [line] (start) -- (design);
+        \path [line] (design) -- (develop);
+        \path [line] (develop) -- (test_sec);
+        \path [line] (develop) -- (test_perf);
+        \path [line] (test_sec) -- (analyze);
+        \path [line] (test_perf) -- (analyze);
+        \path [line] (analyze) -- (conclude);
+
+    \end{tikzpicture}
+    \caption{Diagram Alur Umum Tahapan Penelitian.}
+    \label{fig:flow_research_steps}
 \end{figure}
+% --- Akhir TikZ Diagram ---
 
-\subsubsection{Analisis Statis (Ghidra)}
-Fase ini bertujuan untuk menganalisis struktur dan kompleksitas kode tanpa menjalankannya.
-\begin{enumerate}
-	\item \bo{Peluncuran Ghidra:} Framework Ghidra diluncurkan, dan proyek baru dibuat untuk menampung analisis setiap versi aplikasi (asli dan di-obfuscate untuk konsol, Qt, dan Dear ImGUI).
-	\item \bo{Mengimpor Executable:} Baik file executable asli maupun yang di-obfuscate diimpor ke dalam proyek Ghidra.
-	\item \bo{Analisis Fungsi:} Fungsi yang menangani proses autentikasi dalam setiap aplikasi dipilih untuk analisis terfokus. Alat analisis Ghidra digunakan untuk membongkar fungsi target dan menghasilkan Control Flow Graph (CFG) untuk kedua versi (obfuscated dan non-obfuscated) dari setiap jenis aplikasi.
-	\item \bo{Perbandingan CFG:} CFG dari versi asli dan yang di-obfuscate dibandingkan dengan mendokumentasikan jumlah basic block, edge, dan kompleksitas siklomatik. Kompleksitas siklomatik yang lebih tinggi berkorelasi dengan peningkatan kesulitan dalam pemahaman kode dan reverse engineering. Dokumentasi untuk setiap versi akan mencakup yang berikut:
-	      \begin{itemize}
-		      \item \bo{Jumlah Basic Block:} Ini menunjukkan jumlah total urutan kode non-percabangan dalam alur kontrol fungsi.
-		      \item \bo{Jumlah Edge:} Ini mewakili alur eksekusi dari satu blok ke blok lainnya.
-		      \item \bo{Kompleksitas Siklomatik:} Metrik ini mengukur jumlah jalur independen dalam alur kontrol kode. Ini dihitung berdasarkan rumus: Edge - Node + 2
-	      \end{itemize}
-	\item \bo{Mendokumentasikan Temuan:} Catatan dan observasi terperinci mengenai analisis statis kode dipelihara.
-\end{enumerate}
+\subsection{Studi Literatur}
+Tahap awal meliputi peninjauan literatur terkait \f{reverse engineering}, teknik \f{obfuscation}, \f{code virtualization} (khususnya VxLang), analisis statis/dinamis, dan metodologi pengukuran performa untuk membangun landasan teori dan memahami penelitian terkait.
 
-\begin{figure}
-	\centering
-	\includegraphics[width=1\textwidth]
-	{assets/pics/Static.png}
-	\caption{Flow Diagram Analisis Statis}
+\subsection{Persiapan Artefak}
+Tahap ini berfokus pada implementasi teknis objek studi. Ini mencakup pengembangan kode sumber untuk aplikasi autentikasi dan \textit{benchmark} performa, integrasi VxLang SDK ke dalam kode, konfigurasi sistem \textit{build} (CMake) untuk menghasilkan versi asli dan versi \textit{intermediate} (dengan penanda VxLang), serta proses kompilasi. Versi \textit{intermediate} kemudian diproses menggunakan \textit{tool} eksternal VxLang untuk menghasilkan \textit{executable} akhir yang tervirtualisasi. Detail implementasi disajikan pada Bab 4.
+
+\subsection{Pengujian Keamanan Autentikasi}
+Pengujian ini bertujuan untuk mengevaluasi efektivitas VxLang dalam mempersulit analisis dan manipulasi logika autentikasi. Prosedur yang akan diikuti untuk setiap aplikasi autentikasi (asli dan \textit{virtualized}) diilustrasikan pada Gambar \ref{fig:flow_auth_test_proc} dan mencakup langkah-langkah berikut:
+\begin{itemize}
+    \item \bo{Analisis Statis (Ghidra):} Memuat \textit{executable}, mencari \textit{string} relevan, menganalisis \textit{disassembly/decompilation} untuk memahami alur kontrol, mengidentifikasi instruksi kondisional kritis, dan mencoba melakukan \textit{patching} statis untuk \textit{bypass} autentikasi.
+    \item \bo{Analisis Dinamis (x64dbg):} Menjalankan \textit{executable} dalam \textit{debugger}, mencari \textit{string/pattern} saat \textit{runtime}, mengatur \textit{breakpoint}, mengamati alur eksekusi dan nilai memori/register, serta mencoba melakukan manipulasi \textit{runtime} (misalnya, \textit{patching on-the-fly} atau mengubah \textit{flags}/nilai) untuk \textit{bypass} autentikasi.
+    \item \bo{Pencatatan Observasi:} Mencatat temuan kualitatif mengenai tingkat kesulitan pada setiap langkah analisis (pencarian \textit{string}, pemahaman alur, identifikasi logika) dan mencatat keberhasilan atau kegagalan setiap upaya \textit{bypass} (statis dan dinamis).
+\end{itemize}
+
+% --- TikZ Diagram: Alur Pengujian Autentikasi ---
+\begin{figure}[H] % Menggunakan [H] dari paket float (via uithesis.sty)
+    \centering
+    \begin{tikzpicture}[
+        scale=0.8, transform shape,
+        node distance=2.5cm and 1.2cm,
+        >=latex,
+        block/.style={rectangle, draw, thick, fill=blue!10, text width=9em, text centered, rounded corners, minimum height=3em},
+        proc/.style={rectangle, draw, thick, fill=purple!10, text width=11em, text centered, rounded corners, minimum height=3em},
+        term/.style={ellipse, draw, thick, fill=gray!20, text centered, minimum height=2.5em},
+        input/.style={rectangle, draw, thick, fill=green!10, text centered, rounded corners=5pt, minimum height=2.5em, text width=8em},
+        line/.style={draw, thick, -latex'}
+    ]
+        % Nodes
+        \node [input] (start) {Mulai (Ambil Executable Auth)}; % Diedit
+        \node [proc, below of=start] (static) {Analisis Statis (Ghidra: String, Alur Kontrol, Coba Patch)};
+        \node [proc, below of=static] (dynamic) {Analisis Dinamis (x64dbg: Run, Breakpoint, Amati, Coba Manipulasi)};
+        \node [block, below of=dynamic] (observe) {Catat Observasi (Kesulitan, Keberhasilan Bypass)};
+        \node [term, below of=observe] (end) {Selesai};
+
+        % Paths
+        \path [line] (start) -- (static);
+        \path [line] (static) -- (dynamic);
+        \path [line] (dynamic) -- (observe);
+        \path [line] (observe) -- (end);
+
+    \end{tikzpicture}
+    \caption{Diagram Alur Prosedur Pengujian Keamanan Autentikasi.}
+    \label{fig:flow_auth_test_proc}
 \end{figure}
+% --- Akhir TikZ Diagram ---
+Prosedur ini akan diulang untuk semua varian aplikasi autentikasi (Konsol, Qt, ImGui dalam versi \textit{hardcoded} dan \textit{cloud}), baik untuk versi asli maupun versi \textit{virtualized}.
 
-\bo{Upaya Manipulasi Control Flow:}
-\begin{enumerate}
-	\item \bo{Identifikasi Mekanisme Autentikasi:} Menggunakan Ghidra, identifikasi bagian kode yang menangani proses autentikasi. Ini melibatkan pencarian fungsi yang memvalidasi kredensial atau memeriksa lisensi.
-	\item \bo{Analisis Control Flow:} Analisis control flow dari fungsi autentikasi untuk memahami bagaimana keputusan autentikasi dibuat.
-	\item \bo{Identifikasi Peluang Manipulasi:} Cari peluang untuk memodifikasi control flow (misalnya, mengubah jump kondisional) yang dapat menyebabkan aplikasi selalu menganggap autentikasi berhasil.
-	\item \bi{Patching Executable:} Jika memungkinkan, coba patch executable asli menggunakan Ghidra untuk melewati mekanisme autentikasi pada setiap jenis aplikasi.
-	\item \bo{Uji Coba Aplikasi yang di-Patch:} Jalankan aplikasi yang di-patch untuk memverifikasi apakah upaya melewati autentikasi berhasil.
-	\item \bo{Ulangi pada Aplikasi yang di-Obfuscate:} Lakukan langkah yang sama pada versi aplikasi yang di-obfuscate untuk melihat apakah virtualisasi kode mempersulit upaya manipulasi control flow untuk melewati autentikasi pada setiap jenis aplikasi.
-\end{enumerate}
+\subsection{Pengujian Performa Overhead}
+Pengujian ini bertujuan mengukur dampak kuantitatif VxLang pada kinerja eksekusi dan ukuran file. Prosedur yang akan diikuti untuk setiap aplikasi \textit{benchmark} (asli dan \textit{virtualized}) diilustrasikan pada Gambar \ref{fig:flow_perf_test_proc} dan melibatkan:
+\begin{itemize}
+    \item \bo{Pengukuran Waktu Eksekusi:} Menjalankan \textit{benchmark} (QuickSort dan AES) berulang kali (N=100 untuk QuickSort, pemrosesan \textit{batch} 1GB untuk AES) dan mencatat waktu eksekusi menggunakan \code{std::chrono::high\_resolution\_clock}.
+    \item \bo{Pengukuran Ukuran File:} Mengukur ukuran \textit{byte} dari file \textit{executable} akhir menggunakan \code{std::filesystem::file\_size} atau utilitas OS.
+    \item \bo{Pencatatan Data:} Mencatat semua data waktu eksekusi (setiap \textit{run} dan total/\textit{average}) dan ukuran file untuk analisis selanjutnya.
+\end{itemize}
 
-\subsubsection{Analisis Dinamis (x64dbg)}
-Analisis dinamis melibatkan pengamatan perilaku program saat dijalankan.
-\begin{enumerate}
-	\item \bo{Peluncuran x64Dbg:} Debugger x64dbg diluncurkan, dan executable asli dan yang di-obfuscate (untuk konsol, Qt, dan Dear ImGUI) dimuat untuk analisis.
-	\item \bo{Pengamatan Alur Eksekusi Autentikasi:} Breakpoint diatur pada fungsi autentikasi untuk mengamati alur eksekusi dan nilai variabel yang relevan selama proses autentikasi pada setiap jenis aplikasi.
-	\item \bo{Analisis Perbedaan Alur Kontrol:} Bandingkan alur kontrol eksekusi fungsi autentikasi antara versi asli dan yang di-obfuscate untuk setiap jenis aplikasi. Perhatikan bagaimana virtualisasi kode mengubah urutan instruksi dan mempersulit pemahaman alur kontrol yang sebenarnya.
-	\item \bo{Upaya Melewati Autentikasi:} Gunakan x64dbg untuk mencoba memanipulasi alur eksekusi atau nilai variabel selama runtime dengan tujuan untuk melewati mekanisme autentikasi pada setiap jenis aplikasi. Misalnya, coba ubah hasil perbandingan password agar selalu bernilai benar.
-	\item \bo{Dokumentasi Temuan:} Catat semua observasi, termasuk kesulitan dalam memahami alur kontrol dan keberhasilan atau kegagalan upaya melewati autentikasi pada setiap jenis aplikasi.
-\end{enumerate}
+% --- TikZ Diagram: Alur Pengujian Performa ---
+\begin{figure}[H] % Menggunakan [H] dari paket float (via uithesis.sty)
+    \centering
+    \begin{tikzpicture}[
+        scale=0.8, transform shape,
+        node distance=2cm and 1.2cm,
+        >=latex,
+        block/.style={rectangle, draw, thick, fill=blue!10, text width=9em, text centered, rounded corners, minimum height=3em},
+        proc/.style={rectangle, draw, thick, fill=purple!10, text width=11em, text centered, rounded corners, minimum height=3em},
+        term/.style={ellipse, draw, thick, fill=gray!20, text centered, minimum height=2.5em},
+        input/.style={rectangle, draw, thick, fill=green!10, text centered, rounded corners=5pt, minimum height=2.5em, text width=8em},
+        line/.style={draw, thick, -latex'}
+    ]
+        % Nodes
+        \node [input] (start) {Mulai (Ambil Executable Benchmark)};
+        \node [proc, below of=start] (run_time) {Jalankan Benchmark (N kali / Batch)};
+        \node [proc, below of=run_time] (measure_time) {Ukur Waktu Eksekusi (std::chrono)};
+        \node [proc, below of=measure_time] (measure_size) {Ukur Ukuran File Executable};
+        \node [block, below of=measure_size] (record) {Catat Data Waktu \& Ukuran};
+        \node [term, below of=record] (end) {Selesai};
 
-\begin{figure}
-	\centering
-	\includegraphics[width=1\textwidth]
-	{assets/pics/Dynamic.png}
-	\caption{Flow Diagram Analisis Dinamis}
+        % Paths
+        \path [line] (start) -- (run_time);
+        \path [line] (run_time) -- (measure_time);
+        \path [line] (measure_time) -- (measure_size);
+        \path [line] (measure_size) -- (record);
+        \path [line] (record) -- (end);
+
+    \end{tikzpicture}
+    \caption{Diagram Alur Prosedur Pengujian Performa.}
+    \label{fig:flow_perf_test_proc}
 \end{figure}
+% --- Akhir TikZ Diagram ---
+Prosedur ini akan diulang untuk semua aplikasi \textit{benchmark} (QuickSort, Encryption, Size), baik untuk versi asli maupun versi \textit{virtualized}.
 
-\subsection{Pengujian Performa: Waktu Eksekusi dan Ukuran File}
-Pengujian kinerja ini bertujuan untuk mengevaluasi dampak virtualisasi kode terhadap waktu eksekusi dan ukuran file aplikasi. Untuk mendapatkan pengukuran yang komprehensif, kita akan menggunakan algoritma pengurutan (sorting) sebagai benchmark.
-
-Berikut persiapan yang akan dilakukan :
-\begin{enumerate}
-	\item \bo{Pemilihan Algoritma Pengurutan:} Algoritma pengurutan yang akan digunakan sebagai benchmark adalah algoritma pengurutan cepat (Quicksort). Quicksort dipilih karena efisiensinya yang baik dalam banyak kasus, serta kompleksitasnya yang cukup untuk memberikan gambaran yang baik tentang performa.
-	\item \bo{Pengembangan Benchmark:} Benchmark akan diimplementasikan dengan membuat fungsi yang melakukan pengurutan pada array data. Array data akan diisi dengan angka acak untuk memastikan pengujian yang representatif. Ukuran array data akan divariasikan (misalnya, 1000, 10000, 100000 elemen) untuk mengamati performa pada berbagai skala data.
-	\item \bo{Integrasi Benchmark:} Fungsi benchmark diintegrasikan ke dalam kedua versi aplikasi (asli dan yang di-obfuscate). Hal ini memungkinkan kita untuk mengukur waktu eksekusi dari algoritma pengurutan pada kedua versi aplikasi secara terpisah.
-\end{enumerate}
-
-\subsubsection{Pengukuran Waktu Eksekusi Enskripsi AES}
-\begin{enumerate}
-	\item \bo{Benchmark:} Fungsi benchmark akan melakukan enkripsi AES-CBC-256 pada 1 Gigabyte blok.
-	\item \bo{Pengukuran Waktu:} Pustaka chrono::high\_resolution\_clock dari C++ akan digunakan untuk mengukur secara akurat waktu yang dibutuhkan untuk setiap eksekusi benchmark.
-	\item \bo{Pencatatan Data:} Waktu eksekusi setiap run (dalam milidetik atau mikrosekon) dicatat untuk setiap ukuran array pada kedua versi aplikasi.
-\end{enumerate}
-
-\subsubsection{Pengukuran Waktu Eksekusi Quick Sort}
-\begin{enumerate}
-	\item \bo{Eksekusi Benchmark:} Fungsi benchmark (algoritma pengurutan) akan dieksekusi beberapa kali (misalnya, N=100) pada setiap ukuran array untuk mendapatkan data yang cukup.
-	\item \bo{Pengukuran Waktu:} Pustaka chrono::high\_resolution\_clock dari C++ akan digunakan untuk mengukur secara akurat waktu yang dibutuhkan untuk setiap eksekusi benchmark.
-	\item \bo{Pencatatan Data:} Waktu eksekusi setiap run (dalam milidetik atau mikrosekon) dicatat untuk setiap ukuran array pada kedua versi aplikasi.
-	\item \bo{Perhitungan Rata-Rata:} Waktu eksekusi rata-rata dihitung untuk setiap versi dan setiap ukuran array dengan menjumlahkan semua waktu eksekusi dan membaginya dengan jumlah run (N).
-\end{enumerate}
-
-\subsubsection{Pengukuran Ukuran File}
-\begin{enumerate}
-	\item \bo{Perbandingan Ukuran File:} Ukuran file dari executable asli dan yang di-obfuscate dibandingkan untuk menentukan dampak virtualisasi kode pada ukuran aplikasi.
-\end{enumerate}
-
-\begin{figure}
-	\centering
-	\includegraphics[width=1\textwidth]
-	{assets/pics/Performance.png}
-	\caption{Flow Diagram Analisis Performa}
-\end{figure}
-
+%-----------------------------------------------------------------------------%
 \section{Teknik Analisis Data}
-Data yang dikumpulkan dari kedua rangkaian percobaan akan dianalisis menggunakan teknik deskriptif dan komparatif.
-\subsection{Analisis Data Pengujian Autentikasi}
+%-----------------------------------------------------------------------------%
+Data yang telah dikumpulkan akan dianalisis menggunakan teknik berikut:
 \begin{itemize}
-	\item \bo{Analisis Data Statis:} Metrik kompleksitas yang diperoleh dari analisis statis (yaitu, jumlah basic block, edge, dan kompleksitas siklomatik) akan dievaluasi. Perbedaan akan digunakan untuk menilai efektivitas virtualisasi kode.
-	\item \bo{Analisis Data Dinamis:} Hasil dari analisis dinamis, termasuk alur eksekusi yang diamati dan kesulitan dalam analisis kode, akan dianalisis.
-	\item \bo{Evaluasi Efektivitas Keamanan:} Hasil dari analisis dinamis, termasuk alur eksekusi yang diamati dan kesulitan dalam analisis kode, akan dianalisis.
+    \item \bo{Data Kualitatif (Keamanan):} Analisis deskriptif dan interpretatif berdasarkan catatan observasi untuk membandingkan tingkat kesulitan \f{reverse engineering} antara kelompok kontrol dan eksperimen.
+    \item \bo{Data Kuantitatif (Performa):} Perhitungan statistik deskriptif (rata-rata, standar deviasi), perhitungan \textit{overhead} waktu eksekusi (persentase), dan perhitungan peningkatan ukuran file. Data akan disajikan dalam tabel dan grafik perbandingan.
+    \item \bo{Analisis Trade-off:} Sintesis hasil analisis keamanan dan performa untuk mengevaluasi keseimbangan antara peningkatan proteksi dan dampak pada kinerja.
 \end{itemize}
-
-\subsection{Analisis Data Pengujian Performa}
-\begin{itemize}
-	\item \bo{Perbandingan Waktu Eksekusi:} Waktu eksekusi rata-rata antara aplikasi asli dan yang di-obfuscate dibandingkan untuk menilai potensi overhead kinerja yang diperkenalkan oleh VxLang.
-	\item \bo{Perbandingan Ukuran File:} Ukuran file dari kedua versi dibandingkan untuk menilai dampak ukuran file dari virtualisasi kode.
-	\item \bo{Analisis Trade-off:} Analisis komprehensif dilakukan untuk mengevaluasi trade-off antara keamanan dan kinerja, berdasarkan temuan.
-\end{itemize}
+Hasil analisis ini akan menjadi dasar penarikan kesimpulan.
