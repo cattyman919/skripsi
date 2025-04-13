@@ -171,52 +171,50 @@ if (inputUsername.compare("seno") == 0 &&
 \end{enumerate}
 
 \bo{Implementasi Fungsi Permintaan Cloud (\code{cloud.hpp}):}
+Fungsi \code{send\_login\_request} bertanggung jawab untuk mengemas kredensial ke dalam format JSON dan mengirimkannya ke server \textit{backend} menggunakan library \code{libcurl}. Snippet berikut menyoroti langkah-langkah utamanya:
 \begin{listing}[H]
 	\begin{minted}{cpp}
 // Potongan dari includes/cloud.hpp
-#include <curl/curl.h>
-#include <nlohmann/json.hpp>
-// ... (Callback dan includes lain) ...
-
 bool send_login_request(const std::string &username,
-                        const std::string &password, HWND /*window*/ = NULL) {
+const std::string &password, HWND /window/ = NULL) {
   CURL *curl;
   CURLcode res;
   std::string readBuffer;
   std::string url = "http://localhost:9090/login";
-  nlohmann::json payload; // Menggunakan nlohmann::json
+  
+  // 1. Buat payload JSON
+  nlohmann::json payload;
   payload["username"] = username;
   payload["password"] = password;
   std::string jsonStr = payload.dump();
-
+  
   curl = curl_easy_init();
   if (curl) {
     struct curl_slist *headers = nullptr;
     headers = curl_slist_append(headers, "Content-Type: application/json");
-    // ... (Setopt untuk URL, HEADERS, POSTFIELDS, WRITEFUNCTION, etc.) ...
+    
+    // 2. Konfigurasi request cURL (URL, Headers, Body, Callback, Timeout)
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, jsonStr.c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback); // Asumsi WriteCallback ada
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
-
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L); // Timeout 5 detik
+    
+    // 3. Kirim request
     res = curl_easy_perform(curl);
-    // ... (Cleanup) ...
+    
+    // 4. Cleanup cURL
     curl_easy_cleanup(curl);
     curl_slist_free_all(headers);
-
-    if (res != CURLE_OK) { /* Handle error */ return false; }
-    if (readBuffer.empty()) { /* Handle error */ return false; }
-
-    try {
-      nlohmann::json response = nlohmann::json::parse(readBuffer);
-      return response.value("success", false);
-    } catch (const nlohmann::json::exception &e) {
-      /* Handle parse error */ return false;
+    
+    // 5. Handle error cURL
+    if (res != CURLE_OK || readBuffer.empty()) {
+       // Error handling (misal: log error)
+       return false;
     }
   }
-  return false;
+  return false; // Gagal inisialisasi cURL
 }
     \end{minted}
 	\caption{Implementasi Fungsi \code{send\_login\_request}}

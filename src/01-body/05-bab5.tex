@@ -9,32 +9,35 @@ Pada aplikasi non-virtualized (konsol, Qt, dan ImGUI), proses analisis dimulai d
 
 Sebagai contoh, pada aplikasi \textit{app\_imgui}, analisis \f{disassembly} menggunakan Ghidra mengungkapkan potongan kode berikut:
 
-\begin{minted}{asm}
-1400032cc 48 8d 15 ... LEA            RDX,[DAT_14011054c]        = 73h  s
-1400031d3 48 89 d9     MOV            RCX,RBX
-1400031d6 e8 ...       CALL           VCRUNTIME140.DLL::memcmp
-1400031db 49 83 fe 04  CMP            R14,0x4
-1400031df 74 45        JNZ            LAB_140003226
-1400031e1 85 c0        TEST           EAX,EAX
-1400031e3 74 41        JNZ            LAB_140003226
+\begin{listing}[H]
+    \begin{minted}{asm}
+; (Kode memuat input password ke register, misal RDI) ...
 
-140003201 48 8d 15 ... LEA            RDX,[s_rahman_140110551]   = "rahman"
-140003208 48 89 f9     MOV            RCX,RDI
-14000320b e8 ...       CALL           VCRUNTIME140.DLL::memcmp
-140003210 48 83 fb 06  CMP            RBX,0x6
-140003214 74 10        JNZ            LAB_140003226
-140003216 85 c0        TEST           EAX,EAX
-140003218 74 0c        JNZ            LAB_140003226
+; (Kode memuat password hardcoded "rahman", misal ke alamat yg ditunjuk RDX)
 
-LAB_140003226:
-140003226 48 8b 0d ... MOV            RCX,qword ptr [DAT_140162878]
-14000322d e8 ...       CALL           FUN_140100180
-140003232 48 8d 15 ... LEA            RDX,[u_Authentication_Failed_1401104da] = u"Authentication Failed"
-140003239 4c 8d 05 ... LEA            R8,[u_Login_140110506]      = u"Login"
-140003240 48 89 c1     MOV            RCX,RAX
-140003243 41 b9 10 00 00 00 MOV            R9D,0x10
-140003249 ff 15 ...    CALL           qword ptr [->USER32.DLL::MessageBoxW]
+LEA            RDX,[s_rahman_140110551]   = "rahman"
+MOV            RCX,RDI
+CALL           VCRUNTIME140.DLL::memcmp ; Bandingkan input & hardcoded pwd
+CMP            RBX,0x6
+TEST           EAX,EAX                  ; Cek hasil memcmp (EAX=0 jika sama)
+JNZ            LAB_140003226            ; Lompat ke blok gagal jika EAX != 0
+
+; (Blok kode jika autentikasi berhasil) 
+
+LAB_140003226:  ; Label untuk blok gagal
+LEA            RDX,[u_Authentication_Failed_1401104da] ; Load string "Auth Failed"
+CALL           qword ptr [->USER32.DLL::MessageBoxW] ; Tampilkan pesan gagal
+
 \end{minted}
+\caption{Snippet Assembly: Perbandingan Password dan Lompatan Kondisional (Non-Virtualized)}
+\label{lst:asm_static_nonvirt_snippet}
+\end{listing}
+
+---
+New
+
+Dalam konteks kode di atas, pemanggilan \code{memcmp} (di \texttt{14000320b}) membandingkan password yang dimasukkan pengguna dengan nilai \textit{hardcoded}. Hasilnya diperiksa oleh \code{TEST EAX,EAX} (\texttt{140003216}). Jika password tidak sama, \code{EAX} tidak akan nol, dan instruksi \code{JNZ} (\texttt{140003218}, Jump if Not Zero) akan mengalihkan eksekusi ke \code{LAB\_140003226}, di mana pesan "Authentication Failed" ditampilkan. Untuk memvalidasi potensi celah keamanan, instruksi \code{JNZ} ini dapat diubah (\f{patched}) menjadi \code{JZ} (Jump if Zero) atau \code{NOP} (No Operation) untuk melewati pemeriksaan. Konteks assembly yang lebih lengkap dapat dilihat pada).
+---
 
 Dalam konteks kode di atas, kita dapat melihat bahwa program memuat string "rahman" (pada alamat `140003201`) dan kemungkinan string lain (pada alamat `1400032cc`) ke dalam register. Kemudian, fungsi `memcmp` dipanggil, yang umumnya digunakan untuk membandingkan blok memori. Setelah pemanggilan `memcmp`, terdapat operasi `TEST EAX,EAX` yang diikuti oleh instruksi `JNZ LAB\_140003226`. Instruksi `JNZ` (Jump if Not Zero) akan melompat ke label `LAB\_140003226` jika hasil dari `memcmp` tidak nol, yang dalam konteks perbandingan string sering kali menandakan bahwa string yang dibandingkan tidak sama. Pada label `LAB\_140003226`, kita melihat string "Authentication Failed" dimuat dan ditampilkan melalui fungsi `MessageBoxW`.
 
@@ -51,34 +54,30 @@ Untuk mengatasi risiko \f{hard-coded} username dan password, mekanisme autentika
 
 Meskipun kredensial tidak lagi \f{hard-coded}, analisis statis tetap relevan untuk memahami bagaimana aplikasi klien berinteraksi dengan server. Sebagai contoh, pada aplikasi \textit{console\_cloud}, analisis \f{disassembly} menggunakan Ghidra pada fungsi yang menangani autentikasi menunjukkan potongan kode berikut:
 
-\begin{minted}[linenos=false]{asm}
-LAB_140001754                                   XREF[1]:      140001752(j)
-         140001754 8a 45 bf                    MOV            AL,byte ptr [RBP + local_69]
-         140001757 a8 01                      TEST           AL,0x1
-         140001759 75 02                      JNZ            LAB_14000175d
-         14000175b eb 31                      JMP            LAB_14000178e
+\begin{listing}[H]
+    \begin{minted}[linenos=false]{asm}
+; ... (Kode setelah fungsi send_login_request kembali, hasil mungkin di AL) ...
+MOV      AL, byte ptr [RBP + local_69] ; Ambil hasil boolean?
+TEST     AL, 0x1                       ; Cek bit 0 dari AL
+JNZ      LAB_14000175d                 ; Lompat jika hasil != 0 (Sukses?)
+JMP      LAB_14000178e                 ; Lompat jika hasil == 0 (Gagal?)
 
+LAB_14000175d:  ; Blok kode jika sukses
+; ... (Kode menampilkan "Authorized!") ...
+jmp      LAB_END_AUTH_CHECK                       ; Lompat ke akhir
 
-                                   LAB_14000175d                                   XREF[1]:      140001759(j)
-         14000175d 48 8b 0d                   MOV            RCX,qword ptr [->MSVCP140D.DLL::std::cout]           = 0003ec5e
-                                       44 cd 03 00
-         140001764 48 8d 15                   LEA            RDX,[s_Authorized!_140037270]                         = "Authorized!"
-                                       05 5b 03 00
-         14000176b e8 d0 0c 00 00              CALL           FUN_140002440                                         longlong * FUN_140002440(longlon
-         140001770 48 89 45 b0                MOV            qword ptr [RBP + local_78],RAX
-         140001774 eb 00                      JMP            LAB_140001776
+LAB_14000178e:  ; Blok kode jika gagal
+; ... (Kode menampilkan "Not authorized") ...
 
-
-
-                                   LAB_14000178e                                   XREF[1]:      14000175b(j)
-         14000178e 48 8b 0d                   MOV            RCX,qword ptr [->MSVCP140D.DLL::std::cout]           = 0003ec5e
-                                       13 cd 03 00
-         140001795 48 8d 15                   LEA            RDX,[s_Not_authorized_14003727c]                     = "Not authorized"
-                                       e0 5a 03 00
-         14000179c e8 9f 0c 00 00              CALL           FUN_140002440                                         longlong * FUN_140002440(longlon
-         1400017a1 48 89 45 a8                MOV            qword ptr [RBP + local_80],RAX
-         1400017a5 eb 00                      JMP            LAB_1400017a7
 \end{minted}
+\caption{Snippet Assembly: Pemeriksaan Hasil Autentikasi Cloud (Non-Virtualized)}
+\label{lst:asm_static_cloud_snippet}
+\end{listing}
+
+---
+New
+Pada kode di atas, instruksi \code{TEST AL, 0x1} (\texttt{140001757}) kemungkinan memeriksa flag atau nilai boolean yang dikembalikan oleh fungsi autentikasi cloud (misalnya, 1 untuk sukses, 0 untuk gagal). Instruksi \code{JNZ LAB\_14000175d} (\texttt{140001759}) kemudian mengarahkan alur eksekusi ke blok "Authorized!" jika hasil tes tidak nol (sukses), dan sebaliknya akan jatuh ke \code{JMP LAB\_14000178e} atau langsung mengeksekusi blok "Not authorized". Sama seperti kasus sebelumnya, instruksi \code{JNZ} ini dapat dimanipulasi (misal, diubah menjadi \code{JMP LAB\_14000175d} atau \code{NOP}) untuk memaksa alur ke blok sukses, meskipun server menolak autentikasi. Konteks assembly yang lebih lengkap dapat dilihat pada Lampiran \ref{app:kode_asm} (Kode \ref{lst:asm_static_cloud_full}).
+---
 
 Pada kode di atas, label `LAB\_140001754` kemungkinan merupakan awal dari blok logika autentikasi. Instruksi `TEST AL, 0x1` pada alamat `140001757` memeriksa suatu kondisi (kemungkinan hasil dari komunikasi dengan server). Jika kondisi ini tidak terpenuhi (hasil test tidak nol), program akan melompat ke `LAB\_14000175d` dan mencetak "Authorized!". Jika kondisi terpenuhi (hasil test adalah nol), program akan melompat ke `LAB\_14000178e` dan mencetak "Not authorized".
 
@@ -112,37 +111,36 @@ Untuk aplikasi non-virtualized, analisis dinamis dilakukan dengan mencari string
 
 Pada aplikasi \textit{app\_qt}, saat dijalankan di bawah x64dbg dan diberikan \f{input} yang salah, \f{debugger} mengarahkan eksekusi ke blok kode berikut:
 
-\begin{minted}[linenos=false]{asm}
-LEA rax,qword ptr ds:[<"seno">]
-mov qword ptr ss:[rbp+48],rax
-lea rcx,qword ptr ss:[rbp+A8]
-lea rdx,qword ptr ss:[rbp+48]
-call <app_qt.bool __cdecl operator==(class QString const &, char const *const &)>
-mov cl,al
-xor eax,eax
-test cl,1
-mov byte ptr ss:[rbp-41],al
-jne app_qt.7FF7B0724899
-jmp app_qt.7FF7B07248B7
+\begin{listing}[H]
+    \begin{minted}[linenos=false]{asm}
+; ... (Kode membandingkan input password dengan "rahman" via operator==) ...
+; Hasil perbandingan (boolean) mungkin disimpan di AL atau flag register
 
-LEA rax,qword ptr ds:[<"rahman">]
-mov qword ptr ss:[rbp+40],rax
-lea rcx,qword ptr ss:[rbp+90]
-lea rdx,qword ptr ss:[rbp+40]
-call <app_qt.bool __cdecl operator==(class QString const &, char const *const &)>
-mov byte ptr ss:[rbp-41],al
-mov al,byte ptr ss:[rbp-41]
-test al,1
-jne app_qt.7FF7B07248C3
-jmp app_qt.7FF7B0724988
+mov al, byte ptr ss:[rbp-41]  ; Ambil hasil perbandingan
+test al, 1                    ; Cek apakah hasilnya true (misal: 1)
 
-# app_qt.7FF7B0724988
-lea rcx,qword ptr ss:[rbp+4]
-mov edx,400
-call <app_qt.public: __cdecl QFlags<enum QMessageBox::StandardButton>::QFlags<enum QMessageBox::StandardButton>(enum QMessageBox::StandardButton)>
-lea rdx,qword ptr ds:[<"Authentication Failed">]
+; Perhatikan bahwa logika JNE/JE mungkin berbeda tergantung optimasi compiler
+; Asumsi: JNE melompat jika perbandingan GAGAL (tidak sama)
+
+jne SHORT failure_label       ; Lompat ke blok GAGAL jika password TIDAK sama
+; ... (Kode jika password BENAR) ...
+
+jmp END_OF_AUTH
+
+failure_label:
+; ... (Kode setup untuk menampilkan "Authentication Failed" via QMessageBox) ...
+
+lea rdx, qword ptr ds:[<"Authentication Failed">]
+; ... (call ke fungsi QMessageBox) ...
+
 \end{minted}
-
+\caption{Snippet Assembly: Lompatan Kondisional Setelah Perbandingan Password (Dinamis, Non-Virtualized)}
+\label{lst:asm_dynamic_nonvirt_snippet}
+\end{listing}
+---
+New
+Instruksi \code{test al, 1} memeriksa hasil perbandingan password. Jika password salah (misalnya, \code{al} adalah 0), instruksi \code{jne failure\_label} (Jump if Not Equal/Zero) akan dieksekusi, mengarahkan program ke blok yang menampilkan "Authentication Failed". Dalam analisis dinamis, \textit{debugger} seperti x64dbg memungkinkan \textit{patching on-the-fly}. Dengan mengubah instruksi \code{jne} menjadi \code{je} (Jump if Equal/Zero) atau \code{jmp} (lompatan tanpa syarat ke blok sukses), pemeriksaan password dapat dilewati secara efektif saat \textit{runtime}. Konteks assembly yang lebih lengkap dari sesi debugging ini dapat dilihat di Lampiran \ref{app:kode_asm} (Kode \ref{lst:asm_dynamic_nonvirt_full}).
+---
 Kode di atas menunjukkan bahwa program membandingkan \f{input} dengan string `"seno"` dan `"rahman"` menggunakan operator `==`. Instruksi `jne` (Jump if Not Equal) pada alamat `app\_qt.7FF7B0724899` dan `app\_qt.7FF7B07248C3` menentukan alur eksekusi berdasarkan hasil perbandingan. Jika \f{input} tidak sesuai dengan username atau password yang diharapkan, program akan melompat ke alamat yang pada akhirnya menampilkan pesan "Authentication Failed".
 
 Sama seperti pada analisis statis, celah keamanan dapat dieksploitasi dengan memodifikasi alur eksekusi. Dalam x64dbg, instruksi `jne` dapat diubah menjadi `je` (Jump if Equal) secara langsung pada saat \f{runtime}. Dengan melakukan perubahan ini, program akan melompat ke bagian yang seharusnya dijalankan hanya jika autentikasi berhasil, meskipun \f{input} yang diberikan salah. Operasi negasi ini secara efektif melewati pemeriksaan autentikasi.
@@ -155,32 +153,43 @@ Selain itu, x64dbg juga menampilkan banyak operasi dengan kategori ??? yang tida
 
 Lebih lanjut, melacak alur eksekusi saat memasukkan username dan password menjadi sangat sulit. Berikut adalah perbandingan \f{section} kode saat menerima \f{input} pada aplikasi konsol non-virtualized dan virtualized:
 
-\bo{Non-Virtualized:}
-\begin{minted}[linenos=false]{asm}
-call <console.public: __cdecl std::basic_string<char, struct std::char_traits<char>, class std::allocator<char>>::basic_string<char, struct std::char_traits<char>, class std::allocator<char>>(void)>
-mov rcx,qword ptr ds:[<class std::basic_ostream<char, struct std::char_traits<char>> std::cout>]
-lea rdx,qword ptr ds:[<"Enter username: ">]
-call <console.class std::basic_ostream<char, struct std::char_traits<char>> & __cdecl std::operator<<<struct std::char_traits<char>>(class std::basic_ostream<char, struct std::char_traits<char>> &, char const *)>
-jmp console.7FF68CD5104D
-mov rcx,qword ptr ds:[<class std::basic_istream<char, struct std::char_traits<char>> std::cin>]
-lea rdx,qword ptr ss:[rbp-28]
-call <console.class std::basic_istream<char, struct std::char_traits<char>> & __cdecl std::operator>><char, struct std::char_traits<char>, class std::allocator<char>>(class std::basic_istream<char, struct std::char_traits<char>> &, class std::basic_string<char, struct >
-jmp console.7FF68CD5105F
-mov rcx,qword ptr ds:[<class std::basic_ostream<char, struct std::char_traits<char>> std::cout>]
-lea rdx,qword ptr ds:[<"Enter password: ">]
-call <console.class std::basic_ostream<char, struct std::char_traits<char>> & __cdecl std::operator<<<struct std::char_traits<char>>(class std::basic_ostream<char, struct std::char_traits<char>> &, char const *)>
+\bo{Non-Virtualized:} Menampilkan panggilan standar ke fungsi I/O C++.
+\begin{listing}[H]
+    \begin{minted}[linenos=false]{asm}
+; ...
+mov rcx,qword ptr ds:[<...std::cout>]      ; Pointer ke std::cout
+lea rdx,qword ptr ds:[<"Enter username: ">] ; Pointer ke string prompt
+call <console. ... std::operator<< ...>    ; Panggil fungsi print (std::cout << prompt)
+; ...
+mov rcx,qword ptr ds:[<...std::cin>]       ; Pointer ke std::cin
+lea rdx,qword ptr ss:[rbp-28]              ; Pointer ke buffer input string
+call <console. ... std::operator>> ...>    ; Panggil fungsi read (std::cin >> buffer)
+; ...
 \end{minted}
+\caption{Snippet Assembly: Operasi Input/Output Standar (Non-Virtualized)}
+\label{lst:asm_dynamic_io_nonvirt_snippet}
+\end{listing}
 
-\bo{Virtualized:}
-\begin{minted}[linenos=false]{asm}
-00007FF74CD48244 | 3F                      | ???
-00007FF74CD48245 | E9 1EEF0400             | jmp console_vm.vxm.7FF74CD97168
-00007FF74CD4824A | DBDD                    | fcmovnu st(0),st(5)
-00007FF74CD4824C | 3026                    | xor byte ptr ds:[rsi],ah
-00007FF74CD4824E | 8F                      | ???
-00007FF74CD4824F | EB 03                   | jmp console_vm.vxm.7FF74CD48254
-00007FF74CD48251 | DDD8                    | fstp st(0)
+\bo{Virtualized:} Menampilkan instruksi yang diobfuskasi dan sulit dikenali oleh debugger.
+\begin{listing}[H]
+    \begin{minted}[linenos=false]{asm}
+??? ; Operasi tidak dikenal
+jmp console_vm.vxm.7FF74CD97168 ; Lompatan internal VM?
+fcmovnu st(0),st(5) ; Operasi FPU tidak relevan?
+xor byte ptr ds:[rsi],ah ; Operasi XOR
+??? ; Operasi tidak dikenal
+jmp console_vm.vxm.7FF74CD48254 ; Lompatan pendek
+fstp st(0) ; Operasi FPU
 \end{minted}
+\caption{Snippet Assembly: Instruksi di Lokasi Input (Virtualized)}
+\label{lst:asm_dynamic_io_virt_snippet}
+\end{listing}
+
+---
+New
+
+Perbandingan ini menunjukkan kontras yang jelas. Pada kode non-virtualized, panggilan ke fungsi I/O standar seperti \code{std::cout} dan \code{std::cin} mudah dikenali. Sebaliknya, pada kode yang telah divirtualisasi, instruksi assembly menjadi tidak jelas (\code{???}), diselingi dengan lompatan (\code{jmp}) dan operasi lain yang tampaknya tidak berhubungan langsung dengan I/O (\code{fcmovnu}, \code{xor}, \code{fstp}). Hal ini menyulitkan pelacakan alur eksekusi saat input dimasukkan. Lebih lanjut, observasi menunjukkan register RIP (\f{Instruction Pointer}) seringkali tampak "\f{stuck}" pada alamat tertentu dalam \textit{debugger}, mengindikasikan eksekusi kemungkinan terjadi di dalam \textit{interpreter} mesin virtual VxLang. Konteks assembly yang lebih lengkap untuk perbandingan ini dapat dilihat di Lampiran \ref{app:kode_asm} (Kode \ref{lst:asm_dynamic_io_comparison_full}).
+---
 
 Pada kode yang telah divirtualisasi, terlihat banyak operasi yang dikategorikan sebagai ???. Lebih lanjut, dalam beberapa kasus, register RIP (\f{Instruction Pointer}) tampak "\f{stuck}" pada alamat tertentu di dalam \f{debugger} saat mencoba memasukkan username dan password. Hal ini sangat menyulitkan untuk melacak alur eksekusi dan memahami apa yang sebenarnya terjadi di balik layar. Perilaku ini mengindikasikan bahwa VxLang menggunakan teknik virtualisasi yang kompleks, yang secara signifikan menghambat analisis dinamis menggunakan metode tradisional seperti mencari string dan memantau alur eksekusi secara langsung.
 

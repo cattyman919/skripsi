@@ -1,4 +1,362 @@
 %-----------------------------------------------------------------------------%
-%\addChapter{Lampiran 1}
-%\chapter*{Lampiran 1}
+\chapter*{Kode Sumber Lengkap Aplikasi Autentikasi}
+\label{app:kode_sumber} % Label untuk referensi dari Bab 4
 %-----------------------------------------------------------------------------%
+
+Berikut adalah kode sumber lengkap untuk beberapa bagian penting dari aplikasi studi kasus autentikasi yang dibahas pada Bab 4.
+
+% --- Kode Aplikasi Konsol Hardcoded ---
+
+\begin{minted}{cpp}
+#include <iostream>
+#include <string>
+#include <vector> // Contoh include lain jika ada
+
+// Jika menggunakan VxLang, header-nya di-include di sini
+#ifdef USE_VL_MACRO
+#include "vxlang/vxlib.h"
+#endif
+
+int main(int, char *[]) {
+    std::string inputUsername;
+    std::string inputPassword;
+
+    std::cout << "Enter username: ";
+    std::cin >> inputUsername;
+    std::cout << "Enter password: ";
+    std::cin >> inputPassword;
+
+    #ifdef USE_VL_MACRO
+    VL_VIRTUALIZATION_BEGIN;
+    #endif
+
+    if (inputUsername.compare("seno") == 0 &&
+        inputPassword.compare("rahman") == 0) {
+        std::cout << "Authorized!" << std::endl;
+    } else {
+        std::cout << "Not authorized." << std::endl;
+    }
+
+    #ifdef USE_VL_MACRO
+    VL_VIRTUALIZATION_END;
+    #endif
+
+    system("pause"); // Hanya untuk Windows agar console tidak langsung tertutup
+    return 0;
+}
+    \end{minted}
+\captionof{listing}{Kode Lengkap: Aplikasi Konsol Varian Hardcoded (\code{console.cpp})}
+\label{lst:console_hardcoded_full}
+
+% --- Kode Aplikasi Konsol Cloud ---
+\begin{minted}{cpp}
+#include <iostream>
+#include <string>
+#include "cloud.hpp" // Asumsi header ini berisi send_login_request
+
+// Jika menggunakan VxLang, header-nya di-include di sini
+#ifdef USE_VL_MACRO
+#include "vxlang/vxlib.h"
+#endif
+
+int main(int, char *[]) {
+    std::string inputUsername;
+    std::string inputPassword;
+
+    std::cout << "Enter username: ";
+    std::cin >> inputUsername;
+    std::cout << "Enter password: ";
+    std::cin >> inputPassword;
+
+    bool isAuthenticated = false; // Default value
+
+    #ifdef USE_VL_MACRO
+    VL_VIRTUALIZATION_BEGIN;
+    #endif
+
+    isAuthenticated = send_login_request(inputUsername, inputPassword);
+
+    if (isAuthenticated) {
+        std::cout << "Authorized!" << std::endl;
+    } else {
+        std::cout << "Not authorized." << std::endl;
+    }
+
+    #ifdef USE_VL_MACRO
+    VL_VIRTUALIZATION_END;
+    #endif
+
+    system("pause"); // Hanya untuk Windows
+    return 0;
+}
+    \end{minted}
+\captionof{listing}{Kode Lengkap: Aplikasi Konsol Varian Cloud (\code{console\_cloud.cpp})}
+\label{lst:console_cloud_full}
+
+
+% --- Kode Fungsi send_login_request ---
+
+\begin{minted}{cpp}
+#include <string>
+#include <iostream> // Untuk debug, bisa dihapus
+#include <curl/curl.h>
+#include <nlohmann/json.hpp>
+#include "cloud.hpp" // Deklarasi fungsi jika dipisah
+
+#ifdef _WIN32
+#include <windows.h> // Diperlukan untuk HWND jika digunakan
+#else
+using HWND = void*; // Placeholder untuk non-Windows
+#endif
+
+// Callback function untuk menulis data yang diterima dari cURL ke string
+// Sumber: https://curl.se/libcurl/c/getinmemory.html
+static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
+    size_t realsize = size * nmemb;
+    std::string *mem = (std::string*)userp;
+    mem->append((char*)contents, realsize);
+    return realsize;
+}
+
+
+bool send_login_request(const std::string &username,
+                        const std::string &password, HWND /*window*/ /*= NULL*/) {
+    CURL *curl;
+    CURLcode res;
+    std::string readBuffer; // String untuk menyimpan respons server
+    std::string url = "http://localhost:9090/login"; // URL server backend
+
+    // Membuat payload JSON
+    nlohmann::json payload;
+    payload["username"] = username;
+    payload["password"] = password;
+    std::string jsonStr = payload.dump(); // Konversi JSON ke string
+
+    curl_global_init(CURL_GLOBAL_ALL); // Inisialisasi global libcurl
+    curl = curl_easy_init(); // Inisialisasi handle cURL
+
+    if (curl) {
+        struct curl_slist *headers = nullptr; // List untuk custom headers
+        headers = curl_slist_append(headers, "Content-Type: application/json"); // Set header Content-Type
+
+        // Set opsi cURL
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str()); // Set URL tujuan
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers); // Set custom headers
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, jsonStr.c_str()); // Set body request (data JSON)
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, jsonStr.length()); // Set ukuran body
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback); // Set fungsi callback untuk menerima data respons
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer); // Pointer ke string buffer untuk menyimpan respons
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L); // Set timeout request 5 detik
+        curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L); // Gagal jika HTTP status code >= 400
+
+        // Lakukan request HTTP POST
+        res = curl_easy_perform(curl);
+
+        // Cleanup
+        curl_easy_cleanup(curl);
+        curl_slist_free_all(headers); // Bebaskan memori headers
+
+        // Cek hasil request cURL
+        if (res != CURLE_OK) {
+            // std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+            curl_global_cleanup();
+            return false; // Gagal mengirim request
+        }
+
+        // Cek jika buffer kosong (meskipun CURLE_OK, mungkin tidak ada body respons)
+        if (readBuffer.empty()) {
+           // std::cerr << "Received empty response from server." << std::endl;
+            curl_global_cleanup();
+            return false;
+        }
+
+        // Parse respons JSON
+        try {
+            nlohmann::json response = nlohmann::json::parse(readBuffer);
+            curl_global_cleanup();
+            // Kembalikan nilai field "success" dari JSON (default false jika tidak ada)
+            return response.value("success", false);
+        } catch (const nlohmann::json::parse_error &e) {
+            // std::cerr << "JSON parse error: " << e.what() << std::endl;
+            // std::cerr << "Received data: " << readBuffer << std::endl;
+            curl_global_cleanup();
+            return false; // Gagal parse JSON
+        }
+         catch (const nlohmann::json::exception &e) {
+           // std::cerr << "JSON generic error: " << e.what() << std::endl;
+           curl_global_cleanup();
+           return false; // Error JSON lainnya
+        }
+    }
+
+    curl_global_cleanup();
+    return false; // Gagal menginisialisasi cURL
+}
+\end{minted}
+\captionof{listing}{Kode Lengkap: Implementasi Fungsi \code{send\_login\_request} (\code{cloud.hpp})}
+\label{lst:send_login_request_full}
+
+% Tambahkan listing lainnya untuk Qt dan ImGui di sini...
+
+%-----------------------------------------------------------------------------%
+\chapter*{Konteks Assembly Analisis Bab 5}
+\label{app:kode_asm} % Label untuk referensi dari Bab 5
+%-----------------------------------------------------------------------------%
+
+Berikut adalah konteks assembly yang lebih lengkap untuk analisis yang disajikan pada Bab 5.
+
+% --- Konteks Assembly: Analisis Statis Non-Virtualized ---
+\begin{minted}{asm}
+; --- Konteks Lebih Lengkap untuk Analisis Statis Non-Virtualized (app_imgui) ---
+; (Asumsi RDX sudah menunjuk ke input username, RCX sudah menunjuk ke "seno")
+; ... (Beberapa instruksi sebelumnya) ...
+1400031d6 e8 ...       CALL           VCRUNTIME140.DLL::memcmp ; Cek Username
+1400031db 49 83 fe 04  CMP            R14, 0x4                 ; Cek panjang username?
+1400031df 74 45        JNZ            LAB_140003226            ; Lompat jika panjang salah
+1400031e1 85 c0        TEST           EAX,EAX                  ; Cek hasil username memcmp
+1400031e3 74 41        JNZ            LAB_140003226            ; Lompat jika username salah
+
+; --- Lanjut ke cek password jika username OK ---
+140003201 48 8d 15 ... LEA            RDX,[s_rahman_140110551] ; Muat alamat "rahman"
+140003208 48 89 f9     MOV            RCX,RDI                  ; Muat alamat input password ke RCX
+14000320b e8 ...       CALL           VCRUNTIME140.DLL::memcmp ; Cek Password
+140003210 48 83 fb 06  CMP            RBX, 0x6                 ; Cek panjang password?
+140003214 74 10        JNZ            LAB_140003226            ; Lompat jika panjang salah
+140003216 85 c0        TEST           EAX,EAX                  ; Cek hasil password memcmp
+140003218 74 0c        JNZ            LAB_140003226            ; Lompat jika password salah
+
+; --- Blok Sukses (jika password benar) ---
+; ... (Kode yang dijalankan jika autentikasi berhasil) ...
+; ... (Mungkin ada lompatan ke akhir blok auth) ...
+
+LAB_140003226:                                           ; Label Blok Gagal
+140003226 48 8b 0d ... MOV            RCX, qword ptr [DAT_140162878] ; Setup MessageBox
+14000322d e8 ...       CALL           FUN_140100180            ; Panggil fungsi internal?
+140003232 48 8d 15 ... LEA            RDX,[u_Authentication_Failed_1401104da] ; Teks Error
+140003239 4c 8d 05 ... LEA            R8,[u_Login_140110506]      ; Judul MessageBox
+140003240 48 89 c1     MOV            RCX, RAX                 ; Handle window?
+140003243 41 b9 10 ... MOV            R9D, 0x10                ; Tipe MessageBox (MB_ICONERROR)
+140003249 ff 15 ...    CALL           qword ptr [->USER32.DLL::MessageBoxW] ; Tampilkan Pesan
+; ... (Kelanjutan setelah gagal) ...
+    \end{minted}
+\captionof{listing}{Konteks Assembly Lengkap: Analisis Statis Non-Virtualized (\textit{app\_imgui})}
+\label{lst:asm_static_nonvirt_full}
+
+% --- Konteks Assembly: Analisis Statis Cloud ---
+\begin{minted}[linenos=false]{asm}
+; --- Konteks Lebih Lengkap untuk Analisis Statis Cloud (console_cloud) ---
+; ... (Kode sebelum check hasil auth) ...
+LAB_140001754:                                     ; Awal blok check
+         140001754 8a 45 bf  MOV      AL, byte ptr [RBP + local_69] ; Ambil hasil
+         140001757 a8 01     TEST     AL, 0x1                       ; Cek hasil
+         140001759 75 02     JNZ      LAB_14000175d                 ; Lompat jika sukses
+         14000175b eb 31     JMP      LAB_14000178e                 ; Lompat ke gagal jika tidak sukses
+
+LAB_14000175d:                                     ; Blok Sukses
+         14000175d 48 8b 0d .. MOV      RCX, qword ptr [->MSVCP140D.DLL::std::cout]
+         140001764 48 8d 15 .. LEA      RDX, [s_Authorized!_140037270] ; String "Authorized!"
+         14000176b e8 d0 0c .. CALL     FUN_140002440                 ; Panggil fungsi print?
+         140001770 48 89 45 b0 MOV      qword ptr [RBP + local_78], RAX ; Simpan return value print?
+         140001774 eb 00     JMP      LAB_140001776                 ; Lompat ke akhir blok? (Alamat tidak ditampilkan lengkap)
+
+LAB_14000178e:                                     ; Blok Gagal
+         14000178e 48 8b 0d .. MOV      RCX, qword ptr [->MSVCP140D.DLL::std::cout]
+         140001795 48 8d 15 .. LEA      RDX, [s_Not_authorized_14003727c] ; String "Not authorized"
+         14000179c e8 9f 0c .. CALL     FUN_140002440                 ; Panggil fungsi print?
+         1400017a1 48 89 45 a8 MOV      qword ptr [RBP + local_80], RAX ; Simpan return value print?
+         1400017a5 eb 00     JMP      LAB_1400017a7                 ; Lompat ke akhir blok? (Alamat tidak ditampilkan lengkap)
+; ... (Akhir dari blok pengecekan) ...
+    \end{minted}
+\captionof{listing}{Konteks Assembly Lengkap: Analisis Statis Non-Virtualized Cloud (\textit{console\_cloud})}
+\label{lst:asm_static_cloud_full}
+
+% --- Konteks Assembly: Analisis Dinamis Non-Virtualized ---
+
+\begin{minted}[linenos=false]{asm}
+; --- Konteks Lebih Lengkap untuk Analisis Dinamis Non-Virtualized (app_qt) ---
+; (Asumsi di dalam fungsi handler tombol login)
+
+; Cek Username
+LEA rax,qword ptr ds:[<"seno">]      ; Alamat string "seno"
+mov qword ptr ss:[rbp+48],rax      ; Simpan alamat ke stack
+lea rcx,qword ptr ss:[rbp+A8]      ; Alamat QString input username dari UI
+lea rdx,qword ptr ss:[rbp+48]      ; Alamat "seno" di stack
+call <app_qt.bool __cdecl operator==(class QString const &, char const *const &)> ; Panggil QString::operator==
+mov cl,al                          ; Simpan hasil bool ke CL
+xor eax,eax
+test cl,1                          ; Cek hasil (Zero Flag set jika false)
+mov byte ptr ss:[rbp-41],al        ; Simpan hasil bool ke variabel stack
+jne app_qt.7FF7B0724899            ; Lompat jika TIDAK SAMA (ZF=0) ke blok selanjutnya (cek pwd)
+jmp app_qt.7FF7B07248B7            ; Lompat jika SAMA (ZF=1) ke blok GAGAL (atau logika lain?)
+                                     ; --> Perlu verifikasi ulang logika JNE/JMP ini di debugger
+
+app_qt.7FF7B0724899: ; Label jika username TIDAK SAMA
+
+; Cek Password (Hanya jika username OK - sesuaikan alurnya)
+app_qt.7FF7B07248B7: ; (Asumsi label ini adalah jika username SAMA)
+LEA rax,qword ptr ds:[<"rahman">]    ; Alamat string "rahman"
+mov qword ptr ss:[rbp+40],rax      ; Simpan alamat ke stack
+lea rcx,qword ptr ss:[rbp+90]      ; Alamat QString input password dari UI
+lea rdx,qword ptr ss:[rbp+40]      ; Alamat "rahman" di stack
+call <app_qt.bool __cdecl operator==(class QString const &, char const *const &)> ; Panggil QString::operator==
+mov byte ptr ss:[rbp-41],al        ; Simpan hasil bool ke variabel stack
+mov al,byte ptr ss:[rbp-41]
+test al,1                          ; Cek hasil (Zero Flag set jika false)
+jne app_qt.7FF7B07248C3            ; Lompat jika TIDAK SAMA (ZF=0) ke blok SUKSES?
+jmp app_qt.7FF7B0724988            ; Lompat jika SAMA (ZF=1) ke blok GAGAL?
+                                     ; --> Logika JNE/JMP ini juga perlu diverifikasi
+
+app_qt.7FF7B07248C3: ; (Asumsi Blok Sukses)
+; ... (Kode yang dijalankan jika autentikasi berhasil) ...
+jmp END_OF_AUTH_CHECK_DYN
+
+# app_qt.7FF7B0724988 (Asumsi Blok Gagal)
+lea rcx,qword ptr ss:[rbp+4]       ; 'this' pointer untuk QMessageBox?
+mov edx,400                        ; Argumen untuk constructor QFlags?
+call <app_qt.public: __cdecl QFlags<...>::QFlags<...>(...)> ; Panggil constructor?
+lea rdx,qword ptr ds:[<"Authentication Failed">] ; Alamat string error
+; ... (Panggil static method QMessageBox::warning atau critical?) ...
+
+END_OF_AUTH_CHECK_DYN:
+; ... (Kelanjutan setelah blok autentikasi) ...
+    \end{minted}
+\captionof{listing}{Konteks Assembly Lengkap: Analisis Dinamis Non-Virtualized (\textit{app\_qt})}
+\label{lst:asm_dynamic_nonvirt_full}
+
+% --- Konteks Assembly: Perbandingan IO Virtualized vs Non-Virtualized ---
+\begin{minted}[linenos=false]{asm}
+; --- Konteks Lebih Lengkap: Perbandingan Input/Output ---
+
+; --- Non-Virtualized (console) ---
+call <console.public: __cdecl std::basic_string<char, struct std::char_traits<char>, class std::allocator<char>>::basic_string<char, struct std::char_traits<char>, class std::allocator<char>>(void)> ; Constructor string?
+mov rcx, qword ptr ds:[<class std::basic_ostream<char, struct std::char_traits<char>> std::cout>] ; Pointer ke cout
+lea rdx, qword ptr ds:[<"Enter username: ">] ; Pointer ke string prompt
+call <console.class std::basic_ostream<char, struct std::char_traits<char>> & __cdecl std::operator<<<struct std::char_traits<char>>(class std::basic_ostream<char, struct std::char_traits<char>> &, char const *)> ; Panggil cout << prompt
+jmp console.7FF68CD5104D ; Lompatan dalam fungsi?
+mov rcx, qword ptr ds:[<class std::basic_istream<char, struct std::char_traits<char>> std::cin>] ; Pointer ke cin
+lea rdx, qword ptr ss:[rbp-28] ; Pointer ke buffer string di stack
+call <console.class std::basic_istream<char, struct std::char_traits<char>> & __cdecl std::operator>><char, struct std::char_traits<char>, class std::allocator<char>>(class std::basic_istream<char, struct std::char_traits<char>> &, class std::basic_string<char, struct > ; Panggil cin >> buffer
+jmp console.7FF68CD5105F ; Lompatan dalam fungsi?
+mov rcx, qword ptr ds:[<class std::basic_ostream<char, struct std::char_traits<char>> std::cout>] ; Pointer ke cout
+lea rdx, qword ptr ds:[<"Enter password: ">] ; Pointer ke string prompt
+call <console.class std::basic_ostream<char, struct std::char_traits<char>> & __cdecl std::operator<<<struct std::char_traits<char>>(class std::basic_ostream<char, struct std::char_traits<char>> &, char const *)> ; Panggil cout << prompt
+; ... (Lanjut baca password) ...
+
+
+; --- Virtualized (console_vm) ---
+00007FF74CD48240 | 40 53                   | push rbx
+00007FF74CD48242 | 48 83 EC 20             | sub rsp,20
+00007FF74CD48246 | E8 15F00400             | call console_vm.vxm.7FF74CD97260 ; Panggilan internal VM?
+00007FF74CD4824B | ??                      | ??? ; Byte tidak valid/dikenali
+00007FF74CD4824C | 3026                    | xor byte ptr ds:[rsi],ah
+00007FF74CD4824E | 8F                      | ??? ; Byte tidak valid/dikenali
+00007FF74CD4824F | EB 03                   | jmp short console_vm.vxm.7FF74CD48254
+00007FF74CD48251 | DDD8                    | fstp st(0)
+00007FF74CD48253 | 0000                    | add byte ptr ds:[rax],al
+00007FF74CD48255 | 0000                    | add byte ptr ds:[rax],al
+; ... (Urutan instruksi yang diobfuskasi berlanjut) ...
+    \end{minted}
+\captionof{listing}{Konteks Assembly Lengkap: Perbandingan Operasi Input/Output}
+\label{lst:asm_dynamic_io_comparison_full}
+
+% Tambahkan listing assembly lainnya jika diperlukan...

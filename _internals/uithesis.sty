@@ -149,45 +149,51 @@
 % Slanted fraction symbol
 \usepackage{nicefrac}
 
-% Code listing
-\usepackage[titles]{tocloft}
-\newlistof{listing}{lol}{Daftar Kode}
-\usepackage[newfloat]{minted}
-\usepackage{caption}
-\SetupFloatingEnvironment{listing}{name=\bo{Kode}}
-\setminted{
-	style=pastie,
-	autogobble,
-	% linenos,
-	frame=lines,
-	framesep=1mm,
-	bgcolor=LightGray,
-	baselinestretch=1.2,
-	fontsize=\footnotesize,
-	breaklines,
-	breakanywhere,
-	python3,
+% --- Pengaturan untuk Code Listing (Minted) ---
+\usepackage[titles]{tocloft}           % Untuk daftar kode di Daftar Isi
+\newlistof{listing}{lol}{Daftar Kode} % Mendefinisikan environment daftar kode
+\usepackage[newfloat]{minted}          % Load minted dengan opsi newfloat
+\usepackage{caption}                   % Untuk caption environment listing (dan captionof)
+\usepackage{etoolbox}                  % Diperlukan untuk \AtBeginEnvironment
+\usepackage{xcolor}                    % <<<=== PASTIKAN xcolor dimuat (diperlukan oleh fcolorbox)
+
+% Mengatur environment 'listing' agar tampil sebagai 'Kode x.y' UNTUK DI BADAN TEKS
+\SetupFloatingEnvironment{listing}{
+    name=\bo{Kode},
+    listname={Daftar Kode}
 }
 
-\renewcommand{\theFancyVerbLine}{{\tiny{\arabic{FancyVerbLine}}}}
-
-% Set `listing` numbering to [chapter].[listing_num]
+% --- Patching minted agar bisa pecah halaman & Menghilangkan Box Merah ---
 \makeatletter
-\renewcommand*{\thelisting}{\thechapter.\arabic{listing}}
-\@addtoreset{listing}{chapter}
-\makeatother
-
-% Set listing frame
-\usepackage[framemethod=TikZ]{mdframed}
-\definecolor{code_bg}{rgb}{0.95,0.95,0.95}
-\mdfdefinestyle{code}{
-	backgroundcolor=code_bg,
-	roundcorner=2pt,
-	linewidth=0pt
+\AtBeginEnvironment{minted}{%
+  % Patch untuk page breaks (menghapus status float)
+  \let\FV@floating\@gobble
+  % Patch untuk menonaktifkan fcolorbox (menghilangkan box error merah)
+  \dontdofcolorbox
 }
-\surroundwithmdframed[style=code]{minted}
+% Definisi perintah untuk menonaktifkan fcolorbox
+\def\dontdofcolorbox{\renewcommand\fcolorbox[4][]{##4}}
+\makeatother
+% --- Akhir Patching ---
 
 
+% Pengaturan default untuk semua environment minted
+\setminted{
+    style=default,        % Anda bisa tetap pakai 'friendly' atau style lain
+    autogobble=true,
+    % linenos=true,        % Nomor baris dihilangkan
+    frame=lines,
+    framerule=0.4pt,
+    framesep=2mm,
+    baselinestretch=1.0,
+    fontsize=\small,
+    breaklines=true,       % Tetap aktifkan untuk baris panjang
+    breaksymbolleft={},
+    tabsize=4,
+    encoding=utf8
+}
+
+% Pengaturan nomor dan nama pada Daftar Kode/Gambar/Tabel
 \renewcommand{\cftlistingpresnum}{\bo{Kode}~}
 \setlength{\cftlistingnumwidth}{1in}
 
@@ -196,6 +202,11 @@
 
 \renewcommand{\cfttabpresnum}{\tablename~}
 \setlength{\cfttabnumwidth}{1in}
+% --- Akhir Pengaturan Code Listing ---
+
+%-----------------------------------------------------------------------------%
+% Konfigurasi LaTeX lainnya...
+%-----------------------------------------------------------------------------%
 
 %-----------------------------------------------------------------------------%
 % Konfigurasi
