@@ -3,6 +3,49 @@
 %-----------------------------------------------------------------------------%
 
 \section{Kesimpulan}
+%-----------------------------------------------------------------------------%
+Berdasarkan implementasi dan analisis yang telah dilakukan terhadap efektivitas \f{code virtualization} menggunakan VxLang untuk mempersulit \f{reverse engineering}, dapat ditarik kesimpulan sebagai berikut:
 
+\begin{enumerate}
+    \item \textbf{Implementasi VxLang:} Implementasi \f{code virtualization} menggunakan VxLang melibatkan penandaan bagian kode sumber yang kritikal menggunakan makro SDK (\code{VL\_VIRTUALIZATION\_BEGIN/END}), penautan dengan library VxLang, dan pemrosesan \f{executable} hasil kompilasi menggunakan \f{tool} eksternal VxLang dengan file konfigurasi JSON. Proses ini mengubah kode \textit{native} yang ditandai menjadi \f{bytecode} yang dieksekusi oleh \textit{virtual machine} (VM) internal VxLang.
+
+    \item \textbf{Efektivitas Keamanan:} \f{Code virtualization} menggunakan VxLang terbukti \textbf{efektif secara signifikan} dalam meningkatkan kesulitan \f{reverse engineering} baik secara statis maupun dinamis.
+        \begin{itemize}
+            \item Pada \textbf{analisis statis} (menggunakan Ghidra), kode yang divirtualisasi menunjukkan hilangnya \f{string-string} penting, pengurangan drastis data terdefinisi, munculnya banyak operasi \textit{assembly} yang tidak dikenali ('???'), dan abstraksi alur kontrol logika inti (seperti perbandingan dan lompatan kondisional pada fungsi autentikasi), sehingga identifikasi dan \textit{patching} langsung menjadi sangat sulit.
+            \item Pada \textbf{analisis dinamis} (menggunakan x64dbg), pelacakan alur eksekusi menjadi sangat terhambat akibat instruksi yang tidak jelas dan perilaku \textit{debugger} yang menunjukkan eksekusi kemungkinan terjadi di dalam VM VxLang (RIP tampak "\textit{stuck}"). Pencarian \textit{string} di memori saat \textit{runtime} juga seringkali gagal. Akibatnya, manipulasi \textit{runtime} untuk melewati logika (seperti autentikasi) menjadi jauh lebih kompleks dibandingkan aplikasi non-virtualized.
+        \end{itemize}
+
+    \item \textbf{Dampak Performa dan Ukuran File:} Penerapan VxLang memperkenalkan \textbf{\textit{overhead} performa yang substansial} dan \textbf{peningkatan ukuran file yang signifikan}.
+        \begin{itemize}
+            \item Waktu eksekusi untuk tugas komputasi intensif seperti algoritma QuickSort dan enkripsi/dekripsi AES-CBC-256 meningkat drastis (ratusan hingga puluhan ribu persen untuk QuickSort, dan beberapa ratus persen untuk AES dengan penurunan \textit{throughput} yang tajam).
+            \item Ukuran file \f{executable} meningkat secara signifikan, terutama pada program kecil (bisa lebih dari 10 kali lipat), kemungkinan besar karena penyertaan \textit{interpreter} VM VxLang dan \f{bytecode}.
+        \end{itemize}
+
+    \item \textbf{Trade-off Keamanan vs. Performa:} Terdapat \textit{trade-off} yang jelas antara peningkatan keamanan terhadap \f{reverse engineering} yang ditawarkan oleh VxLang dengan penurunan kinerja eksekusi dan penambahan ukuran file. VxLang memberikan lapisan proteksi yang kuat namun dengan biaya performa yang tidak dapat diabaikan.
+\end{enumerate}
+
+Secara keseluruhan, penelitian ini menunjukkan bahwa \f{code virtualization} dengan VxLang adalah teknik yang ampuh untuk melindungi perangkat lunak dari analisis dan manipulasi oleh \textit{reverse engineer}, namun pengembang perlu mempertimbangkan dampaknya terhadap performa dan ukuran aplikasi secara cermat.
+
+%-----------------------------------------------------------------------------%
 \section{Saran}
+%-----------------------------------------------------------------------------%
+Berdasarkan kesimpulan dari penelitian ini, berikut adalah beberapa saran yang dapat diberikan:
 
+\begin{enumerate}
+    \item \textbf{Bagi Pengembang Perangkat Lunak:}
+        \begin{itemize}
+            \item \textbf{Virtualisasi Selektif:} Mengingat \textit{overhead} performa yang signifikan, disarankan untuk menerapkan \textit{code virtualization} VxLang secara selektif hanya pada bagian kode yang paling kritikal dan sensitif (misalnya, mekanisme validasi lisensi, algoritma inti yang merupakan kekayaan intelektual, fungsi anti-cheat, atau bagian dari logika autentikasi yang kompleks), bukan pada keseluruhan aplikasi.
+            \item \textbf{Evaluasi Performa Mendalam:} Sebelum mengimplementasikan VxLang pada produk komersial, lakukan pengujian performa yang menyeluruh pada kasus penggunaan nyata aplikasi tersebut untuk memastikan dampaknya masih dapat diterima oleh pengguna akhir dan tidak mengganggu fungsionalitas secara signifikan.
+            \item \textbf{Kombinasi Teknik:} Pertimbangkan untuk mengkombinasikan VxLang dengan teknik \textit{obfuscation} atau proteksi lainnya (seperti anti-debugging, enkripsi data, atau \textit{code flattening} pada bagian yang tidak divirtualisasi) untuk menciptakan lapisan keamanan yang lebih mendalam (\textit{defense-in-depth}).
+        \end{itemize}
+
+    \item \textbf{Untuk Penelitian Selanjutnya:}
+        \begin{itemize}
+            \item \textbf{Analisis Keamanan Lebih Lanjut:} Melakukan analisis terhadap ketahanan VxLang menggunakan teknik \textit{reverse engineering} yang lebih canggih atau \textit{tool deobfuscation} otomatis yang mungkin dikembangkan khusus untuk menargetkan proteksi berbasis VM.
+            \item \textbf{Optimasi Performa:} Meneliti kemungkinan untuk mengurangi \textit{overhead} performa yang disebabkan oleh VxLang, misalnya dengan menganalisis dan mengoptimalkan \textit{interpreter} VM internalnya, atau mengeksplorasi arsitektur VM yang berbeda.
+            \item \textbf{Keamanan Interpreter VM:} Menganalisis potensi kerentanan pada \textit{interpreter} VM VxLang itu sendiri yang mungkin dapat dieksploitasi untuk membongkar atau memanipulasi \f{bytecode}.
+            \item \textbf{Studi Komparatif:} Membandingkan efektivitas keamanan dan \textit{overhead} performa VxLang dengan solusi \textit{code virtualization} atau \textit{obfuscation} komersial maupun \textit{open-source} lainnya (misalnya, VMProtect, Themida, LLVM Obfuscator).
+            \item \textbf{Dukungan Platform Lain:} Melakukan analisis serupa jika/ketika VxLang telah mendukung platform lain seperti Linux ELF atau arsitektur ARM, untuk melihat apakah efektivitas dan dampaknya konsisten.
+            \item \textbf{Pengaruh Konfigurasi:} Menyelidiki lebih lanjut pengaruh berbagai opsi konfigurasi yang ditawarkan oleh VxLang (jika ada, seperti tingkat virtualisasi/obfuscation yang berbeda, fitur anti-tamper) terhadap tingkat kesulitan \textit{reverse engineering} dan \textit{overhead} performa.
+        \end{itemize}
+\end{enumerate}
