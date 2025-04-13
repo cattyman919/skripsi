@@ -1,31 +1,35 @@
 # Tools
 LATEXMK = latexmk
-# Gunakan 'rm -rf' untuk Linux/macOS atau 'rd /s /q' (rmdir) untuk Windows jika perlu menghapus direktori
-# Gunakan 'rm -f' untuk Linux/macOS atau 'del /Q' untuk Windows jika perlu menghapus file
-# Kita akan utamakan menggunakan fitur cleanup dari latexmk
-RM = rd /s /q 
+# Use appropriate remove commands for your OS if needed for clean targets
+RMDIR = rd /s /q 
+RM = del /Q 
+# RMDIR = rm -rf # Linux/macOS (Example)
+# RM = rm -f  # Linux/macOS (Example)
 
 # Project-specific settings
 DOCNAME = thesis
+TEXFILE = $(DOCNAME).tex
 OUTDIR = out
+PDF = $(OUTDIR)/$(DOCNAME).pdf
+BUILD_FLAGS = -synctex=1 -pdf -shell-escape -outdir=$(OUTDIR) -file-line-error
 
 # Targets
-# Target default 'all' sekarang bergantung pada target 'pdf_only'
-all: pdf_only
+# Default target: Build the PDF incrementally
+all: $(PDF)
 
-# Target ini memastikan PDF dibuat DAN file auxiliary dibersihkan
-pdf_only: $(OUTDIR)/$(DOCNAME).pdf
-	@echo "Pembersihan file auxiliary di direktori $(OUTDIR)..."
-	$(LATEXMK) -silent -outdir=$(OUTDIR) -c
-	@echo "Proses selesai. Hanya $(OUTDIR)/$(DOCNAME).pdf yang tersisa."
-
-# Rules
-# Rule utama untuk membuat PDF. Pembersihan dipindahkan ke target 'pdf_only'.
-$(OUTDIR)/$(DOCNAME).pdf: $(DOCNAME).tex
+# Rule to build the PDF using latexmk
+# latexmk handles dependencies and multiple runs automatically
+$(PDF): $(TEXFILE) src/**/*.*  *.bib settings.tex istilah.tex
 	@echo "Memulai kompilasi $(DOCNAME).pdf ke direktori $(OUTDIR)..."
-	$(LATEXMK) -synctex=1 -pdf -shell-escape -outdir=$(OUTDIR) -file-line-error $(DOCNAME)
+	$(LATEXMK) $(BUILD_FLAGS) $(DOCNAME)
+	@echo "Kompilasi selesai: $(PDF)"
 
-# Target manual untuk membersihkan file (opsional, tapi baik untuk dimiliki)
+# Continuous Preview (Recommended for development)
+pvc:
+	@echo "Memulai mode Preview Continuously (PVC)... Tekan Ctrl+C untuk berhenti."
+	$(LATEXMK) -pvc $(BUILD_FLAGS) $(DOCNAME)
+
+# Cleanup targets
 mostlyclean:
 	@echo "Membersihkan file auxiliary (mostlyclean)..."
 	-$(LATEXMK) -silent -outdir=$(OUTDIR) -c
@@ -33,12 +37,11 @@ mostlyclean:
 clean:
 	@echo "Membersihkan semua file hasil kompilasi (clean)..."
 	-$(LATEXMK) -silent -outdir=$(OUTDIR) -C
-	-del /Q $(OUTDIR)\$(DOCNAME).pdf > nul 2>&1 
-	-if exist $(OUTDIR) $(RM) $(OUTDIR) 
+	-$(RM) $(PDF)
+	-$(RMDIR) $(OUTDIR)
 
-# Menandai target yang bukan file
-.PHONY: all pdf_only mostlyclean clean
+# Phony targets (targets that are not files)
+.PHONY: all pvc mostlyclean clean
 
-# Sertakan dependensi yang dibuat otomatis (jika ada)
-# Pastikan pathnya benar jika file .d ada di dalam OUTDIR
-# -include $(OUTDIR)/*.d
+# Suppress echoing of commands
+#.SILENT:
