@@ -33,19 +33,18 @@ CALL           qword ptr [->USER32.DLL::MessageBoxW] ; Tampilkan pesan gagal
 \label{lst:asm_static_nonvirt_snippet}
 \end{listing}
 
----
-New
+Dalam konteks kode di atas, pemanggilan \code{memcmp} (di operasi \texttt{LEA}) membandingkan password yang dimasukkan pengguna dengan nilai "rahman" yang \textit{hardcoded} pada aplikasinya. Hasilnya diperiksa oleh \code{TEST EAX,EAX} (\texttt{140003216}). Jika password tidak sama, \code{EAX} tidak akan nol, dan instruksi \code{JNZ} (\texttt{140003218}, Jump if Not Zero) akan mengalihkan eksekusi ke \code{LAB\_140003226}, di mana pesan "Authentication Failed" ditampilkan. 
 
-Dalam konteks kode di atas, pemanggilan \code{memcmp} (di \texttt{14000320b}) membandingkan password yang dimasukkan pengguna dengan nilai \textit{hardcoded}. Hasilnya diperiksa oleh \code{TEST EAX,EAX} (\texttt{140003216}). Jika password tidak sama, \code{EAX} tidak akan nol, dan instruksi \code{JNZ} (\texttt{140003218}, Jump if Not Zero) akan mengalihkan eksekusi ke \code{LAB\_140003226}, di mana pesan "Authentication Failed" ditampilkan. Untuk memvalidasi potensi celah keamanan, instruksi \code{JNZ} ini dapat diubah (\f{patched}) menjadi \code{JZ} (Jump if Zero) atau \code{NOP} (No Operation) untuk melewati pemeriksaan. Konteks assembly yang lebih lengkap dapat dilihat pada).
----
-
-Dalam konteks kode di atas, kita dapat melihat bahwa program memuat string "rahman" (pada alamat `140003201`) dan kemungkinan string lain (pada alamat `1400032cc`) ke dalam register. Kemudian, fungsi `memcmp` dipanggil, yang umumnya digunakan untuk membandingkan blok memori. Setelah pemanggilan `memcmp`, terdapat operasi `TEST EAX,EAX` yang diikuti oleh instruksi `JNZ LAB\_140003226`. Instruksi `JNZ` (Jump if Not Zero) akan melompat ke label `LAB\_140003226` jika hasil dari `memcmp` tidak nol, yang dalam konteks perbandingan string sering kali menandakan bahwa string yang dibandingkan tidak sama. Pada label `LAB\_140003226`, kita melihat string "Authentication Failed" dimuat dan ditampilkan melalui fungsi `MessageBoxW`.
-
-Berdasarkan analisis ini, dapat disimpulkan bahwa blok kode antara alamat `140003201` dan `140003218` kemungkinan besar merupakan bagian dari logika autentikasi yang membandingkan \f{input} pengguna dengan nilai yang diharapkan ("rahman" dan string lainnya). Jika perbandingan gagal (hasil `memcmp` tidak nol), program akan melompat ke `LAB\_140003226` dan menampilkan pesan "Authentication Failed".
-
-Untuk memvalidasi potensi celah keamanan, instruksi `JNZ LAB\_140003226` pada alamat `140003216` dapat diubah (\f{patched}) menjadi `JZ LAB\_140003226` atau instruksi lain yang akan selalu mengarahkan program untuk melewati blok kode yang menampilkan pesan kegagalan autentikasi. Dalam kasus ini, mengubah `JNZ` menjadi `JZ` (Jump if Zero) akan menyebabkan lompatan terjadi hanya jika hasil perbandingan adalah nol (yang menandakan autentikasi berhasil), sehingga secara efektif membalikkan logika dan memungkinkan akses tanpa otorisasi.
+Untuk memvalidasi potensi celah keamanan, instruksi `JNZ LAB\_140003226` dapat diubah (\f{patched}) menjadi `JZ LAB\_140003226` atau instruksi lain yang akan selalu mengarahkan program untuk melewati blok kode yang menampilkan pesan kegagalan autentikasi. Dalam kasus ini, mengubah `JNZ` menjadi `JZ` (Jump if Zero) akan menyebabkan lompatan terjadi hanya jika hasil perbandingan adalah nol (yang menandakan autentikasi berhasil), sehingga secara efektif membalikkan logika dan memungkinkan akses tanpa otorisasi.
 
 Lebih lanjut, analisis pada bagian \f{defined data} (.rdata) juga mengungkapkan adanya \f{string} `"seno"` dan `"rahman"`. Keberadaan \f{string-string} ini sangat mengindikasikan bahwa aplikasi menyimpan \f{username} dan \f{password} secara \f{hard-coded}. Praktik menyimpan kredensial secara langsung dalam kode program sangat berbahaya dari sudut pandang keamanan. String seperti ini mudah ditemukan melalui analisis statis, seperti yang telah dilakukan, sehingga penyerang dapat dengan mudah memperoleh informasi \f{username} dan \f{password} tanpa perlu melakukan \f{reverse engineering} yang mendalam atau menjalankan aplikasi. Dalam kasus ini, \f{username} `"seno"` dan \f{password} `"rahman"` yang ditemukan dalam \f{defined data} dapat dieksploitasi untuk melewati mekanisme autentikasi.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.45\textheight]
+	{assets/pics/hardcoded_credentials.jpeg}
+  \caption{\f{Hardcoded username \& password} pada \f{defined data}}
+\end{figure}
 
 Analisis serupa juga dilakukan pada aplikasi konsol dan Qt, di mana pola perbandingan string dan penggunaan instruksi kondisional untuk mengontrol alur program berdasarkan hasil autentikasi juga ditemukan dan dapat dimanipulasi dengan cara yang serupa untuk melewati proses autentikasi.
 
@@ -74,14 +73,9 @@ LAB_14000178e:  ; Blok kode jika gagal
 \label{lst:asm_static_cloud_snippet}
 \end{listing}
 
----
-New
-Pada kode di atas, instruksi \code{TEST AL, 0x1} (\texttt{140001757}) kemungkinan memeriksa flag atau nilai boolean yang dikembalikan oleh fungsi autentikasi cloud (misalnya, 1 untuk sukses, 0 untuk gagal). Instruksi \code{JNZ LAB\_14000175d} (\texttt{140001759}) kemudian mengarahkan alur eksekusi ke blok "Authorized!" jika hasil tes tidak nol (sukses), dan sebaliknya akan jatuh ke \code{JMP LAB\_14000178e} atau langsung mengeksekusi blok "Not authorized". Sama seperti kasus sebelumnya, instruksi \code{JNZ} ini dapat dimanipulasi (misal, diubah menjadi \code{JMP LAB\_14000175d} atau \code{NOP}) untuk memaksa alur ke blok sukses, meskipun server menolak autentikasi. Konteks assembly yang lebih lengkap dapat dilihat pada Lampiran \ref{app:kode_asm} (Kode \ref{lst:asm_static_cloud_full}).
----
+Pada kode di atas, instruksi \code{TEST AL, 0x1} kemungkinan memeriksa flag atau nilai boolean yang dikembalikan oleh fungsi autentikasi cloud (misalnya, 1 untuk sukses, 0 untuk gagal). Instruksi \code{JNZ LAB\_14000175d} kemudian mengarahkan alur eksekusi ke blok "Authorized!" jika hasil tes tidak nol (sukses), dan sebaliknya akan jatuh ke \code{JMP LAB\_14000178e} atau langsung mengeksekusi blok "Not authorized". Sama seperti kasus sebelumnya, instruksi \code{JNZ} ini dapat dimanipulasi (misal, diubah menjadi \code{JMP LAB\_14000175d} atau \code{NOP}) untuk memaksa alur ke blok sukses, meskipun server menolak autentikasi. Konteks assembly yang lebih lengkap dapat dilihat pada Lampiran \ref{app:kode_asm} (Kode \ref{lst:asm_static_cloud_full}).
 
-Pada kode di atas, label `LAB\_140001754` kemungkinan merupakan awal dari blok logika autentikasi. Instruksi `TEST AL, 0x1` pada alamat `140001757` memeriksa suatu kondisi (kemungkinan hasil dari komunikasi dengan server). Jika kondisi ini tidak terpenuhi (hasil test tidak nol), program akan melompat ke `LAB\_14000175d` dan mencetak "Authorized!". Jika kondisi terpenuhi (hasil test adalah nol), program akan melompat ke `LAB\_14000178e` dan mencetak "Not authorized".
-
-Sama seperti pada kasus \f{hard-coded} sebelumnya, instruksi `JNZ LAB\_14000175d` pada alamat `140001759` dapat diubah menjadi `JZ LAB\_14000175d`. Dengan perubahan ini, program akan selalu melompat ke bagian yang menampilkan "Authorized!" tanpa perlu melakukan verifikasi yang sebenarnya dari server. Meskipun username dan password tidak lagi disimpan di dalam aplikasi, logika di sisi klien yang menentukan apakah autentikasi berhasil atau gagal masih dapat dimanipulasi.
+Sama seperti pada kasus \f{hard-coded} sebelumnya, instruksi `JNZ LAB\_14000175d` dapat diubah menjadi `JZ LAB\_14000175d`. Dengan perubahan ini, program akan selalu melompat ke bagian yang menampilkan "Authorized!" tanpa perlu melakukan verifikasi yang sebenarnya dari server. Meskipun username dan password tidak lagi disimpan di dalam aplikasi, logika di sisi klien yang menentukan apakah autentikasi berhasil atau gagal masih dapat dimanipulasi.
 
 Ini menunjukkan bahwa meskipun memindahkan logika autentikasi ke server dan menghindari \f{hard-coded credential} meningkatkan keamanan, sisi klien aplikasi masih dapat menjadi target untuk \f{reverse engineering}. Penyerang dapat memodifikasi aplikasi klien untuk selalu menganggap autentikasi berhasil, meskipun server mungkin menolak permintaan autentikasi. Oleh karena itu, keamanan menyeluruh memerlukan perlindungan tidak hanya pada kredensial tetapi juga pada logika bisnis aplikasi di sisi klien.
 
@@ -137,11 +131,8 @@ lea rdx, qword ptr ds:[<"Authentication Failed">]
 \caption{Snippet Assembly: Lompatan Kondisional Setelah Perbandingan Password (Dinamis, Non-Virtualized)}
 \label{lst:asm_dynamic_nonvirt_snippet}
 \end{listing}
----
-New
+
 Instruksi \code{test al, 1} memeriksa hasil perbandingan password. Jika password salah (misalnya, \code{al} adalah 0), instruksi \code{jne failure\_label} (Jump if Not Equal/Zero) akan dieksekusi, mengarahkan program ke blok yang menampilkan "Authentication Failed". Dalam analisis dinamis, \textit{debugger} seperti x64dbg memungkinkan \textit{patching on-the-fly}. Dengan mengubah instruksi \code{jne} menjadi \code{je} (Jump if Equal/Zero) atau \code{jmp} (lompatan tanpa syarat ke blok sukses), pemeriksaan password dapat dilewati secara efektif saat \textit{runtime}. Konteks assembly yang lebih lengkap dari sesi debugging ini dapat dilihat di Lampiran \ref{app:kode_asm} (Kode \ref{lst:asm_dynamic_nonvirt_full}).
----
-Kode di atas menunjukkan bahwa program membandingkan \f{input} dengan string `"seno"` dan `"rahman"` menggunakan operator `==`. Instruksi `jne` (Jump if Not Equal) pada alamat `app\_qt.7FF7B0724899` dan `app\_qt.7FF7B07248C3` menentukan alur eksekusi berdasarkan hasil perbandingan. Jika \f{input} tidak sesuai dengan username atau password yang diharapkan, program akan melompat ke alamat yang pada akhirnya menampilkan pesan "Authentication Failed".
 
 Sama seperti pada analisis statis, celah keamanan dapat dieksploitasi dengan memodifikasi alur eksekusi. Dalam x64dbg, instruksi `jne` dapat diubah menjadi `je` (Jump if Equal) secara langsung pada saat \f{runtime}. Dengan melakukan perubahan ini, program akan melompat ke bagian yang seharusnya dijalankan hanya jika autentikasi berhasil, meskipun \f{input} yang diberikan salah. Operasi negasi ini secara efektif melewati pemeriksaan autentikasi.
 
@@ -152,6 +143,7 @@ Analisis dinamis pada aplikasi yang telah divirtualisasi menggunakan x64dbg menu
 Selain itu, x64dbg juga menampilkan banyak operasi dengan kategori ??? yang tidak dapat di-\f{disassemble}. Hal ini mempersulit pemahaman alur eksekusi dan fungsi-fungsi yang terlibat dalam proses autentikasi.
 
 Lebih lanjut, melacak alur eksekusi saat memasukkan username dan password menjadi sangat sulit. Berikut adalah perbandingan \f{section} kode saat menerima \f{input} pada aplikasi konsol non-virtualized dan virtualized:
+
 
 \bo{Non-Virtualized:} Menampilkan panggilan standar ke fungsi I/O C++.
 \begin{listing}[H]
@@ -185,13 +177,7 @@ fstp st(0) ; Operasi FPU
 \label{lst:asm_dynamic_io_virt_snippet}
 \end{listing}
 
----
-New
-
-Perbandingan ini menunjukkan kontras yang jelas. Pada kode non-virtualized, panggilan ke fungsi I/O standar seperti \code{std::cout} dan \code{std::cin} mudah dikenali. Sebaliknya, pada kode yang telah divirtualisasi, instruksi assembly menjadi tidak jelas (\code{???}), diselingi dengan lompatan (\code{jmp}) dan operasi lain yang tampaknya tidak berhubungan langsung dengan I/O (\code{fcmovnu}, \code{xor}, \code{fstp}). Hal ini menyulitkan pelacakan alur eksekusi saat input dimasukkan. Lebih lanjut, observasi menunjukkan register RIP (\f{Instruction Pointer}) seringkali tampak "\f{stuck}" pada alamat tertentu dalam \textit{debugger}, mengindikasikan eksekusi kemungkinan terjadi di dalam \textit{interpreter} mesin virtual VxLang. Konteks assembly yang lebih lengkap untuk perbandingan ini dapat dilihat di Lampiran \ref{app:kode_asm} (Kode \ref{lst:asm_dynamic_io_comparison_full}).
----
-
-Pada kode yang telah divirtualisasi, terlihat banyak operasi yang dikategorikan sebagai ???. Lebih lanjut, dalam beberapa kasus, register RIP (\f{Instruction Pointer}) tampak "\f{stuck}" pada alamat tertentu di dalam \f{debugger} saat mencoba memasukkan username dan password. Hal ini sangat menyulitkan untuk melacak alur eksekusi dan memahami apa yang sebenarnya terjadi di balik layar. Perilaku ini mengindikasikan bahwa VxLang menggunakan teknik virtualisasi yang kompleks, yang secara signifikan menghambat analisis dinamis menggunakan metode tradisional seperti mencari string dan memantau alur eksekusi secara langsung.
+Perbandingan ini menunjukkan kontras yang jelas. Pada kode non-virtualized, panggilan ke fungsi I/O standar seperti \code{std::cout} dan \code{std::cin} mudah dikenali. Sebaliknya, pada kode yang telah divirtualisasi, instruksi assembly menjadi tidak jelas (\code{???}), diselingi dengan lompatan (\code{jmp}) dan operasi lain yang tampaknya tidak berhubungan langsung dengan I/O (\code{fcmovnu}, \code{xor}, \code{fstp}). Hal ini menyulitkan pelacakan alur eksekusi saat input dimasukkan. Lebih lanjut, observasi menunjukkan register RIP (\f{Instruction Pointer}) seringkali tampak "\f{stuck}" pada alamat tertentu dalam \textit{debugger}, mengindikasikan eksekusi kemungkinan terjadi di dalam \textit{interpreter} mesin virtual VxLang. Hal ini sangat menyulitkan untuk melacak alur eksekusi dan memahami apa yang sebenarnya terjadi di balik layar. Perilaku ini mengindikasikan bahwa VxLang menggunakan teknik virtualisasi yang kompleks, yang secara signifikan menghambat analisis dinamis menggunakan metode tradisional seperti mencari string dan memantau alur eksekusi secara langsung. Konteks assembly yang lebih lengkap untuk perbandingan ini dapat dilihat di Lampiran \ref{app:kode_asm} (Kode \ref{lst:asm_dynamic_io_comparison_full}).
 
 \section{Analisis Performa \f{Overhead} VxLang}
 Hasil dari percobaan performa overhead dan perubahan ukuran file setelah penerapan virtualisasi kode menggunakan VxLang. Percobaan ini dilakukan pada algoritma Quick Sort dan enkripsi AES-CBC-256.

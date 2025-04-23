@@ -1,10 +1,10 @@
 # Tools
 LATEXMK = latexmk
 # Use appropriate remove commands for your OS if needed for clean targets
-RMDIR = rd /s /q 
-RM = del /Q 
-# RMDIR = rm -rf # Linux/macOS (Example)
-# RM = rm -f  # Linux/macOS (Example)
+# RMDIR = rd /s /q 
+# RM = del /Q 
+RMDIR = rm -rf 
+RM = rm -f  
 
 # Project-specific settings
 DOCNAME = thesis

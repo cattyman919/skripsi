@@ -157,17 +157,35 @@ if (inputUsername.compare("seno") == 0 &&
 			            \label{lst:console_hardcoded}
 		            \end{listing}
 		      \item \bo{Varian Cloud (\code{src/console/console\_cloud.cpp}):} Menggunakan \code{send\_login\_request} dari \code{includes/cloud.hpp} untuk mengirim kredensial via HTTP POST ke \code{http://localhost:9090/login}.
+\begin{figure}[H]
+	          \centering
+	          \includegraphics[height=0.25\textheight]{assets/pics/console_app.jpeg} % Sesuaikan height/width jika perlu
+	          \caption{Tampilan Aplikasi Autentikasi Varian Konsol saat dijalankan.}
+	          \label{fig:console_app_ui}
+	      \end{figure}
 	      \end{itemize}
 	\item \bo{Aplikasi Qt (\code{app\_qt}, \code{app\_qt\_cloud}):} Aplikasi GUI menggunakan Qt Widgets. UI dari \code{src/app\_qt/forms/todo\_auth.ui}.
 	      \begin{itemize}
 		      \item \bo{Varian Hardcoded (\code{src/app\_qt/src/todo\_auth.cpp}):} Logika serupa Kode \ref{lst:console_hardcoded} ditempatkan dalam \f{slot} \code{on\_button\_login\_clicked()}, menggunakan \code{ui->input\_User->text()} dan \code{ui->input\_Pass->text()}. Hasil via \code{QMessageBox}.
 		      \item \bo{Varian Cloud (\code{src/app\_qt/src/todo\_auth\_cloud.cpp}):} Slot memanggil \code{send\_login\_request}.
 	      \end{itemize}
+        \begin{figure}[H]
+	          \centering
+	          \includegraphics[height=0.3\textheight]{assets/pics/qt_app.jpeg} % Sesuaikan height/width jika perlu
+	          \caption{Tampilan Antarmuka Aplikasi Autentikasi Varian Qt.}
+	          \label{fig:qt_app_ui}
+	      \end{figure}
 	\item \bo{Aplikasi Dear ImGui (\code{app\_imgui}, \code{app\_imgui\_cloud}):} Aplikasi GUI \f{immediate mode} menggunakan Dear ImGui, GLFW, OpenGL.
 	      \begin{itemize}
 		      \item \bo{Varian Hardcoded (\code{src/app\_imgui/login.cpp}):} Logika perbandingan dalam \code{Login::LoginWindow} saat \code{ImGui::Button("Login")} ditekan. Hasil ditampilkan via \code{MessageBoxW}.
 		      \item \bo{Varian Cloud (\code{src/app\_imgui/login\_cloud.cpp}):} Memanggil \code{send\_login\_request} saat tombol login ditekan, menampilkan hasil via \code{MessageBoxW}.
 	      \end{itemize}
+        \begin{figure}[H]
+	          \centering
+	          \includegraphics[height=0.5\textheight]{assets/pics/imgui_app.jpeg} % Sesuaikan height/width jika perlu
+	          \caption{Tampilan Antarmuka Aplikasi Autentikasi Varian Dear ImGui.}
+	          \label{fig:imgui_app_ui}
+	      \end{figure}
 \end{enumerate}
 
 \bo{Implementasi Fungsi Permintaan Cloud (\code{cloud.hpp}):}
