@@ -83,18 +83,41 @@ Analisis serupa juga dilakukan pada aplikasi konsol dan ImGUI versi \f{cloud}, d
 
 \subsubsection{Analisis Aplikasi Virtualized}
 
-Analisis statis pada aplikasi yang telah divirtualisasi menggunakan VxLang menunjukkan tingkat kesulitan yang jauh lebih tinggi. Beberapa observasi signifikan yang ditemukan adalah:
+Analisis statis pada aplikasi yang telah divirtualisasi menggunakan VxLang menunjukkan tingkat kesulitan yang jauh lebih tinggi dibandingkan versi non-virtualized. Observasi kualitatif sebelumnya diperkuat oleh data kuantitatif yang diperoleh dari ringkasan analisis Ghidra terhadap \f{executable} \code{app\_qt.exe} (asli) dan \code{app\_qt\_vm.exe} (virtualized), seperti yang dirangkum dalam Gambar \ref{fig:ghidra_summary_qt} dan \ref{fig:ghidra_summary_qt_vm}.
+
+Beberapa temuan kuantitatif dan kualitatif signifikan adalah:
 
 \begin{itemize}
-  \item \bo{Hilangnya String yang Terdefinisi:} \f{String-string} yang terkait dengan autentikasi, seperti "Authentication Failed", tidak ditemukan secara eksplisit dalam bagian `.data` dari \f{executable}. Hal ini menyulitkan identifikasi awal dari lokasi kode yang relevan dengan autentikasi.
-  \item \bo{Pengurangan Jumlah Data yang Terdefinisi:} Jumlah data yang terdefinisi dalam \f{executable} virtualized berkurang secara drastis (dari sekitar 900 menjadi 130 pada salah satu kasus). Ini mengindikasikan bahwa banyak data dan string mungkin telah dienkripsi atau disembunyikan melalui teknik virtualisasi.
-  \item \bo{Operasi yang Tidak Diketahui:} Banyak operasi \f{assembly} yang tidak dikenali atau dikategorikan sebagai '?' oleh \f{disassembler} Ghidra. Hal ini menyulitkan pemahaman alur kontrol program dan fungsi-fungsi yang terlibat dalam proses autentikasi.
-  \item \bo{Abstraksi Logika Autentikasi:} Mekanisme virtualisasi VxLang tampaknya telah mengabstraksi logika autentikasi yang sebenarnya. Operasi perbandingan \f{string} dan instruksi kondisional yang jelas terlihat pada aplikasi non-virtualized tidak lagi dapat diidentifikasi dengan mudah.
+    \item \bo{Hilangnya Informasi Struktural Fundamental:} Perbedaan paling mencolok adalah Ghidra melaporkan \textbf{0 instruksi} dan \textbf{0 fungsi} yang terdeteksi pada \code{app\_qt\_vm.exe}, dibandingkan dengan 9133 instruksi dan 678 fungsi pada \code{app\_qt.exe} (lihat Gambar \ref{fig:ghidra_summary_qt} dan \ref{fig:ghidra_summary_qt}). Hal ini secara fundamental mengindikasikan bahwa Ghidra tidak dapat menginterpretasikan atau me-\f{disassemble} \f{bytecode} yang dihasilkan oleh VxLang sebagai instruksi mesin x86-64 standar. Akibatnya, pemahaman alur kontrol program dan identifikasi blok logika menjadi hampir mustahil melalui analisis statis konvensional.
+
+    \item \bo{Penurunan Drastis Data Terdefinisi dan Simbol:} Jumlah data yang terdefinisi (\f{Defined Data}) berkurang signifikan dari 1987 pada versi asli menjadi hanya 128 pada versi virtualized. Demikian pula, jumlah simbol yang dikenali turun drastis dari 2761 menjadi 23. Penurunan ini secara kuantitatif mendukung observasi sebelumnya mengenai hilangnya \f{string-string} penting (seperti "Authentication Failed") dan nama-nama fungsi atau variabel yang dapat membantu analisis. Ini menunjukkan bahwa VxLang efektif menyembunyikan atau mengenkripsi data dan mengaburkan titik masuk serta referensi internal program.
+
+    \item \bo{Peningkatan Ukuran File yang Substansial:} Ukuran \f{executable} meningkat secara masif dari sekitar 156 KB (\code{app\_qt.exe}) menjadi sekitar 2.47 MB (\code{app\_qt\_vm.exe}). Peningkatan ukuran lebih dari 15 kali lipat ini kemungkinan besar disebabkan oleh penyertaan \f{runtime} atau \f{interpreter} mesin virtual VxLang beserta representasi \f{bytecode} dari kode asli yang divirtualisasi.
+
+    \item \bo{Kesulitan Identifikasi Struktur Kode Lainnya:} Penurunan jumlah tipe data (dari 428 menjadi 37) dan kategori tipe data (dari 28 menjadi 3) juga menunjukkan hilangnya informasi struktural yang biasanya dapat diekstraksi oleh Ghidra. Selain itu, Ghidra tidak dapat lagi mengidentifikasi \f{compiler} asli (clang), menandakan perubahan signifikan pada struktur \f{header} dan metadata \f{executable}.
+
+    \item \bo{Operasi yang Tidak Diketahui Tetap Ada:} Meskipun ringkasan menunjukkan 0 instruksi, saat menjelajahi kode secara manual di Ghidra, banyak operasi \f{assembly} yang tidak dikenali atau dikategorikan sebagai '???' tetap muncul, seperti yang diobservasi sebelumnya. Ini semakin memperkuat gagasan bahwa kode telah ditransformasi menjadi format yang tidak standar.
 \end{itemize}
 
-Ketidakhadiran \f{string} autentikasi yang jelas dan banyaknya operasi yang tidak diketahui menyiratkan bahwa VxLang menggunakan teknik virtualisasi kode yang efektif dalam menyembunyikan implementasi internal program. Hal ini mempersulit analisis statis tradisional yang mengandalkan identifikasi \f{string} dan pola \f{assembly} yang umum.
+% --- TAMBAHAN GAMBAR GHIDRA SUMMARY QT ASLI ---
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{assets/pics/app_qt_summary_result.jpeg} % Sesuaikan path dan ukuran
+    \caption{Ringkasan Hasil Analisis Ghidra untuk \code{app\_qt.exe} (Non-Virtualized).}
+    \label{fig:ghidra_summary_qt}
+\end{figure}
+% --- AKHIR TAMBAHAN GAMBAR GHIDRA SUMMARY QT ASLI ---
 
-Akibatnya, identifikasi dan manipulasi logika autentikasi melalui analisis statis menjadi sangat sulit pada aplikasi yang divirtualisasi. Meskipun mungkin ada cara lain untuk menganalisis kode yang divirtualisasi, pendekatan yang bergantung pada pencarian \f{string} dan \f{patching} instruksi kondisional secara langsung menjadi tidak efektif dalam kasus ini.
+% --- TAMBAHAN GAMBAR GHIDRA SUMMARY QT VM ---
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{assets/pics/app_qt_vm_summary_result.jpeg} % Sesuaikan path dan ukuran
+    \caption{Ringkasan Hasil Analisis Ghidra untuk \code{app\_qt\_vm.exe} (Virtualized).}
+    \label{fig:ghidra_summary_qt_vm}
+\end{figure}
+% --- AKHIR TAMBAHAN GAMBAR GHIDRA SUMMARY QT VM ---
+
+Secara keseluruhan, data kuantitatif dari Ghidra ini memberikan bukti kuat bahwa \f{code virtualization} menggunakan VxLang secara efektif mengaburkan struktur fundamental program pada tingkat biner. Ketidakmampuan \f{disassembler/decompiler} seperti Ghidra untuk mengenali instruksi, fungsi, dan data secara signifikan meningkatkan kesulitan analisis statis. Identifikasi dan manipulasi logika autentikasi melalui pendekatan statis konvensional menjadi sangat tidak praktis dan kemungkinan besar tidak berhasil pada aplikasi yang telah divirtualisasi dengan VxLang.
 
 \subsection{Analisis Dinamis}
 Analisis dinamis dilakukan dengan menjalankan aplikasi di bawah \f{debugger} x64dbg untuk mengamati perilaku saat \f{runtime}. Tujuannya adalah untuk memverifikasi temuan dari analisis statis dan memahami bagaimana aplikasi berinteraksi dengan \f{input} pengguna, khususnya dalam proses autentikasi.
