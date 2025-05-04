@@ -1,47 +1,78 @@
-# Tools
+# Latex Builder
 LATEXMK = latexmk
-# Use appropriate remove commands for your OS if needed for clean targets
+
+# Windows
+
 # RMDIR = rd /s /q 
 # RM = del /Q 
+
+# Linux / Mac
 RMDIR = rm -rf 
 RM = rm -f  
 
 # Project-specific settings
-DOCNAME = thesis
-TEXFILE = $(DOCNAME).tex
-OUTDIR = out
-PDF = $(OUTDIR)/$(DOCNAME).pdf
-BUILD_FLAGS = -synctex=1 -pdf -shell-escape -outdir=$(OUTDIR) -file-line-error
+SKRIPSI = skripsi
+JOURNAL = journal
+
+BUILD_FLAGS = -synctex=1 -pdf -shell-escape -file-line-error
+
+SKRIPSI_FLAG = -outdir=../out/$(SKRIPSI)
+JOURNAL_FLAG = -outdir=../out/$(JOURNAL)
 
 # Targets
-# Default target: Build the PDF incrementally
-all: $(PDF)
+all: $(SKRIPSI) $(JOURNAL)
 
-# Rule to build the PDF using latexmk
-# latexmk handles dependencies and multiple runs automatically
-$(PDF): $(TEXFILE) src/**/*.*  *.bib settings.tex istilah.tex
-	@echo "Memulai kompilasi $(DOCNAME).pdf ke direktori $(OUTDIR)..."
-	$(LATEXMK) $(BUILD_FLAGS) $(DOCNAME)
-	@echo "Kompilasi selesai: $(PDF)"
+$(SKRIPSI): $(SKRIPSI)/$(SKRIPSI).tex pustaka.bib settings.tex $(SKRIPSI)/istilah.tex
+	@echo "Memulai kompilasi $(SKRIPSI).pdf ke direktori out ..." && \
+	cd skripsi && \
+	$(LATEXMK) $(BUILD_FLAGS) $(SKRIPSI_FLAG) $(SKRIPSI) && \
+	echo "Kompilasi selesai: $(SKRIPSI)"
 
+$(JOURNAL): $(JOURNAL)/$(JOURNAL).tex pustaka.bib settings.tex
+	@echo "Memulai kompilasi $(JOURNAL).pdf ke direktori out ..." && \
+	cd journal && \
+	$(LATEXMK) $(BUILD_FLAGS) $(JOURNAL_FLAG) $(JOURNAL) && \
+	echo "Kompilasi selesai: $(JOURNAL)"
 # Continuous Preview (Recommended for development)
-pvc:
-	@echo "Memulai mode Preview Continuously (PVC)... Tekan Ctrl+C untuk berhenti."
-	$(LATEXMK) -pvc $(BUILD_FLAGS) $(DOCNAME)
+pvc_skripsi:
+	@echo "Memulai mode Preview Continuously (PVC)... Tekan Ctrl+C untuk berhenti." && \
+	cd skripsi && \
+	$(LATEXMK) -pvc $(BUILD_FLAGS) $(SKRIPSI_FLAG) $(SKRIPSI)
+
+pvc_journal:
+	@echo "Memulai mode Preview Continuously (PVC)... Tekan Ctrl+C untuk berhenti." && \
+	cd journal && \
+	$(LATEXMK) -pvc $(BUILD_FLAGS) $(JOURNAL_FLAG) $(JOURNAL)
 
 # Cleanup targets
 mostlyclean:
 	@echo "Membersihkan file auxiliary (mostlyclean)..."
-	-$(LATEXMK) -silent -outdir=$(OUTDIR) -c
+	-$(LATEXMK) -silent $(SKRIPSI_FLAG) -c
+	-$(LATEXMK) -silent $(JOURNAL_FLAG) -c
+
+clean_skripsi:
+	@echo "Membersihkan semua file hasil kompilasi $(SKRIPSI)..."
+	-$(LATEXMK) -silent $(SKRIPSI_FLAG) -C
+	-$(RM) out/$(SKRIPSI).pdf
+	-$(RMDIR) out/$(SKRIPSI)
+
+clean_journal:
+	@echo "Membersihkan semua file hasil kompilasi $(JOURNAL)..."
+	-$(LATEXMK) -silent $(JOURNAL_FLAG) -C
+	-$(RM) out/$(JOURNAL).pdf
+	-$(RMDIR) out/$(JOURNAL)
 
 clean:
 	@echo "Membersihkan semua file hasil kompilasi (clean)..."
-	-$(LATEXMK) -silent -outdir=$(OUTDIR) -C
-	-$(RM) $(PDF)
-	-$(RMDIR) $(OUTDIR)
+	-$(LATEXMK) -silent $(SKRIPSI_FLAG) -C
+	-$(LATEXMK) -silent $(JOURNAL_FLAG) -C
+	-$(RM) out/$(SKRIPSI).pdf
+	-$(RMDIR) out/$(SKRIPSI)
+	-$(RM) out/$(JOURNAL).pdf
+	-$(RMDIR) out/$(JOURNAL)
 
 # Phony targets (targets that are not files)
-.PHONY: all pvc mostlyclean clean
+.PHONY: all $(SKRIPSI) $(JOURNAL) pvc mostlyclean clean
 
 # Suppress echoing of commands
 #.SILENT:

@@ -20,7 +20,7 @@
   "ignore": {
     "useGitignore": true,
     "useDefaultPatterns": true,
-    "customPatterns": ["_internals/makara.eps"]
+    "customPatterns": ["skripsi/_internals/makara.eps"]
   },
   "security": {
     "enableSecurityCheck": true
