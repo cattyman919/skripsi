@@ -1,3 +1,7 @@
+# Thesis Files
+
+Thesis can be accessed here: [Google Drive](https://drive.google.com/drive/folders/140Il7vJkaAsBiTb5aikSA64-WBHhvqav?usp=drive_link)
+
 # UI Style
 
 LaTeX configuration for report/thesis/dissertation according to [University Indonesia](http://www.ui.ac.id/) standard. Originally made by Andreas Febrian and available for download [here](http://komunitas.ui.ac.id/pg/file/andreas.febrian/read/12945/template-latex-untuk-laporan-skripsithesisdisertasi)
