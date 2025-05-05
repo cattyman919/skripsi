@@ -1,0 +1,55 @@
+\section{Implementation Details} \label{sec:implementation}
+This section briefly outlines the key aspects of the experimental setup and the integration of VxLang.
+
+\subsection{Development Environment}
+All development and testing were conducted on a Windows 11 (64-bit) system. The Clang compiler (v19.1.3, via \texttt{clang-cl} for MSVC ABI compatibility) targeting x86-64 was used with the C++17 standard. CMake (v3.31) and Ninja (v1.12.1) managed the build process. Essential libraries included the VxLang SDK, Qt 6, Dear ImGui, OpenSSL 3.x, and libcurl, linked appropriately via CMake.
+
+\subsection{VxLang Integration}
+VxLang was applied to the target applications using its Software Development Kit (SDK) and external processing tool.
+
+\subsubsection{Code Marking} Critical code sections intended for virtualization were demarcated in the C++ source code using the SDK's macros, primarily \texttt{VL\_VIRTUALIZATION\_BEGIN} and \texttt{VL\_VIRTUALIZATION\_END}. For instance, in the authentication logic:
+
+\begin{verbatim}
+    // ... Input username/password ...
+    #ifdef USE_VL_MACRO
+    VL_VIRTUALIZATION_BEGIN; // Mark start
+    #endif
+
+    if (check_credentials(username, password)) {
+        // Authorized path
+    } else {
+        // Unauthorized path
+    }
+
+    #ifdef USE_VL_MACRO
+    VL_VIRTUALIZATION_END; // Mark end
+    #endif
+    // ...
+\end{verbatim}
+Similar macros were placed around the recursive \texttt{quickSort} function body and the main encryption/decryption loop in the AES benchmark.
+
+\subsubsection{Build Process} The CMake configuration was set up to generate two distinct build types:
+\begin{enumerate}
+    \item \textbf{Original Build:} Compiled without the \texttt{USE\_VL\_MACRO} preprocessor definition and without linking the VxLang library. Produces the baseline executable (e.g., \texttt{app\_qt.exe}).
+    \item \textbf{Intermediate Build (VM Marked):} Compiled with \texttt{USE\_VL\_MACRO} defined and linked against \texttt{vxlib64.lib}. Produces an intermediate executable containing the VxLang markers (e.g., \texttt{app\_qt\_vm.exe}).
+\end{enumerate}
+
+\subsubsection{Virtualization Processing} The intermediate executables (e.g., \texttt{app\_qt\_vm.exe}) were then processed offline by the external VxLang command-line tool. This tool reads a JSON configuration file specifying input/output paths and virtualization options (e.g., virtualizing the entry point). The tool modifies the intermediate executable in-place or creates a new output file, replacing the native code within the marked sections with its virtualized bytecode and embedding the necessary VM runtime. The resulting file is the final virtualized executable used for testing. A simplified JSON configuration might look like:
+
+\begin{verbatim}
+{
+  "Input": "path/to/intermediate_app_vm.exe",
+  "Output": "path/to/final_virtualized_app.exe",
+  "Virtualizer": {
+    "EntryPoint": false 
+  },
+  "Obfuscator": { 
+    "EntryPoint": false 
+  },
+  "Packer": { 
+    "Enable": false 
+  } 
+  // Other options omitted for brevity
+}
+\end{verbatim}
+For this study, default virtualization settings were primarily used after marking the code sections.

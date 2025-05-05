@@ -3,6 +3,7 @@
 
 latex-skripsi.xml
 _minted_*/
+aux/
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof

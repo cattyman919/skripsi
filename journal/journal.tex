@@ -1,203 +1,83 @@
 \documentclass[journal]{IEEEtran}
 
-\usepackage{_internals/preamble}
+% --- Core Packages ---
+\usepackage{_internals/preamble} % Load all common packages from preamble.sty
 
-\input{../settings}
+% --- Bibliography Setup (BibLaTeX) ---
+% Load biblatex *after* the class and preamble, but *before* \begin{document}
+\usepackage[backend=biber,style=ieee,natbib=true, maxnames=6, minnames=1, date=year, doi=false, isbn=false, url=false]{biblatex} % Using biblatex-ieee
+% Options explained:
+% maxnames=6: Show up to 6 authors, then use 'et al.'
+% minnames=1: Use 'et al.' if there's more than 1 author *and* maxnames is exceeded.
+% date=year: Only show year, not month/day
+% doi=false, isbn=false, url=false: Hide these fields by default (common for IEEE)
+\addbibresource{../pustaka.bib} % Path to your master .bib file
 
+\input{commands.tex}
+
+% --- Start of Document ---
 \begin{document}
-%
-% paper title
-% Titles are generally capitalized except for words such as a, an, and, as,
-% at, but, by, for, in, nor, of, on, or, the, to and up, which are usually
-% not capitalized unless they are the first or last word of the title.
-% Linebreaks \\ can be used within to get better formatting as desired.
-% Do not put math or special symbols in the title.
-\title{Bare Demo of IEEEtran.cls\\ for IEEE Journals}
-%
-%
-% author names and IEEE memberships
-% note positions of commas and nonbreaking spaces ( ~ ) LaTeX will not break
-% a structure at a ~ so this keeps an author's name from being broken across
-% two lines.
-% use \thanks{} to gain access to the first footnote area
-% a separate \thanks must be used for each paragraph as LaTeX2e's \thanks
-% was not built to handle multiple paragraphs
-%
 
-\author{\penulis~Shell,~\IEEEmembership{Member,~IEEE,}
-        John~Doe,~\IEEEmembership{Fellow,~OSA,}
-        and~Jane~Doe,~\IEEEmembership{Life~Fellow,~IEEE}% <-this % stops a space
-\thanks{M. Shell was with the Department
-of Electrical and Computer Engineering, Georgia Institute of Technology, Atlanta,
-GA, 30332 USA e-mail: (see http://www.michaelshell.org/contact.html).}% <-this % stops a space
-\thanks{J. Doe and J. Doe are with Anonymous University.}% <-this % stops a space
-\thanks{Manuscript received April 19, 2005; revised August 26, 2015.}}
+% --- Paper Title ---
+\title{\journalTitle}
 
-% note the % following the last \IEEEmembership and also \thanks - 
-% these prevent an unwanted space from occurring between the last author name
-% and the end of the author line. i.e., if you had this:
-% 
-% \author{....lastname \thanks{...} \thanks{...} }
-%                     ^------------^------------^----Do not want these spaces!
-%
-% a space would be appended to the last name and could cause every name on that
-% line to be shifted left slightly. This is one of those "LaTeX things". For
-% instance, "\textbf{A} \textbf{B}" will typeset as "A B" not "AB". To get
-% "AB" then you have to do: "\textbf{A}\textbf{B}"
-% \thanks is no different in this regard, so shield the last } of each \thanks
-% that ends a line with a % and do not let a space in before the next \thanks.
-% Spaces after \IEEEmembership other than the last one are OK (and needed) as
-% you are supposed to have spaces between the names. For what it is worth,
-% this is a minor point as most people would not even notice if the said evil
-% space somehow managed to creep in.
+% --- Author Information ---
+\author{\IEEEauthorblockN{\authorOne\IEEEauthorrefmark{1}} % Use refmark if needed for affiliations/notes
+        % , \IEEEauthorblockN{Author Two Name\IEEEauthorrefmark{2}} % Add other authors
+\IEEEauthorblockA{\textit{\authorOneAffiliation} \\ Email: \authorOneEmail}
+% \IEEEauthorblockA{\IEEEauthorrefmark{2}\textit{Affiliation Author Two}} % Corresponding affiliation
+% --- Add more authors/affiliations as needed ---
 
+\thanks{Manuscript received Month DD, YYYY; revised Month DD, YYYY. This work was supported in part by [Funding Agency, Grant Number, if any]. (Corresponding author: \correspondingAuthor.)} % Update or remove as appropriate
+% \thanks{\authorOne is with the Department of Electrical Engineering, Faculty of Engineering, Universitas Indonesia, Depok, 16424 Indonesia (e-mail: \authorOneEmail).} % Standard IEEE affiliation format
+% \thanks{Author Two is with ...} % Add other author affiliations if needed
+}
 
+% --- Paper Headers ---
+% Optional: Customize headers for published version/preprint
+% \markboth{IEEE Transactions on Dependable and Secure Computing,~Vol.~XX, No.~XX, Month~YYYY}%
+% {Rahman: Analysis of VxLang Code Virtualization Effectiveness}
 
-% The paper headers
-\markboth{Journal of \LaTeX\ Class Files,~Vol.~14, No.~8, August~2015}%
-{Shell \MakeLowercase{\textit{et al.}}: Bare Demo of IEEEtran.cls for IEEE Journals}
-% The only time the second header will appear is for the odd numbered pages
-% after the title page when using the twoside option.
-% 
-% *** Note that you probably will NOT want to include the author's ***
-% *** name in the headers of peer review papers.                   ***
-% You can use \ifCLASSOPTIONpeerreview for conditional compilation here if
-% you desire.
-
-
-
-
-% If you want to put a publisher's ID mark on the page you can do it like
-% this:
-%\IEEEpubid{0000--0000/00\$00.00~\copyright~2015 IEEE}
-% Remember, if you use this you must call \IEEEpubidadjcol in the second
-% column for its text to clear the IEEEpubid mark.
-
-
-
-% use for special paper notices
-%\IEEEspecialpapernotice{(Invited Paper)}
-
-
-
-
-% make the title area
+% --- Make Title Area ---
 \maketitle
 
-% As a general rule, do not put math, special symbols or citations
-% in the abstract or keywords.
+% --- Abstract and Keywords ---
 \input{src/abstract.tex}
+\input{src/keywords.tex}
 
-% Note that keywords are not normally used for peerreview papers.
-\input{src/keyword.tex}
-
-
-
-
-
-
-% For peer review papers, you can put extra information on the cover
-% page as needed:
-% \ifCLASSOPTIONpeerreview
-% \begin{center} \bfseries EDICS Category: 3-BBND \end{center}
-% \fi
-%
-% For peerreview papers, this IEEEtran command inserts a page break and
-% creates the second title. It will be ignored for other modes.
-\IEEEpeerreviewmaketitle
-
-
+% --- Main Content ---
+\IEEEpeerreviewmaketitle % Command for peer review markers
 
 \input{src/introduction.tex}
-
-
-
-
+\input{src/related_work.tex}
+\input{src/methodology.tex}
+\input{src/implementation_details.tex}
+\input{src/results_discussion.tex}
 \input{src/conclusion.tex}
 
+% --- Optional Sections ---
+% \appendices % If you have appendices
+% \section{Proof of the Zonklar Equation}
+% Appendix one text goes here.
+
+% \section*{Acknowledgment} % Use section* for unsnumbered sections
+% \input{src/acknowledgment.tex} % Input the acknowledgment content
 
 
+% --- References ---
+% Print the bibliography using BibLaTeX
+\printbibliography
 
+% --- Optional Biographies ---
+% \newpage % If biographies need to start on a new page
 
-% if have a single appendix:
-%\appendix[Proof of the Zonklar Equations]
-% or
-%\appendix  % for no appendix heading
-% do not use \section anymore after \appendix, only \section*
-% is possibly needed
+% \begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{path/to/your/photo.png}}]{Seno Pamungkas Rahman}
+% received the B.Eng. degree in Computer Engineering from the Universitas Indonesia, Depok, Indonesia, in 2025. His research interests include software security, reverse engineering, code obfuscation, and system programming.
+% \end{IEEEbiography}
 
-% use appendices with more than one appendix
-% then use \section to start each appendix
-% you must declare a \section before using any
-% \subsection or using \label (\appendices by itself
-% starts a section numbered zero.)
-%
-
-
-\input{src/appendix.tex}
-
-% use section* for acknowledgment
-\input{src/acknowledgment.tex}
-
-% Can use something like this to put references on a page
-% by themselves when using endfloat and the captionsoff option.
-\ifCLASSOPTIONcaptionsoff
-  \newpage
-\fi
-
-
-
-% trigger a \newpage just before the given reference
-% number - used to balance the columns on the last page
-% adjust value as needed - may need to be readjusted if
-% the document is modified later
-%\IEEEtriggeratref{8}
-% The "triggered" command can be changed if desired:
-%\IEEEtriggercmd{\enlargethispage{-5in}}
-
-% references section
-
-% can use a bibliography generated by BibTeX as a .bbl file
-% BibTeX documentation can be easily obtained at:
-% http://mirror.ctan.org/biblio/bibtex/contrib/doc/
-% The IEEEtran BibTeX style support page is at:
-% http://www.michaelshell.org/tex/ieeetran/bibtex/
-%\bibliographystyle{IEEEtran}
-% argument is your BibTeX string definitions and bibliography database(s)
-%\bibliography{IEEEabrv,../bib/paper}
-%
-% <OR> manually copy in the resultant .bbl file
-% set second argument of \begin to the number of references
-% (used to reserve space for the reference number labels box)
-\input{src/references.tex}
-
-% biography section
-% 
-% If you have an EPS/PDF photo (graphicx package needed) extra braces are
-% needed around the contents of the optional argument to biography to prevent
-% the LaTeX parser from getting confused when it sees the complicated
-% \includegraphics command within an optional argument. (You could create
-% your own custom macro containing the \includegraphics command to make things
-% simpler here.)
-%\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{mshell}}]{Michael Shell}
-% or if you just want to reserve a space for a photo:
-
-\begin{IEEEbiography}{Michael Shell}
-Biography text here.
-\end{IEEEbiography}
-
-% if you will not have a photo at all:
-\begin{IEEEbiographynophoto}{John Doe}
-Biography text here.
-\end{IEEEbiographynophoto}
-
-% insert where needed to balance the two columns on the last page with
-% biographies
-%\newpage
-
-\begin{IEEEbiographynophoto}{Jane Doe}
-Biography text here.
-\end{IEEEbiographynophoto}
+% \begin{IEEEbiographynophoto}{Dr. Ruki Harwahyu}
+% Biography text here. Include degrees, affiliations, research interests, memberships (e.g., Member, IEEE).
+% \end{IEEEbiographynophoto}
 
 % You can push biographies down or up by placing
 % a \vfill before or after them. The appropriate
@@ -211,10 +91,4 @@ Biography text here.
 % is flush with the other column.
 %\enlargethispage{-5in}
 
-
-
-% that's all folks
 \end{document}
-
-
-

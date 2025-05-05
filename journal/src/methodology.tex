@@ -1,0 +1,64 @@
+\section{Methodology} \label{sec:methodology}
+This research employs an experimental approach to evaluate the effectiveness of VxLang's code virtualization. We compare the reverse engineering difficulty and performance characteristics of software binaries before and after applying VxLang's virtualization.
+
+\subsection{Experimental Design}
+A comparative study design was used, involving a control group (original, non-virtualized binaries) and an experimental group (binaries with critical sections virtualized by VxLang).
+
+\begin{itemize}
+    \item \textbf{Independent Variable:} Application of VxLang code virtualization (Applied vs. Not Applied).
+    \item \textbf{Dependent Variables:}
+        \begin{itemize}
+            \item \textit{Reverse Engineering Difficulty:} Qualitatively assessed based on the effort required for static analysis (code understanding, logic identification, patching attempts using Ghidra) and dynamic analysis (runtime tracing, memory inspection, manipulation attempts using x64dbg). Success/failure of bypassing authentication logic was recorded.
+            \item \textit{Performance Overhead:} Quantitatively measured via execution time for specific computational tasks (QuickSort, AES encryption/decryption).
+            \item \textit{File Size Overhead:} Quantitatively measured by comparing the size (in bytes) of the final executable files.
+        \end{itemize}
+\end{itemize}
+
+\subsection{Study Objects}
+Two categories of applications were developed and analyzed:
+
+\subsubsection{Authentication Case Study Applications} Simple applications simulating user login were created to serve as targets for reverse engineering analysis focused on bypassing the authentication mechanism. Variants included:
+    \begin{itemize}
+        \item \textbf{Interface Types:} Console (CLI), Qt Widgets (GUI), Dear ImGui (Immediate Mode GUI).
+        \item \textbf{Authentication Mechanisms:} Hardcoded credentials (comparing input against string literals) and Cloud-based validation (sending credentials via HTTP POST to a local backend server).
+    \end{itemize}
+    For each variant, the core authentication logic (comparison function or the call to the cloud request function and subsequent result check) was targeted for virtualization in the experimental group.
+
+\subsubsection{Performance Benchmark Applications} Applications designed to measure the performance impact of virtualization on specific computational tasks:
+    \begin{itemize}
+        \item \textbf{QuickSort Benchmark:} Implemented a standard recursive QuickSort algorithm. The core recursive function was virtualized. Tested with varying array sizes (100 to 1,000,000 elements).
+        \item \textbf{AES Encryption Benchmark:} Implemented AES-256-CBC encryption/decryption using OpenSSL's EVP API. The loop performing batch encryption/decryption operations on 1GB of data was virtualized.
+        \item \textbf{File Size Benchmark:} A minimal application with embedded dummy data to assess the baseline size increase due to the inclusion of the VxLang runtime.
+    \end{itemize}
+
+\subsection{Instrumentation and Materials}
+\begin{itemize}
+    \item \textbf{Hardware:} Standard Windows 11 (64-bit) PC.
+    \item \textbf{Development Tools:} Clang/clang-cl (C++17), CMake, Ninja, Neovim.
+    \item \textbf{Libraries/Frameworks:} VxLang SDK, Qt 6, Dear ImGui (+GLFW/OpenGL3 backend), OpenSSL 3.x, libcurl, nlohmann/json.
+    \item \textbf{Analysis Tools:} Ghidra (v11.x) for static analysis, x64dbg (latest snapshot) for dynamic analysis.
+    \item \textbf{Performance Measurement:} C++ \texttt{std::chrono::high\_resolution\_clock} for timing, \texttt{std::filesystem::file\_size} for file size.
+\end{itemize}
+
+\subsection{Data Collection Procedure}
+
+\subsubsection{Security Analysis}
+For each authentication application (original and virtualized):
+    \begin{enumerate}
+        \item \textbf{Static Analysis (Ghidra):} Load executable, search for relevant strings (e.g., "Failed", "Authorized", potential credentials), analyze disassembly/decompilation around string references or entry points, identify conditional jumps controlling authentication success/failure, attempt static patching to bypass logic. Record qualitative observations on difficulty.
+        \item \textbf{Dynamic Analysis (x64dbg):} Run executable under debugger, search for strings/patterns at runtime, set breakpoints at suspected logic locations (identified via static analysis or runtime observation), step through execution, observe register/memory values, attempt runtime manipulation (patching conditional jumps, altering flags/memory) to bypass authentication. Record qualitative observations and success/failure of bypass attempts.
+    \end{enumerate}
+
+\subsubsection{Performance Analysis}
+For each benchmark application (original and virtualized):
+    \begin{enumerate}
+        \item \textbf{Execution Time:} Run QuickSort benchmark 100 times per data size, record individual times. Run AES benchmark on 1GB data, record total encryption/decryption time. Use \texttt{std::chrono}. Calculate average, standard deviation (for QuickSort), and throughput (for AES).
+        \item \textbf{File Size:} Measure the size of the final executable file in bytes using \texttt{std::filesystem::file\_size}.
+    \end{enumerate}
+
+\subsection{Data Analysis Techniques}
+\begin{itemize}
+    \item \textbf{Qualitative Security Data:} Descriptive analysis based on observation notes comparing the reverse engineering effort and success rates between control and experimental groups for both static and dynamic analysis phases.
+    \item \textbf{Quantitative Performance Data:} Calculation of descriptive statistics (mean, standard deviation), percentage overhead for execution time, throughput calculation (MB/s), and percentage increase in file size. Comparative tables and graphs will be used for presentation.
+    \item \textbf{Trade-off Analysis:} Synthesis of security findings and performance results to evaluate the balance between protection enhancement and performance/size costs introduced by VxLang.
+\end{itemize}
