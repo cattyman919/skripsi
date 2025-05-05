@@ -16,19 +16,22 @@ JOURNAL = journal
 
 BUILD_FLAGS = -synctex=1 -pdf -shell-escape -file-line-error -auxdir=../aux -outdir=../out
 
+OUTPUT_SKRIPSI_NAME = "Seno Pamungkas Rahman_Skripsi"
+OUTPUT_JOURNAL_NAME = "Seno Pamungkas Rahman_Journal"
+
 # Targets
 all: $(SKRIPSI) $(JOURNAL)
 
 $(SKRIPSI): $(SKRIPSI)/$(SKRIPSI).tex pustaka.bib settings.tex $(SKRIPSI)/istilah.tex
 	@echo "Memulai kompilasi $(SKRIPSI).pdf ke direktori out ..." && \
 	cd skripsi && \
-	$(LATEXMK) $(BUILD_FLAGS) $(SKRIPSI) && \
+	$(LATEXMK) $(BUILD_FLAGS) -jobname=$(OUTPUT_SKRIPSI_NAME) $(SKRIPSI) && \
 	echo "Kompilasi selesai: $(SKRIPSI)"
 
 $(JOURNAL): $(JOURNAL)/$(JOURNAL).tex pustaka.bib settings.tex
 	@echo "Memulai kompilasi $(JOURNAL).pdf ke direktori out ..." && \
 	cd journal && \
-	$(LATEXMK) $(BUILD_FLAGS) $(JOURNAL) && \
+	$(LATEXMK) $(BUILD_FLAGS) -jobname=$(OUTPUT_JOURNAL_NAME) $(JOURNAL) && \
 	echo "Kompilasi selesai: $(JOURNAL)"
 # Continuous Preview (Recommended for development)
 pvc_skripsi:
@@ -43,16 +46,15 @@ pvc_journal:
 
 clean_skripsi:
 	@echo "Membersihkan semua file hasil kompilasi $(SKRIPSI)..."
-	-$(RM) out/$(SKRIPSI).pdf
+	-$(RM) out/$(OUTPUT_SKRIPSI_NAME)*.pdf
+	-$(RM) out/$(OUTPUT_SKRIPSI_NAME)*.gz
 
 clean_journal:
 	@echo "Membersihkan semua file hasil kompilasi $(JOURNAL)..."
-	-$(RM) out/$(JOURNAL).pdf
+	-$(RM) out/$(OUTPUT_JOURNAL_NAME)*.pdf
+	-$(RM) out/$(OUTPUT_JOURNAL_NAME)*.gz
 
-clean:
-	@echo "Membersihkan semua file hasil kompilasi (clean)..."
-	-$(RM) out/$(SKRIPSI).pdf
-	-$(RM) out/$(JOURNAL).pdf
+clean: clean_skripsi clean_journal
 
 # Phony targets (targets that are not files)
 .PHONY: all $(SKRIPSI) $(JOURNAL) pvc mostlyclean clean
