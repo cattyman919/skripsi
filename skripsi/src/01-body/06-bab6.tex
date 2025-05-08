@@ -7,7 +7,7 @@
 Berdasarkan implementasi dan analisis yang telah dilakukan terhadap efektivitas \f{code virtualization} menggunakan VxLang untuk mempersulit \f{reverse engineering}, dapat ditarik kesimpulan sebagai berikut:
 
 \begin{enumerate}
-    \item \textbf{Implementasi VxLang:} Implementasi \f{code virtualization} menggunakan VxLang melibatkan penandaan bagian kode sumber yang kritikal menggunakan makro SDK (\code{VL\_VIRTUALIZATION\_BEGIN/END}), penautan dengan library VxLang, dan pemrosesan \f{executable} hasil kompilasi menggunakan \f{tool} eksternal VxLang dengan file konfigurasi JSON. Proses ini mengubah kode \textit{native} yang ditandai menjadi \f{bytecode} yang dieksekusi oleh \textit{virtual machine} (VM) internal VxLang.
+    \item \textbf{Implementasi VxLang:} Implementasi \f{code virtualization} menggunakan VxLang melibatkan penandaan bagian kode sumber yang kritikal menggunakan makro SDK (\code{VL\_VIRTUALIZATION\_BEGIN/END}), kompilasi menjadi \textit{executable intermediate} (\texttt{*\_vm.exe}) yang tertaut dengan library VxLang, dan pemrosesan \textit{executable intermediate} tersebut secara langsung menggunakan \textit{tool command-line} \texttt{vxlang.exe} untuk menghasilkan \textit{executable} akhir yang tervirtualisasi (\texttt{*\_vxm.exe}). Proses ini mengubah kode \textit{native} yang ditandai menjadi \f{bytecode} yang dieksekusi oleh \textit{virtual machine} (VM) internal VxLang.
 
     \item \textbf{Efektivitas Keamanan:} \f{Code virtualization} menggunakan VxLang terbukti \textbf{efektif secara signifikan} dalam meningkatkan kesulitan \f{reverse engineering} baik secara statis maupun dinamis.
         \begin{itemize}
@@ -22,6 +22,8 @@ Berdasarkan implementasi dan analisis yang telah dilakukan terhadap efektivitas 
         \end{itemize}
 
     \item \textbf{Trade-off Keamanan vs. Performa:} Terdapat \textit{trade-off} yang jelas antara peningkatan keamanan terhadap \f{reverse engineering} yang ditawarkan oleh VxLang dengan penurunan kinerja eksekusi dan penambahan ukuran file. VxLang memberikan lapisan proteksi yang kuat namun dengan biaya performa yang tidak dapat diabaikan.
+
+    \item \textbf{Pengaruh terhadap Deteksi Malware:} Studi kasus tambahan menggunakan aplikasi RAT Lilith menunjukkan bahwa virtualisasi kode dengan VxLang juga efektif dalam mengurangi tingkat deteksi oleh layanan pemindaian \textit{malware} VirusTotal. Jumlah vendor yang mendeteksi Lilith sebagai berbahaya menurun setelah virtualisasi, dan karakteristik deteksi berubah dari spesifik (berdasarkan \textit{signature} RAT) menjadi lebih generik atau berbasis heuristik/AI. Ini mengindikasikan bahwa VxLang berhasil mengaburkan \textit{signature} statis yang biasa digunakan oleh \textit{software} antivirus, meskipun fungsionalitas RAT itu sendiri tetap berjalan normal.
 \end{enumerate}
 
 Secara keseluruhan, penelitian ini menunjukkan bahwa \f{code virtualization} dengan VxLang adalah teknik yang ampuh untuk melindungi perangkat lunak dari analisis dan manipulasi oleh \textit{reverse engineer}, namun pengembang perlu mempertimbangkan dampaknya terhadap performa dan ukuran aplikasi secara cermat.
@@ -47,5 +49,7 @@ Berdasarkan kesimpulan dari penelitian ini, berikut adalah beberapa saran yang d
             \item \textbf{Studi Komparatif:} Membandingkan efektivitas keamanan dan \textit{overhead} performa VxLang dengan solusi \textit{code virtualization} atau \textit{obfuscation} komersial maupun \textit{open-source} lainnya (misalnya, VMProtect, Themida, LLVM Obfuscator).
             \item \textbf{Dukungan Platform Lain:} Melakukan analisis serupa jika/ketika VxLang telah mendukung platform lain seperti Linux ELF atau arsitektur ARM, untuk melihat apakah efektivitas dan dampaknya konsisten.
             \item \textbf{Pengaruh Konfigurasi:} Menyelidiki lebih lanjut pengaruh berbagai opsi konfigurasi yang ditawarkan oleh VxLang (jika ada, seperti tingkat virtualisasi/obfuscation yang berbeda, fitur anti-tamper) terhadap tingkat kesulitan \textit{reverse engineering} dan \textit{overhead} performa.
+            \item \textbf{Analisis Komprehensif terhadap Deteksi Antivirus:} Melakukan penelitian lebih mendalam mengenai bagaimana berbagai jenis \textit{engine} antivirus (berbasis \textit{signature}, heuristik, AI/ML, perilaku) merespons terhadap berbagai teknik \textit{code virtualization} dan \textit{obfuscation}, termasuk VxLang, pada beragam sampel \textit{malware} dan PUA (\textit{Potentially Unwanted Application}).
+            \item \textbf{Pengembangan Teknik Deteksi untuk Kode Tervirtualisasi:} Menyelidiki pengembangan teknik atau \textit{tool} baru yang dapat lebih efektif mendeteksi atau bahkan melakukan \textit{deobfuscation} parsial terhadap kode yang telah dilindungi oleh \textit{virtualizer} seperti VxLang, terutama dari perspektif analisis \textit{malware}.
         \end{itemize}
 \end{enumerate}

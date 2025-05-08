@@ -494,46 +494,12 @@ Di dalam header SDK, terdapat beberapa Application Programming Interfaces (API) 
 
 API-API ini dapat diterapkan pada kode sumber dengan cara menandai bagian-bagian kode yang ingin diobfuskasi atau divirtualisasi dengan menggunakan API BEGIN dan END yang sesuai.
 
-\subsubsection{Konfigurasi Obfuscation VxLang}
-VxLang menawarkan dua mode penggunaan: Command Line Mode dan Project Mode. Command Line Mode relatif sederhana, sedangkan Project Mode memungkinkan pengembang untuk mengatur proyek mereka melalui file JSON. Dalam penjelasan ini, kita akan fokus pada Project Mode.
-
-Project Mode menggunakan file JSON untuk mengkonfigurasi berbagai aspek dari proses obfuscation dan virtualisasi.
-\begin{figure}
-	\centering
-	\includegraphics[width=0.55\textheight]
-	{\Assets/vxlang_json.png}
-	\caption{VxLang konfigurasi JSON \cite{VxLang}}
-\end{figure}
-Berikut adalah penjelasan mengenai pengaturan-pengaturan yang terdapat dalam file JSON konfigurasi:
-\begin{itemize}
-	\item \bo{Input :} Menentukan path (jalur) ke file kode sumber yang akan diproses.
-	\item \bo{Output :} Menentukan path ke file keluaran (output) yang telah diobfuskasi.
-	\item \bo{Backup :} Flag (bendera) yang menentukan apakah file kode sumber asli perlu di-backup (dicadangkan).
-	\item \bo{BaseSectionName :} Nama bagian (section) yang menjadi dasar. Jika diatur ke ".base", nama bagian VxLang akan ditulis sebagai ".base0"/".base1". Section adalah bagian-bagian dalam file executable yang menyimpan kode, data, dan informasi lainnya.
-	\item \bo{MapFilePath :} Path ke file map. File map berisi informasi mengenai alamat dan simbol dalam program, yang dapat digunakan untuk debugging atau analisis.
-	\item \bo{SignatureMode :} Kemampuan untuk melakukan obfuscation dengan menambahkan tanda tangan (signature) dalam lingkungan di mana SDK tidak dapat ditemukan (misalnya, bahasa native yang berbeda). Signature dapat digunakan untuk memverifikasi integritas kode atau untuk keperluan lisensi.
-	\item \bo{Virtualizer :} Pengaturan untuk fitur virtualisasi.
-	      \begin{itemize}
-		      \item \bo{EntryPoint :} Memvirtualisasi entry point program. Entry point adalah alamat memori tempat eksekusi program dimulai. Memvirtualisasi entry point dapat mempersulit attacker untuk memahami bagaimana program dimulai dan bagaimana alur kontrol program diinisialisasi.
-	      \end{itemize}
-	\item \bo{Obfuscator :} Pengaturan untuk code flattening atau obfuscation umum.
-	      \begin{itemize}
-		      \item \bo{EntryPoint :} Meng-obfuscasi entry point program.
-		      \item \bo{Function :} Meng-obfuscasi fungsi-fungsi tertentu yang dipilih dalam file map.
-	      \end{itemize}
-	\item \bo{Packer :} Pengaturan untuk kompresi dan obfuscation biner. Packer adalah program yang mengompresi dan/atau meng-obfuscasi file executable untuk mempersulit reverse engineering.
-	      \begin{itemize}
-		      \item \bo{Enable :} Flag yang menentukan apakah biner perlu dikompresi.
-	      \end{itemize}
-	\item \bo{SymbolData :} Flag yang menentukan apakah simbol-simbol debugging perlu dicatat (logged). Simbol-simbol debugging berisi informasi yang berguna untuk debugging, tetapi juga dapat membantu reverse engineer dalam memahami kode.
-	\item \bo{UseAntiTemper :} Pengaturan untuk fitur anti-tamper. Anti-tamper adalah teknik untuk mencegah atau mendeteksi modifikasi yang tidak sah pada kode.
-	      \begin{itemize}
-		      \item \bo{Enable :} Nilai yang menentukan apakah fitur anti-tamper diaktifkan.
-		      \item \bo{Message :} Pesan deteksi yang akan ditampilkan ketika deteksi oleh fitur deteksi tertentu.
-	      \end{itemize}
-	\item \bo{extension :} Daftar modul ekstensi VxLang. Modul ekstensi dapat digunakan untuk menambahkan fungsionalitas tambahan ke VxLang.
-	\item \bo{RawData :} Daftar data yang menyertai modul ekstensi. Daftar ini tersedia dalam modul ekstensi.
-\end{itemize}
+\subsubsection{Proses Virtualisasi VxLang}
+Setelah kode sumber ditandai menggunakan makro SDK dan dikompilasi menjadi \textit{executable intermediate} yang tertaut dengan library VxLang, langkah selanjutnya adalah pemrosesan menggunakan \textit{tool} VxLang. \textit{Tool} ini dijalankan melalui \textit{command-line} secara langsung pada \textit{executable intermediate}. Contohnya:
+\begin{verbatim}
+    vxlang.exe target_intermediate.exe
+\end{verbatim}
+\textit{Tool} ini akan menganalisis penanda virtualisasi dalam \textit{executable intermediate}, mengganti kode \textit{native} yang ditandai dengan representasi \textit{bytecode} internal, dan menyematkan \textit{runtime Virtual Machine} (VM) yang diperlukan. Proses ini secara otomatis menghasilkan \textit{executable} akhir yang telah tervirtualisasi, biasanya dengan menambahkan sufiks \texttt{\_vxm} pada nama file asli (misalnya, \texttt{target\_intermediate\_vxm.exe}). \textit{Executable} inilah yang kemudian digunakan untuk distribusi atau pengujian lebih lanjut. Detail mengenai opsi \textit{command-line} lanjutan atau kustomisasi (jika ada) berada di luar cakupan tinjauan ini.
 
 \section{\textit{Graphical User Interface Frameworks}}
 Dalam pengembangan aplikasi autentikasi sebagai bagian dari demonstrasi pada penelitian ini, digunakan dua framework antarmuka pengguna grafis (GUI) yang berbeda, yaitu Qt Framework dan Dear ImGUI.

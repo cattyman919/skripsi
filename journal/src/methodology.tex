@@ -62,3 +62,6 @@ For each benchmark application (original and virtualized):
     \item \textbf{Quantitative Performance Data:} Calculation of descriptive statistics (mean, standard deviation), percentage overhead for execution time, throughput calculation (MB/s), and percentage increase in file size. Comparative tables and graphs will be used for presentation.
     \item \textbf{Trade-off Analysis:} Synthesis of security findings and performance results to evaluate the balance between protection enhancement and performance/size costs introduced by VxLang.
 \end{itemize}
+
+\subsubsection{Case Study: Lilith RAT}
+To further evaluate VxLang's effectiveness on more complex software potentially exhibiting malicious characteristics and to assess its impact on automated detection tools, a Remote Administration Tool (RAT) named Lilith \cite{LilithRAT} was included as an additional study object. The client component of this open-source C++ RAT was compiled and analyzed both in its original form and after applying VxLang virtualization to its core functions. Analysis focused on static/dynamic reverse engineering difficulty, functional integrity post-virtualization, and detection rates by antivirus engines via VirusTotal.

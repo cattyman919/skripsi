@@ -58,10 +58,10 @@
 \usepackage{hyperref} % Creates hyperlinks in the document
 \hypersetup{ % Configuration for hyperref (moved from journal.tex)
     colorlinks=true,
-    linkcolor=blue,
-    filecolor=magenta,
-    urlcolor=cyan,
-    citecolor=green, % Adjusted cite color
+    linkcolor=blue,    % Warna untuk tautan internal (misal: ke section, gambar)
+    filecolor=magenta, % Warna untuk tautan ke file lokal
+    urlcolor=cyan,     % Warna untuk URL eksternal
+    citecolor=blue,    % cite color
     pdftitle={Effectiveness of Code Virtualization using VxLang}, % Example title
     pdfpagemode=FullScreen, % Example setting
     pdfauthor={Seno Pamungkas Rahman}, % Add author metadata
@@ -74,6 +74,8 @@
 \pgfplotsset{compat=1.18} % Set compatibility for pgfplots (moved from journal.tex)
 \usetikzlibrary{arrows.meta} % Load tikz library if needed by plots
 
+\usepackage{xcolor}
+\usepackage{minted}
 % correct bad hyphenation here
 \hyphenation{op-tical net-works semi-conduc-tor re-verse en-gi-neer-ing vir-tu-al-i-za-tion}
 

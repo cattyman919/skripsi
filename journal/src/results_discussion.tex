@@ -50,6 +50,15 @@ The effectiveness of VxLang virtualization was evaluated through static and dyna
 
 These results strongly indicate that VxLang's code virtualization effectively hinders both static and dynamic reverse engineering attempts using standard tools and techniques.
 
+\subsubsection{Analysis of Lilith RAT}
+Static and dynamic analysis were also performed on the Lilith RAT client (original vs. virtualized). Findings mirrored those from the authentication case studies:
+    \begin{itemize}
+        \item \textbf{Non-Virtualized:} Analysis was feasible. Strings related to commands and functionality were identifiable. Control flow for network communication and command handling could be traced using Ghidra and x64dbg, allowing potential understanding of its mechanisms (e.g., keylogging, remote execution).
+        \item \textbf{Virtualized:} Analysis difficulty increased significantly. Ghidra failed to properly disassemble virtualized sections, showing numerous '???' entries and obscuring the logic. Dynamic tracing in x64dbg was severely hampered by the VM execution, making it hard to follow command processing or data flow.
+        \item \textbf{Functional Integrity:} Importantly, functional testing confirmed that the virtualized Lilith client remained fully operational, successfully connecting to the server and executing core RAT commands, despite the code transformation.
+    \end{itemize}
+This indicates VxLang's virtualization hinders analysis even for complex, potentially malicious software, without necessarily breaking its intended functionality.
+
 \subsection{Performance and Size Overhead Results}
 
 \subsubsection{Execution Time Overhead}
@@ -178,13 +187,22 @@ Table \ref{tab:file_size} shows a consistent increase in executable file size af
     \end{tabular}
 \end{table}
 
+\subsection{VirusTotal Detection Analysis}
+To assess the impact of VxLang virtualization on automated malware detection, both the original and virtualized Lilith RAT client executables were submitted to VirusTotal, a service aggregating results from numerous antivirus engines.
+
+\begin{itemize}
+    \item \textbf{Non-Virtualized Lilith:} Detected by \textbf{22 out of 72} engines. Analysis revealed specific threat labels like "trojan.lilithrat/keylogger" and family labels including "lilithrat" and "keylogger". Detections often included specific names like "Backdoor:Win64/LilithRat.GA!MTB" or "Trojan[Backdoor]/Win64.LilithRAT", indicating recognition based on known signatures or specific RAT characteristics.
+    \item \textbf{Virtualized Lilith:} Detected by \textbf{18 out of 72} engines, showing a decrease in detection rate. The popular threat label became a generic "trojan", and specific family labels disappeared. Detection signatures shifted towards generic malware, heuristic-based flags, AI/ML detections, or packed/protected software warnings (e.g., "Trojan:Win32/Wacatac.C!ml", "Static AI - Suspicious PE", "ML.Attribute.HighConfidence", "RiskWare[Packed]/Win32.VMProtect.a"). Notably, some vendors that flagged the original version (like Avast, based on thesis observation) no longer detected the virtualized version or provided less specific flags.
+\end{itemize}
+These results suggest that VxLang virtualization effectively obfuscates static signatures used by many traditional antivirus engines, forcing reliance on less specific heuristic or AI-based methods, and potentially evading detection by some vendors altogether. The detection as "Packed/VMProtect" indicates the virtualization layer itself can be flagged as suspicious by some tools, similar to known packers/protectors.
+
 \subsection{Discussion}
 The experimental results clearly demonstrate the core trade-off inherent in using VxLang's code virtualization.
 
-\textbf{Security Enhancement:} VxLang provides a substantial barrier against common reverse engineering techniques. The transformation of native code into an interpreted bytecode format effectively neutralizes standard static analysis tools like Ghidra and significantly complicates dynamic analysis with debuggers like x64dbg. The obfuscation of control flow and data within the virtualized sections makes identifying and manipulating critical logic, such as authentication checks, extremely challenging compared to non-virtualized code. This aligns with the expected security benefits of VM-based obfuscation \cite{Ore06, Sal18}.
+\textbf{Security Enhancement and Detection Evasion:} VxLang provides a substantial barrier against common reverse engineering techniques, applicable even to complex software like the Lilith RAT while preserving its functionality. The transformation into interpreted bytecode neutralizes standard static analysis tools (Ghidra) and significantly complicates dynamic analysis (x64dbg). Furthermore, the VirusTotal analysis indicates that this obfuscation extends to automated malware detection; VxLang effectively hinders signature-based detection, reduces overall detection rates, and forces AV engines towards more generic or heuristic approaches. This capability to evade specific detection signatures adds another layer to its protective potential, aligning with the expected benefits of advanced obfuscation \cite{Ore06, Sal18, Rou13}.
 
-\textbf{Performance Cost:} The security benefits come at a steep price in terms of performance. The interpretation overhead introduced by the VM significantly slows down the execution of virtualized code, particularly for computationally intensive tasks like sorting or cryptographic operations. The observed overhead percentages (often exceeding several thousand percent for QuickSort) highlight that virtualizing performance-critical loops or frequently called functions can severely impact application responsiveness.
+\textbf{Performance Cost:} The security and evasion benefits come at a steep price in terms of performance. The interpretation overhead significantly slows down virtualized code, especially for computationally intensive tasks (QuickSort, AES), potentially rendering indiscriminate application impractical due to severe speed degradation.
 
-\textbf{Size Increase:} The considerable increase in file size, especially for smaller applications, is another factor to consider. This is primarily due to the embedded VM runtime. While less critical than performance for many desktop applications, it might be a concern for resource-constrained environments or distribution size limits.
+\textbf{Size Increase:} The considerable increase in file size, mainly due to the embedded VM runtime, is another factor, particularly relevant for smaller applications or distribution constraints.
 
-\textbf{Practical Implications:} VxLang appears to be a potent tool for protecting highly sensitive code segments where security is paramount and performance impact on those specific segments is acceptable or manageable. Examples include anti-tamper mechanisms, license validation routines, or core algorithmic intellectual property. However, applying it indiscriminately to large portions of an application, especially performance-sensitive areas, is likely impractical due to the severe execution speed degradation. Developers must strategically select which code sections warrant the high level of protection (and associated cost) offered by virtualization. The choice between hardcoded and cloud-based authentication showed that while cloud validation removes credentials from the client, the client-side logic handling the *result* of the validation remains a viable target for bypass if not protected, reinforcing the need for techniques like virtualization on critical client-side checks.
+\textbf{Practical Implications:} VxLang appears potent for protecting highly sensitive code where security and potentially detection evasion are paramount, and the performance impact on those specific segments is acceptable (e.g., anti-tamper, licensing, core IP). The Lilith case shows it can protect complex logic without breaking it. However, the severe performance cost necessitates a strategic, selective application, targeting only critical sections. The VirusTotal results also imply that while detection is hindered, it's not eliminated, especially by heuristic/AI methods or tools flagging the protection layer itself. The choice between hardcoded and cloud-based authentication showed that protecting client-side logic handling the *result* of validation remains crucial, reinforcing the need for techniques like virtualization on critical checks, regardless of where primary authentication occurs.

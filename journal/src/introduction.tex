@@ -11,7 +11,7 @@ This paper investigates the effectiveness of code virtualization using VxLang in
     \item What is the quantifiable impact of VxLang's virtualization on application performance (execution time) and file size?
 \end{enumerate}
 
-To address these questions, we implement VxLang's virtualization on selected functions within case study applications (simulating authentication) and performance benchmarks (QuickSort, AES encryption). We then perform comparative static analysis (using Ghidra \cite{Nat19}) and dynamic analysis (using x64dbg \cite{Dun14}) on the original and virtualized binaries. Performance overhead is measured by comparing execution times and executable sizes.
+To address these questions, we implement VxLang's virtualization on selected functions within case study applications (simulating authentication) and performance benchmarks (QuickSort, AES encryption). We then perform comparative static analysis (using Ghidra \cite{Nat19}) and dynamic analysis (using x64dbg \cite{Dun14}) on the original and virtualized binaries. Performance overhead is measured by comparing execution times and executable sizes, and the impact on automated malware detection tools is assessed using VirusTotal analysis on a relevant case study.
 
 The primary contributions of this work are:
 \begin{itemize}

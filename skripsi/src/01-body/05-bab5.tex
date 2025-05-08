@@ -340,3 +340,102 @@ Tabel \ref{tab:file_size} menyajikan ukuran file executable (dalam KB) untuk ber
 \end{table}
 
 Hasil pengukuran ukuran file menunjukkan bahwa penerapan virtualisasi kode menggunakan VxLang secara umum meningkatkan ukuran file executable. Peningkatan ukuran file sangat signifikan untuk program-program kecil seperti quick\_sort, encryption, dan console, di mana ukurannya meningkat lebih dari sepuluh kali lipat. Untuk aplikasi GUI yang lebih besar seperti app\_imgui dan app\_qt, peningkatan ukuran file juga terlihat, meskipun persentasenya mungkin lebih kecil dibandingkan dengan program yang lebih kecil. Peningkatan ukuran file size relatif lebih kecil, namun tetap signifikan. Peningkatan ukuran ini kemungkinan disebabkan oleh penambahan interpreter mesin virtual VxLang dan bytecode yang dihasilkan ke dalam executable yang dilindungi.
+
+\section{Analisis Aplikasi RAT Lilith dengan VxLang}
+\label{bab:hasil_penelitian_lilith}
+Bagian ini menyajikan hasil analisis terhadap aplikasi RAT Lilith, baik dalam versi asli maupun versi yang telah divirtualisasi menggunakan VxLang. Analisis mencakup evaluasi kesulitan \textit{reverse engineering} secara statis dan dinamis, serta dampak virtualisasi terhadap deteksi oleh layanan pemindaian \textit{malware} VirusTotal.
+
+\subsection{Analisis Statis dan Dinamis RAT Lilith}
+\label{subsec:analisis_statdin_lilith}
+Analisis statis menggunakan Ghidra dan analisis dinamis menggunakan x64dbg dilakukan pada kedua versi klien Lilith.
+\begin{itemize}
+    \item \textbf{RAT Lilith Non-Virtualized:} Analisis terhadap versi asli Lilith relatif mudah dilakukan. \textit{String} terkait fungsionalitasnya (misalnya, perintah-perintah, pesan status) dapat ditemukan. Alur kontrol untuk pemrosesan perintah dan komunikasi jaringan dapat dilacak. Dengan pemahaman yang cukup, seorang analis dapat mengidentifikasi mekanisme \textit{keylogging}, cara kerja perintah \textit{remote control}, dan bagaimana data dikirimkan antara klien dan server.
+    \item \textbf{RAT Lilith Virtualized:} Sejalan dengan temuan pada aplikasi studi kasus autentikasi, versi Lilith yang telah divirtualisasi menunjukkan peningkatan kesulitan analisis yang signifikan:
+        \begin{itemize}
+            \item \textbf{Analisis Statis (Ghidra):} Sebagian besar instruksi dalam fungsi-fungsi yang divirtualisasi tidak dapat di-\textit{disassemble} dengan benar oleh Ghidra, menghasilkan banyak blok kode yang ditandai sebagai '???' atau instruksi yang tidak valid. \textit{String-string} penting yang diobservasi pada versi asli menjadi sulit atau tidak mungkin ditemukan. Memahami alur logika utama dan fungsionalitas spesifik seperti \textit{keylogging} atau penanganan perintah menjadi sangat terhambat.
+            \item \textbf{Analisis Dinamis (x64dbg):} Pelacakan eksekusi pada bagian yang divirtualisasi juga sangat sulit. Seperti pada kasus sebelumnya, \textit{Instruction Pointer} (RIP) seringkali tampak melakukan lompatan yang tidak terduga atau berputar dalam blok kode kecil, yang mengindikasikan eksekusi oleh VM internal VxLang. Upaya untuk memasang \textit{breakpoint} pada fungsi-fungsi inti menjadi kurang efektif karena fungsi asli telah ditransformasi menjadi \textit{bytecode}.
+        \end{itemize}
+    \item \textbf{Fungsionalitas Aplikasi:} Meskipun mengalami virtualisasi, pengujian fungsionalitas menunjukkan bahwa klien Lilith yang tervirtualisasi \textbf{tetap dapat berjalan dengan normal}. Klien mampu terhubung ke server, menerima perintah, menjalankan fungsi seperti \textit{remote command execution} dan \textit{keylogging}, serta mengirimkan hasilnya kembali ke server. Hal ini menunjukkan bahwa VxLang berhasil memvirtualisasi kode tanpa merusak fungsionalitas inti dari aplikasi yang kompleks seperti RAT.
+\end{itemize}
+
+\subsection{Analisis Deteksi Malware RAT Lilith menggunakan VirusTotal}
+\label{subsec:analisis_virustotal_lilith}
+Untuk mengevaluasi bagaimana virtualisasi kode VxLang mempengaruhi deteksi oleh perangkat lunak antivirus/antimalware, kedua versi \textit{executable} klien Lilith (asli dan virtualized) diunggah ke layanan VirusTotal. VirusTotal adalah layanan daring gratis yang menganalisis \textit{file} dan URL menggunakan lebih dari 70 \textit{engine} antivirus dan layanan pemindaian \textit{website blacklist}.
+
+\subsubsection{Hasil Analisis VirusTotal pada Lilith Non-Virtualized}
+\textit{Executable} klien Lilith versi asli (\f{Lilith\_Client.exe}) diunggah ke VirusTotal. Hasil analisis menunjukkan bahwa \textit{file} ini terdeteksi sebagai berbahaya oleh sejumlah besar vendor keamanan. Ringkasan hasil dapat dilihat pada Gambar \ref{fig:virustotal_lilith_non_vm}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{\Assets/lilith_analyze.png} % Sesuaikan path dan ukuran
+    \caption{Hasil Analisis VirusTotal untuk Klien Lilith RAT Non-Virtualized.}
+    \label{fig:virustotal_lilith_non_vm}
+\end{figure}
+
+Observasi utama dari hasil analisis VirusTotal untuk Lilith non-virtualized adalah:
+\begin{itemize}
+    \item \textbf{Tingkat Deteksi:} Terdeteksi oleh \textbf{22 dari 72} vendor keamanan.
+    \item \textbf{Label Ancaman Populer (\textit{Popular Threat Label}):} Dilabeli sebagai "\textit{trojan.lilithrat/keylogger}".
+    \item \textbf{Kategori Ancaman (\textit{Threat Categories}):} Dikategorikan sebagai "\textit{trojan}".
+    \item \textbf{Label Keluarga (\textit{Family Labels}):} Teridentifikasi dengan label keluarga spesifik seperti "\textit{lilithrat}", "\textit{keylogger}", dan "\textit{qydfv}".
+    \item \textbf{Deteksi Vendor Spesifik:} Banyak vendor memberikan nama deteksi yang jelas merujuk pada sifat RAT atau Trojan, contohnya:
+        \begin{itemize}
+            \item Microsoft: \textit{Backdoor:Win64/LilithRat.GA!MTB}
+            \item Kaspersky: \textit{Trojan.TR/AVI.Rat.qydfv}
+            \item Malwarebytes: \textit{Backdoor.Lilith} (Contoh, mungkin berbeda)
+            \item Beberapa vendor lain: \textit{Win64:MalwareX-gen [Rat]}, \textit{Trojan[Backdoor]/Win64.LilithRAT}, \textit{Generic Malware}.
+        \end{itemize}
+\end{itemize}
+Hasil ini menunjukkan bahwa Lilith RAT versi asli, karena sifat dan perilakunya, dikenali oleh banyak \textit{engine} antivirus sebagai perangkat lunak berbahaya dengan identifikasi yang cukup spesifik merujuk pada nama atau karakteristiknya.
+
+\subsubsection{Hasil Analisis VirusTotal pada Lilith Virtualized}
+Selanjutnya, \textit{executable} klien Lilith yang telah divirtualisasi menggunakan VxLang (\f{Lilith\_Client\_vm.exe}) diunggah ke VirusTotal. Hasil analisis menunjukkan perubahan signifikan dalam pola deteksi, seperti yang dirangkum pada Gambar \ref{fig:virustotal_lilith_vm}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{\Assets/lilith_vm_analyze.png} % Sesuaikan path dan ukuran
+    \caption{Hasil Analisis VirusTotal untuk Klien Lilith RAT yang Divirtualisasi VxLang.}
+    \label{fig:virustotal_lilith_vm}
+\end{figure}
+
+Observasi utama dari hasil analisis VirusTotal untuk Lilith yang divirtualisasi adalah:
+\begin{itemize}
+    \item \textbf{Tingkat Deteksi:} Terdeteksi oleh \textbf{18 dari 72} vendor keamanan. Terjadi penurunan jumlah vendor yang mendeteksi \textit{file} sebagai berbahaya dibandingkan versi non-virtualized.
+    \item \textbf{Label Ancaman Populer (\textit{Popular Threat Label}):} Label ancaman populer berubah menjadi lebih generik, yaitu "\textit{trojan}". Label spesifik "\textit{trojan.lilithrat/keylogger}" tidak lagi muncul.
+    \item \textbf{Kategori Ancaman (\textit{Threat Categories}):} Tetap dikategorikan sebagai "\textit{trojan}".
+    \item \textbf{Label Keluarga (\textit{Family Labels}):} \textbf{Tidak ada} label keluarga spesifik yang teridentifikasi. Ini kontras dengan versi non-virtualized yang memiliki label seperti "lilithrat" dan "keylogger".
+    \item \textbf{Deteksi Vendor Spesifik:} Karakteristik deteksi dari vendor berubah. Beberapa contoh deteksi meliputi:
+        \begin{itemize}
+            \item ClamAV: \textit{Win.Malware.Generic-9995066-S} (Contoh, deteksi generik)
+            \item Jiangmin: \textit{Trojan.Malware.300983.susgen}
+            \item Microsoft: \textit{Trojan:Win32/Wacatac.C!ml} (Deteksi berbasis \textit{Machine Learning})
+            \item Beberapa vendor lain: \textit{Win/malicious\_confidence\_70\%} (Deteksi berbasis tingkat kepercayaan), \textit{Malicious (score: 100)}, \textit{Static AI - Suspicious PE}, \textit{ML.Attribute.HighConfidence}, \textit{W64.AIDetectMalware}, \textit{RiskWare[Packed]/Win32.VMProtect.a}, \textit{Malicious.moderate.ml.score}.
+        \end{itemize}
+        Terlihat bahwa banyak deteksi bersifat generik, berbasis heuristik, \textit{Artificial Intelligence} (AI), atau bahkan mendeteksi adanya \textit{packer} (seperti indikasi "VMProtect", meskipun VxLang yang digunakan). Vendor Avast, yang sebelumnya mungkin mendeteksi versi non-virtualized (perlu diverifikasi dari hasil lengkap VirusTotal), tidak lagi memberikan deteksi spesifik atau bahkan mungkin tidak mendeteksinya sama sekali pada versi virtualized ini.
+\end{itemize}
+
+\subsubsection{Pembahasan Hasil Analisis VirusTotal pada Lilith}
+Perbandingan hasil analisis VirusTotal antara Lilith versi asli dan versi yang divirtualisasi VxLang menunjukkan beberapa poin penting mengenai efektivitas virtualisasi dalam konteks deteksi \textit{malware}:
+\begin{enumerate}
+    \item \textbf{Pengaburan \textit{Signature} Statis:} Penurunan jumlah deteksi dan hilangnya label keluarga serta label ancaman spesifik (seperti "lilithrat" atau "keylogger") mengindikasikan bahwa VxLang berhasil mengaburkan \textit{signature} statis dari Lilith RAT. \textit{Malware scanner} yang sangat bergantung pada pencocokan pola byte unik dari \textit{malware} yang diketahui menjadi kurang efektif. Virtualisasi mengubah struktur biner kode secara fundamental, sehingga \textit{signature} yang ada untuk versi asli tidak lagi cocok.
+
+    \item \textbf{Perubahan Karakteristik Deteksi:} Deteksi pada versi virtualisasi cenderung lebih generik atau berbasis mekanisme canggih seperti AI/ML dan heuristik. Label seperti "\textit{Static AI - Suspicious PE}", "\textit{ML.Attribute.HighConfidence}", atau "\textit{Trojan:Win32/Wacatac.C!ml}" menunjukkan bahwa beberapa \textit{engine} masih dapat menandai \textit{file} sebagai mencurigakan atau berbahaya, tetapi bukan berdasarkan \textit{signature} spesifik Lilith, melainkan berdasarkan karakteristik umum yang dipelajari oleh model AI/ML atau aturan heuristik yang lebih luas.
+
+    \item \textbf{Deteksi sebagai \textit{Packed/Protected Software}:} Munculnya deteksi seperti "\textit{RiskWare[Packed]/Win32.VMProtect.a}" menarik. Meskipun VxLang adalah \textit{tool} yang berbeda dari VMProtect, deteksi ini menyiratkan bahwa teknik virtualisasi yang digunakan oleh VxLang memiliki karakteristik yang mungkin mirip dengan \textit{packer} atau protektor komersial lainnya yang dikenal oleh \textit{engine} antivirus. \textit{Software} yang dikemas atau diproteksi seringkali ditandai sebagai "\textit{RiskWare}" atau mencurigakan karena teknik ini juga umum digunakan oleh pembuat \textit{malware} untuk menghindari deteksi. Ini menunjukkan bahwa VxLang sendiri, sebagai lapisan proteksi, dapat memicu jenis deteksi tertentu.
+
+    \item \textbf{Efektivitas Menghindari Deteksi Vendor Tertentu:} Seperti yang Anda observasi dengan Avast (dan mungkin vendor lain yang tidak lagi mendeteksi atau memberikan deteksi yang lebih lemah), virtualisasi VxLang dapat efektif dalam melewati deteksi dari beberapa vendor yang mungkin memiliki \textit{signature} yang baik untuk versi asli Lilith tetapi belum memiliki \textit{signature} atau heuristik yang cukup baik untuk versi yang diobfuskasi oleh VxLang.
+
+    \item \textbf{Cara Kerja \textit{Malware Scanner} dan Pengaruh Virtualisasi:}
+        Secara umum, \textit{malware scanner} menggunakan beberapa metode:
+        \begin{itemize}
+            \item \textbf{\textit{Signature-based Detection}:} Mencocokkan pola byte dalam \textit{file} dengan \textit{database signature malware} yang diketahui. Virtualisasi sangat efektif melawan ini karena mengubah pola byte secara drastis.
+            \item \textbf{\textit{Heuristic Analysis}:} Mencari karakteristik atau perilaku yang mencurigakan (misalnya, upaya memodifikasi \textit{registry} sistem, penggunaan API tertentu yang sering disalahgunakan, struktur kode yang tidak biasa). Virtualisasi dapat mengaburkan beberapa heuristik statis, tetapi heuristik dinamis (jika \textit{scanner} melakukan emulasi/sandboxing) mungkin masih bisa menangkap perilaku berbahaya.
+            \item \textbf{\textit{Behavioral Analysis (Sandboxing)}:} Menjalankan \textit{file} dalam lingkungan terisolasi (\textit{sandbox}) untuk mengamati perilakunya secara langsung. Jika Lilith yang tervirtualisasi tetap menunjukkan perilaku RAT yang khas (misalnya, koneksi ke server, \textit{keylogging}), \textit{scanner} dengan kemampuan \textit{sandboxing} canggih mungkin masih dapat mendeteksinya berdasarkan perilaku. Namun, virtualisasi dapat memperlambat analisis dinamis ini atau bahkan mencoba mendeteksi lingkungan \textit{sandbox}.
+            \item \textbf{\textit{Machine Learning/AI-based Detection}:} Model ML dilatih pada dataset besar \textit{file} bersih dan berbahaya untuk mengidentifikasi pola kompleks yang mungkin tidak terlihat oleh manusia atau heuristik sederhana. Deteksi seperti "\textit{Static AI}" atau "\textit{ML.Attribute}" menunjukkan penggunaan teknik ini. VxLang mungkin mengubah beberapa fitur yang dipelajari model ini, tetapi fitur lain yang lebih abstrak atau terkait dengan metadata \textit{file} (seperti tingkat entropi yang tinggi karena enkripsi/kompresi oleh \textit{virtualizer}) mungkin masih memicu deteksi.
+        \end{itemize}
+        Virtualisasi oleh VxLang mempersulit \textit{signature-based detection} dan analisis heuristik statis. Namun, \textit{file} yang tervirtualisasi masih dapat terdeteksi oleh analisis perilaku atau model AI/ML, meskipun mungkin dengan tingkat kepercayaan yang berbeda atau label yang lebih generik.
+
+    \item \textbf{Implikasi Keamanan:} Temuan ini menggarisbawahi bahwa meskipun VxLang dapat secara signifikan mempersulit \textit{reverse engineering} manual dan mengurangi tingkat deteksi oleh beberapa \textit{engine} antivirus (terutama yang berbasis \textit{signature}), aplikasi yang dilindungi (termasuk \textit{malware}) tidak menjadi sepenuhnya tidak terdeteksi. Namun, virtualisasi memberikan lapisan penghalang tambahan yang memaksa analis atau \textit{engine} antivirus untuk menggunakan teknik yang lebih canggih atau memakan waktu lebih lama untuk analisis yang akurat.
+\end{enumerate}
+
+Secara keseluruhan, analisis VirusTotal pada RAT Lilith memperkuat kesimpulan bahwa \textit{code virtualization} menggunakan VxLang efektif dalam mengaburkan kode, tidak hanya dari analis manusia tetapi juga dari mekanisme deteksi otomatis \textit{malware scanner}, meskipun tidak membuatnya "kebal" sepenuhnya.
