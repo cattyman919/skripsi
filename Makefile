@@ -16,8 +16,8 @@ JOURNAL = journal
 
 BUILD_FLAGS = -synctex=1 -pdf -shell-escape -file-line-error -auxdir=../aux -outdir=../out
 
-OUTPUT_SKRIPSI_NAME = "Seno Pamungkas Rahman_Skripsi"
-OUTPUT_JOURNAL_NAME = "Seno Pamungkas Rahman_Journal"
+OUTPUT_SKRIPSI_NAME = "Seno Pamungkas Rahman_Skripsi (Latex)"
+OUTPUT_JOURNAL_NAME = "Seno Pamungkas Rahman_Journal (Latex)"
 
 # Targets
 all: $(SKRIPSI) $(JOURNAL)
