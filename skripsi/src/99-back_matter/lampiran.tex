@@ -1,6 +1,6 @@
 %-----------------------------------------------------------------------------%
 \chapter*{Kode Sumber Lengkap Aplikasi Autentikasi}
-\label{app:kode_sumber} % Label untuk referensi dari Bab 4
+\label{app:kode_sumber} 
 %-----------------------------------------------------------------------------%
 
 Berikut adalah kode sumber lengkap untuk beberapa bagian penting dari aplikasi studi kasus autentikasi yang dibahas pada Bab 4.
@@ -13,9 +13,7 @@ Berikut adalah kode sumber lengkap untuk beberapa bagian penting dari aplikasi s
 #include <vector> // Contoh include lain jika ada
 
 // Jika menggunakan VxLang, header-nya di-include di sini
-#ifdef USE_VL_MACRO
 #include "vxlang/vxlib.h"
-#endif
 
 int main(int, char *[]) {
     std::string inputUsername;
@@ -26,9 +24,7 @@ int main(int, char *[]) {
     std::cout << "Enter password: ";
     std::cin >> inputPassword;
 
-    #ifdef USE_VL_MACRO
     VL_VIRTUALIZATION_BEGIN;
-    #endif
 
     if (inputUsername.compare("seno") == 0 &&
         inputPassword.compare("rahman") == 0) {
@@ -37,9 +33,7 @@ int main(int, char *[]) {
         std::cout << "Not authorized." << std::endl;
     }
 
-    #ifdef USE_VL_MACRO
     VL_VIRTUALIZATION_END;
-    #endif
 
     system("pause"); // Hanya untuk Windows agar console tidak langsung tertutup
     return 0;
@@ -55,9 +49,7 @@ int main(int, char *[]) {
 #include "cloud.hpp" // Asumsi header ini berisi send_login_request
 
 // Jika menggunakan VxLang, header-nya di-include di sini
-#ifdef USE_VL_MACRO
 #include "vxlang/vxlib.h"
-#endif
 
 int main(int, char *[]) {
     std::string inputUsername;
@@ -70,9 +62,7 @@ int main(int, char *[]) {
 
     bool isAuthenticated = false; // Default value
 
-    #ifdef USE_VL_MACRO
     VL_VIRTUALIZATION_BEGIN;
-    #endif
 
     isAuthenticated = send_login_request(inputUsername, inputPassword);
 
@@ -82,9 +72,7 @@ int main(int, char *[]) {
         std::cout << "Not authorized." << std::endl;
     }
 
-    #ifdef USE_VL_MACRO
     VL_VIRTUALIZATION_END;
-    #endif
 
     system("pause"); // Hanya untuk Windows
     return 0;
@@ -359,4 +347,269 @@ call <console.class std::basic_ostream<char, struct std::char_traits<char>> & __
 \captionof{listing}{Konteks Assembly Lengkap: Perbandingan Operasi Input/Output}
 \label{lst:asm_dynamic_io_comparison_full}
 
-% Tambahkan listing assembly lainnya jika diperlukan...
+\chapter*{Contoh Konfigurasi Build CMake dan Skrip Virtualisasi}
+\label{app:config_build_vx_full} % Label unik untuk lampiran ini
+
+Bagian ini menampilkan contoh sederhana bagaimana \textit{target build} yang berbeda (asli dan \textit{intermediate} untuk VxLang) dapat didefinisikan dalam \texttt{CMakeLists.txt} dan bagaimana \textit{tool} VxLang dijalankan melalui skrip.
+
+\begin{minted}[fontsize=\scriptsize, breaklines, frame=lines]{cmake}
+  # Contoh Penyederhanaan Logika CMakeLists.txt untuk Target 'console'
+  # (Fungsi add_project_executables pada proyek sebenarnya lebih komprehensif
+  # dan menangani varian GUI serta cloud secara terpadu)
+
+  # Variabel untuk direktori output (diasumsikan sudah di-set)
+  set(OUTPUT_DIR "${CMAKE_BINARY_DIR}/bin/console/${CMAKE_BUILD_TYPE}")
+
+  # Target Asli (Non-VM)
+  add_executable(console src/console/console.cpp 
+                 ${CMAKE_SOURCE_DIR}/public/resources/console.rc) # Contoh RC file
+  set_target_properties(console PROPERTIES 
+    RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_DIR}"
+    OUTPUT_NAME "console"
+  )
+  # Penentuan subsystem untuk console (jika tidak otomatis)
+  if(MSVC)
+    set_target_properties(console PROPERTIES LINK_FLAGS "/SUBSYSTEM:CONSOLE")
+  endif()
+
+  # Target Intermediate (untuk VxLang)
+  add_executable(console_vm src/console/console.cpp 
+                 ${CMAKE_SOURCE_DIR}/public/resources/console.rc) # Contoh RC file
+  target_compile_definitions(console_vm PRIVATE USE_VL_MACRO)
+  target_link_libraries(console_vm PRIVATE vxlib64) # vxlib64 dari link_directories()
+  set_target_properties(console_vm PROPERTIES
+      RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_DIR}"
+      OUTPUT_NAME "console_vm"
+  )
+  # Penentuan subsystem untuk console_vm (jika tidak otomatis)
+  if(MSVC)
+    set_target_properties(console_vm PROPERTIES LINK_FLAGS "/SUBSYSTEM:CONSOLE")
+  endif()
+  
+  # Catatan: Kode di atas adalah ilustrasi. Proyek menggunakan fungsi 
+  # add_project_executables yang lebih generik di CMakeLists.txt utama.
+  # Fungsi tersebut menangani berbagai target (console, qt, imgui, performance)
+  # dan variannya (standar, cloud, _vm, _cloud_vm) serta properti GUI/Console.
+  # Contoh relevan dari add_project_executables:
+  if(TARGET_VM_LIBS) # Untuk target _vm dan _cloud_vm
+    target_compile_definitions(${TARGET_NAME_VM} PRIVATE USE_VL_MACRO ${TARGET_DEFINITIONS})
+    target_link_libraries(${TARGET_NAME_VM} PRIVATE ${TARGET_VM_LIBS})
+    # ... set_target_properties ...
+  else() # Untuk target standar dan cloud standar
+    # ... tidak ada USE_VL_MACRO dan tidak ada link ke vxlib64 ...
+  endif()
+\end{minted}
+\captionof{listing}{Ilustrasi Konfigurasi CMake untuk Target Asli dan Intermediate VxLang}
+\label{lst:cmake_vxlang_appendix_full}
+
+\begin{minted}[fontsize=\scriptsize,  frame=lines, breaklines]{batch}
+  @echo off
+  setlocal enabledelayedexpansion
+
+  set build_type=Release
+  set vxlang_executable=vxlang\vxlang.exe  REM Path ke tool VxLang
+
+  rem Contoh untuk target 'console'
+  set target_name_base=console
+  set target_intermediate_path=bin\%target_name_base%\%build_type%\%target_name_base%_vm.exe
+  set target_virtualized_output=bin\%target_name_base%\%build_type%\%target_name_base%_vm.vxm.exe
+
+  echo.
+  echo Virtualizing %target_name_base% ...
+
+  if exist "%target_virtualized_output%" (
+    echo %target_virtualized_output% already exists. Skipping.
+  ) else (
+    if exist "%target_intermediate_path%" (
+      echo Processing %target_intermediate_path% with %vxlang_executable% ...
+      %vxlang_executable% "%target_intermediate_path%"
+      if exist "%target_virtualized_output%" (
+        echo Successfully virtualized: %target_virtualized_output%
+      ) else (
+        echo Failed to create %target_virtualized_output%
+      )
+    ) else (
+      echo Intermediate file %target_intermediate_path% does not exist. Build it first.
+    )
+  )
+  rem Proses serupa diulang untuk target lain seperti app_qt_vm.exe, Lilith_Client_vm.exe, dll.
+  endlocal
+\end{minted}
+\captionof{listing}{Contoh Penyederhanaan Skrip \texttt{virtualize.bat} untuk Satu Target}
+\label{lst:virtualize_bat_appendix_full}
+
+% --- Cuplikan Kode Benchmark dengan Makro VxLang ---
+\chapter*{Penempatan Makro VxLang pada Kode Benchmark}
+\label{app:benchmark_vxlang_macros_full} % Label unik
+
+\begin{minted}[fontsize=\scriptsize,  frame=lines, breaklines]{cpp}
+// Potongan relevan dari src/performance/quick_sort.cpp
+
+int partition(std::vector<int> &arr, int low, int high) {
+  // VL_VIRTUALIZATION_BEGIN; // Opsional, jika ingin virtualisasi partition
+  int pivot = arr[high];
+  int i = low - 1;
+
+  for (int j = low; j < high; j++) {
+    if (arr[j] <= pivot) {
+      i++;
+      std::swap(arr[i], arr[j]);
+    }
+  }
+  std::swap(arr[i + 1], arr[high]);
+  // VL_VIRTUALIZATION_END; // Opsional
+  return i + 1;
+}
+
+// Fungsi utama QuickSort yang divirtualisasi
+void quickSort(std::vector<int> &arr, int low, int high) {
+  VL_VIRTUALIZATION_BEGIN; // Makro VxLang Awal
+  if (low < high) {
+    // Pemanggilan partition terjadi di dalam blok tervirtualisasi
+    int pivot_index = partition(arr, low, high); 
+    
+    // Panggilan rekursif juga berada di dalam blok virtualisasi
+    quickSort(arr, low, pivot_index - 1);
+    quickSort(arr, pivot_index + 1, high);
+  }
+  VL_VIRTUALIZATION_END; // Makro VxLang Akhir
+}
+\end{minted}
+\captionof{listing}{Penempatan Makro VxLang pada Fungsi \texttt{quickSort}}
+\label{lst:quicksort_vxlang_macros_appendix_full}
+
+\begin{minted}[fontsize=\scriptsize,  frame=lines, breaklines]{cpp}
+  // Potongan relevan dari src/performance/encryption.cpp
+  // Fungsi untuk mengukur waktu enkripsi batch
+  double measureBatchEncryptionTime(AESCipher &aes,
+                                  const std::vector<std::vector<unsigned char>> &blocks,
+                                  std::vector<std::vector<unsigned char>> &encrypted) {
+      auto start = std::chrono::high_resolution_clock::now();
+      
+      VL_VIRTUALIZATION_BEGIN; // Makro VxLang Awal
+      encrypted.resize(blocks.size()); // Alokasi di luar loop utama enkripsi
+      for (size_t i = 0; i < blocks.size(); ++i) {
+          // Panggilan aes.encrypt() terjadi di dalam blok virtualisasi
+          encrypted[i] = aes.encrypt(blocks[i]); 
+      }
+      VL_VIRTUALIZATION_END; // Makro VxLang Akhir
+      
+      auto end = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double, std::micro> duration = end - start;
+      return duration.count();
+  }
+  // Fungsi measureBatchDecryptionTime memiliki struktur serupa
+\end{minted}
+\captionof{listing}{Penempatan Makro VxLang pada Loop Utama Benchmark Enkripsi AES}
+\label{lst:aes_vxlang_macros_appendix_full}
+
+% --- Cuplikan Kode Lilith RAT dengan Makro VxLang ---
+\chapter*{Contoh Penerapan Makro VxLang pada Lilith RAT}
+\label{app:lilith_vxlang_macros_full} % Label unik
+
+\begin{minted}[fontsize=\scriptsize,  frame=lines, breaklines]{cpp}
+  // Potongan dari src/Lilith/client/client.cpp
+  // Fungsi Client::ProcessPacketType(PacketType _PacketType)
+
+  // ...
+  case PacketType::Instruction: {
+    std::string msg;
+    if (!GetString(msg)) { // GetString sendiri mungkin tidak divirtualisasi
+      return false;
+    }
+    // Bagian inti pemrosesan perintah dan pengiriman respons divirtualisasi
+    VL_VIRTUALIZATION_BEGIN; 
+    // Panggil fungsi General::processCommand yang mungkin juga sebagian/seluruhnya divirtualisasi
+    std::string response = General::processCommand(msg); 
+    // SendString sendiri mungkin tidak divirtualisasi agar interaksi jaringan tetap native
+    SendString(response, PacketType::Instruction); 
+    VL_VIRTUALIZATION_END;
+    break;
+  }
+  // ...
+  case PacketType::CMDCommand: {
+    std::string msg;
+    if (!GetString(msg)) return false;
+
+    if (CMD::cmdptr != NULL) {
+      // Hanya interaksi dengan objek CMD yang divirtualisasi
+      VL_VIRTUALIZATION_BEGIN; 
+      CMD::cmdptr->writeCMD(msg); 
+      VL_VIRTUALIZATION_END;
+    } else {
+      // Jalur error handling mungkin tidak perlu divirtualisasi
+      SendString("Initiate a CMD session first.", PacketType::Warning);
+    }
+    break;
+  }
+  // ...
+  // Contoh lain: di dalam Client::ClientThread()
+  // Loop utama pemrosesan paket dapat divirtualisasi
+  /*
+  void Client::ClientThread() {
+    VL_VIRTUALIZATION_BEGIN; // Melingkupi seluruh loop atau bagian kritisnya
+    PacketType packetTypeReceived;
+    while (true) { // Kondisi loop mungkin lebih kompleks
+      if (!clientptr->GetPacketType(packetTypeReceived)) 
+        break; 
+      if (!clientptr->ProcessPacketType(packetTypeReceived)) 
+        break; 
+    }
+    // ... (logika setelah loop) ...
+    VL_VIRTUALIZATION_END;
+    // ... (cleanup koneksi) ...
+  }
+  */
+\end{minted}
+\captionof{listing}{Contoh Ilustratif Penempatan Makro VxLang pada Fungsi Inti Lilith RAT Client}
+\label{lst:lilith_vxlang_macros_appendix_full}
+
+% --- Isi Parsial dari Header VxLang SDK (vxlib.h) ---
+\chapter*{Isi Parsial Header VxLang SDK (\texttt{vxlib.h})}
+\label{app:vxlib_h_content_full} % Label unik
+
+\begin{minted}[fontsize=\scriptsize,  frame=lines, breaklines]{cpp}
+  #pragma once
+
+  // Bagian ini mengontrol aktivasi makro VxLang berdasarkan definisi USE_VL_MACRO
+  #ifdef USE_VL_MACRO
+    // Jika USE_VL_MACRO didefinisikan (misalnya, saat build _vm target),
+    // makro akan memanggil fungsi eksternal dari vxlib64.lib.
+    // Fungsi-fungsi ini adalah titik masuk ke runtime VxLang.
+    extern "C" void VxVirtualizationBegin();
+    extern "C" void VxVirtualizationEnd();
+
+    // Contoh untuk makro lainnya jika ada dan digunakan dalam proyek
+    // extern "C" void VxCodeFlatteningBegin();
+    // extern "C" void VxCodeFlatteningEnd();
+    // extern "C" void VxObfuscationBegin();
+    // extern "C" void VxObfuscationEnd();
+
+    // Definisi Makro yang Aktif
+    #define VL_VIRTUALIZATION_BEGIN            VxVirtualizationBegin()
+    #define VL_VIRTUALIZATION_END              VxVirtualizationEnd()
+
+    // #define VL_CODE_FLATTENING_BEGIN        VxCodeFlatteningBegin()
+    // #define VL_CODE_FLATTENING_END          VxCodeFlatteningEnd()
+    // #define VL_OBFUSCATION_BEGIN            VxObfuscationBegin()
+    // #define VL_OBFUSCATION_END              VxObfuscationEnd()
+    // ... dan seterusnya untuk makro lain yang aktif ...
+
+  #else
+    // Jika USE_VL_MACRO TIDAK didefinisikan (misalnya, saat build target asli),
+    // makro-makro ini menjadi kosong (tidak menghasilkan kode apa pun).
+    // Ini memungkinkan kode sumber yang sama digunakan untuk build asli dan virtualized.
+    #define VL_VIRTUALIZATION_BEGIN
+    #define VL_VIRTUALIZATION_END
+
+    // #define VL_CODE_FLATTENING_BEGIN
+    // #define VL_CODE_FLATTENING_END
+    // #define VL_OBFUSCATION_BEGIN
+    // #define VL_OBFUSCATION_END
+    // ... dan seterusnya untuk makro lain yang tidak aktif ...
+
+  #endif // USE_VL_MACRO
+
+\end{minted}
+\captionof{listing}{Mekanisme Kondisional Makro VxLang dalam \texttt{vxlib.h}}
+\label{lst:vxlib_h_content_appendix_full}

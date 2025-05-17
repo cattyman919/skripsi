@@ -30,7 +30,7 @@ CALL           qword ptr [->USER32.DLL::MessageBoxW] ; Tampilkan pesan gagal
 
 \end{minted}
 \caption{Snippet Assembly: Perbandingan Password dan Lompatan Kondisional (Non-Virtualized)}
-\label{lst:asm_static_nonvirt_snippet_updated} % Pastikan label unik jika ada versi lama
+\label{lst:asm_static_nonvirt_snippet} % Pastikan label unik jika ada versi lama
 \end{listing}
 
 Dalam konteks kode di atas, pemanggilan \code{memcmp} (di operasi \texttt{LEA}) membandingkan password yang dimasukkan pengguna dengan nilai "rahman" yang \textit{hardcoded} pada aplikasinya. Hasilnya diperiksa oleh \code{TEST EAX,EAX} (\texttt{140003216}). Jika password tidak sama, \code{EAX} tidak akan nol, dan instruksi \code{JNZ} (\texttt{140003218}, Jump if Not Zero) akan mengalihkan eksekusi ke \code{LAB\_140003226}, di mana pesan "Authentication Failed" ditampilkan. 
@@ -70,7 +70,7 @@ LAB_14000178e:  ; Blok kode jika gagal
 
 \end{minted}
 \caption{Snippet Assembly: Pemeriksaan Hasil Autentikasi Cloud (Non-Virtualized)}
-\label{lst:asm_static_cloud_snippet_updated} % Pastikan label unik
+\label{lst:asm_static_cloud_snippet} % Pastikan label unik
 \end{listing}
 
 Pada kode di atas, instruksi \code{TEST AL, 0x1} kemungkinan memeriksa flag atau nilai boolean yang dikembalikan oleh fungsi autentikasi cloud (misalnya, 1 untuk sukses, 0 untuk gagal). Instruksi \code{JNZ LAB\_14000175d} kemudian mengarahkan alur eksekusi ke blok "Authorized!" jika hasil tes tidak nol (sukses), dan sebaliknya akan jatuh ke \code{JMP LAB\_14000178e} atau langsung mengeksekusi blok "Not authorized". Sama seperti kasus sebelumnya, instruksi \code{JNZ} ini dapat dimanipulasi (misal, diubah menjadi \code{JMP LAB\_14000175d} atau \code{NOP}) untuk memaksa alur ke blok sukses, meskipun server menolak autentikasi. Konteks assembly yang lebih lengkap dapat dilihat pada Lampiran \ref{app:kode_asm} (Kode \ref{lst:asm_static_cloud_full}).
@@ -156,7 +156,7 @@ lea rdx, qword ptr ds:[<"Authentication Failed">]
 
 \end{minted}
 \caption{Snippet Assembly: Lompatan Kondisional Setelah Perbandingan Password (Dinamis, Non-Virtualized)}
-\label{lst:asm_dynamic_nonvirt_snippet_updated} % Pastikan label unik
+\label{lst:asm_dynamic_nonvirt_snippet} % Pastikan label unik
 \end{listing}
 
 Instruksi \code{test al, 1} memeriksa hasil perbandingan password. Jika password salah (misalnya, \code{al} adalah 0), instruksi \code{jne failure\_label} (Jump if Not Equal/Zero) akan dieksekusi, mengarahkan program ke blok yang menampilkan "Authentication Failed". Dalam analisis dinamis, \textit{debugger} seperti x64dbg memungkinkan \textit{patching on-the-fly}. Dengan mengubah instruksi \code{jne} menjadi \code{je} (Jump if Equal/Zero) atau \code{jmp} (lompatan tanpa syarat ke blok sukses), pemeriksaan password dapat dilewati secara efektif saat \textit{runtime}. Konteks assembly yang lebih lengkap dari sesi debugging ini dapat dilihat di Lampiran \ref{app:kode_asm} (Kode \ref{lst:asm_dynamic_nonvirt_full}).
@@ -186,7 +186,7 @@ call <console. ... std::operator>> ...>    ; Panggil fungsi read (std::cin >> bu
 ; ...
 \end{minted}
 \caption{Snippet Assembly: Operasi Input/Output Standar (Non-Virtualized)}
-\label{lst:asm_dynamic_io_nonvirt_snippet_updated} % Pastikan label unik
+\label{lst:asm_dynamic_io_nonvirt_snippet} % Pastikan label unik
 \end{listing}
 
 \bo{Virtualized:} Menampilkan instruksi yang diobfuskasi dan sulit dikenali oleh debugger.
@@ -201,7 +201,7 @@ jmp console_vm.vxm.7FF74CD48254 ; Lompatan pendek
 fstp st(0) ; Operasi FPU
 \end{minted}
 \caption{Snippet Assembly: Instruksi di Lokasi Input (Virtualized)}
-\label{lst:asm_dynamic_io_virt_snippet_updated} % Pastikan label unik
+\label{lst:asm_dynamic_io_virt_snippet} % Pastikan label unik
 \end{listing}
 
 Perbandingan ini menunjukkan kontras yang jelas. Pada kode non-virtualized, panggilan ke fungsi I/O standar seperti \code{std::cout} dan \code{std::cin} mudah dikenali. Sebaliknya, pada kode yang telah divirtualisasi, instruksi assembly menjadi tidak jelas (\code{???}), diselingi dengan lompatan (\code{jmp}) dan operasi lain yang tampaknya tidak berhubungan langsung dengan I/O (\code{fcmovnu}, \code{xor}, \code{fstp}). Hal ini menyulitkan pelacakan alur eksekusi saat input dimasukkan. Lebih lanjut, observasi menunjukkan register RIP (\f{Instruction Pointer}) seringkali tampak "\f{stuck}" pada alamat tertentu dalam \textit{debugger}, mengindikasikan eksekusi kemungkinan terjadi di dalam \textit{interpreter} mesin virtual VxLang. Hal ini sangat menyulitkan untuk melacak alur eksekusi dan memahami apa yang sebenarnya terjadi di balik layar. 
@@ -218,12 +218,12 @@ Perilaku ini mengindikasikan bahwa VxLang menggunakan teknik virtualisasi yang k
 Hasil dari percobaan performa overhead dan perubahan ukuran file setelah penerapan virtualisasi kode menggunakan VxLang. Percobaan ini dilakukan pada algoritma Quick Sort dan enkripsi AES-CBC-256.
 
 \subsection{Hasil Pengujian Performa \f{Quick Sort}}
-Tabel \ref{tab:quick_sort_performance_updated} menyajikan hasil pengukuran waktu rata-rata dan standar deviasi dari algoritma Quick Sort yang dijalankan sebanyak 100 kali untuk setiap ukuran array, baik sebelum maupun sesudah virtualisasi menggunakan VxLang. Data virtualisasi untuk ukuran array di atas 1.000.000 elemen tidak tersedia dalam log pengujian \textit{release build} ini.
+Tabel \ref{tab:quick_sort_performance} menyajikan hasil pengukuran waktu rata-rata dan standar deviasi dari algoritma Quick Sort yang dijalankan sebanyak 100 kali untuk setiap ukuran array, baik sebelum maupun sesudah virtualisasi menggunakan VxLang. Data virtualisasi untuk ukuran array di atas 1.000.000 elemen tidak tersedia dalam log pengujian \textit{release build} ini.
 
 \begin{table}[H] % Ganti H dengan htbp jika ingin float
     \centering
     \caption{Hasil Pengujian Waktu Eksekusi Quick Sort (ms)}
-    \label{tab:quick_sort_performance_updated}
+    \label{tab:quick_sort_performance}
     \begin{tabularx}{\textwidth}{@{}|X|X|X|X|X|@{}}
     \hline
         \multirow{2}{*}{\textbf{Ukuran Array}} & \multicolumn{2}{c|}{\textbf{Tanpa Virtualisasi}} & \multicolumn{2}{c|}{\textbf{Dengan Virtualisasi}}\\
@@ -289,10 +289,10 @@ Tabel \ref{tab:quick_sort_performance_updated} menyajikan hasil pengukuran waktu
         \end{axis}
     \end{tikzpicture}
     \caption{Perbandingan Waktu Eksekusi Algoritma Quick Sort antara Versi Tanpa dan Dengan Virtualisasi VxLang.}
-    \label{fig:quick_sort_performance_updated}
+    \label{fig:quick_sort_performance}
 \end{figure}
 
-Berdasarkan Tabel \ref{tab:quick_sort_performance_updated} dan Gambar \ref{fig:quick_sort_performance_updated}, terlihat adanya peningkatan waktu eksekusi yang sangat signifikan pada algoritma Quick Sort setelah divirtualisasi menggunakan VxLang, bahkan pada \textit{release build}. Peningkatan ini konsisten terjadi seiring dengan bertambahnya ukuran array. Sebagai contoh:
+Berdasarkan Tabel \ref{tab:quick_sort_performance} dan Gambar \ref{fig:quick_sort_performance}, terlihat adanya peningkatan waktu eksekusi yang sangat signifikan pada algoritma Quick Sort setelah divirtualisasi menggunakan VxLang, bahkan pada \textit{release build}. Peningkatan ini konsisten terjadi seiring dengan bertambahnya ukuran array. Sebagai contoh:
 \begin{itemize}
     \item Untuk array berukuran 100 elemen, waktu eksekusi rata-rata meningkat dari 0.01 ms menjadi 2.74 ms, yang menunjukkan \textit{overhead} sekitar 27,300\%.
     \item Untuk array berukuran 100.000 elemen, waktu eksekusi meningkat dari 15.12 ms menjadi 3.080.30 ms, dengan \textit{overhead} sekitar 20,272\%.
@@ -301,12 +301,12 @@ Berdasarkan Tabel \ref{tab:quick_sort_performance_updated} dan Gambar \ref{fig:q
 Peningkatan standar deviasi juga menunjukkan bahwa waktu eksekusi pada versi virtualisasi menjadi lebih bervariasi, terutama pada ukuran array yang lebih besar. Hal ini mengindikasikan adanya \textit{overhead} yang substansial dan kurang prediktabilitas yang diperkenalkan oleh mesin virtual VxLang dalam mengeksekusi instruksi virtual dibandingkan dengan eksekusi kode \textit{native}. Meskipun \textit{overhead} ini mungkin sedikit lebih rendah dibandingkan dengan \textit{debug build} sebelumnya (misalnya, untuk 1 juta elemen, \textit{overhead debug build} adalah sekitar 20.860\%), nilainya tetap sangat tinggi dan menunjukkan dampak performa yang berat.
 
 \subsection{Hasil Pengujian Performa Enkripsi AES-CBC-256}
-Tabel \ref{tab:aes_performance_updated} menyajikan hasil benchmarking enkripsi AES-CBC-256 dengan 1.000.000 blok data (total 976 MB), sebelum dan sesudah virtualisasi menggunakan VxLang.
+Tabel \ref{tab:aes_performance} menyajikan hasil benchmarking enkripsi AES-CBC-256 dengan 1.000.000 blok data (total 976 MB), sebelum dan sesudah virtualisasi menggunakan VxLang.
 
 \begin{table}[H] % Ganti H dengan htbp jika ingin float
   \centering
   \caption{Hasil Pengujian Performa Enkripsi AES-CBC-256}
-  \label{tab:aes_performance_updated}
+  \label{tab:aes_performance}
   \begin{tabular}{|l|c|c|}
     \hline
     \bo{Metrik}                                     & \bo{Tanpa Virtualisasi} & \bo{Dengan Virtualisasi} \\
@@ -342,12 +342,12 @@ Peningkatan waktu eksekusi ini berdampak langsung pada penurunan \textit{through
 Hasil ini mengkonfirmasi bahwa virtualisasi kode dengan VxLang memperkenalkan \textit{overhead} yang cukup besar pada operasi komputasi intensif seperti enkripsi, bahkan dalam \textit{release build} yang umumnya lebih teroptimasi dibandingkan \textit{debug build}. Perbandingkan dengan \textit{debug build} sebelumnya (enkripsi +384\%, dekripsi +510\%, throughput gabungan turun 82%), angka-angka pada \textit{release build} ini menunjukkan pola \textit{overhead} yang serupa dan tetap signifikan.
 
 \subsection{Hasil Pengujian Ukuran File}
-Tabel \ref{tab:file_size_updated} menyajikan ukuran file \f{executable} (dalam KB) untuk berbagai program sebelum dan sesudah virtualisasi menggunakan VxLang.
+Tabel \ref{tab:file_size} menyajikan ukuran file \f{executable} (dalam KB) untuk berbagai program sebelum dan sesudah virtualisasi menggunakan VxLang.
 
 \begin{table}[htbp]
   \centering
   \caption{Hasil Pengujian Ukuran File (KB)}
-  \label{tab:file_size_updated}
+  \label{tab:file_size}
   \begin{tabular}{@{}|l|c|c|@{}}
     \hline
     \multirow{2}{*}{\textbf{Program}} & \multicolumn{2}{c|}{\textbf{Ukuran File}} \\
@@ -385,11 +385,11 @@ Hasil pengukuran ukuran file pada \textit{release build} menunjukkan bahwa pener
 Peningkatan ukuran ini, seperti pada \textit{debug build}, kemungkinan besar disebabkan oleh penambahan \textit{interpreter} mesin virtual VxLang dan representasi \textit{bytecode} dari kode asli ke dalam \textit{executable} yang dilindungi. Peningkatan ini konsisten di semua jenis aplikasi yang diuji.
 
 \section{Analisis Aplikasi RAT Lilith dengan VxLang}
-\label{bab:hasil_penelitian_lilith_updated} % Pastikan label unik jika perlu
+\label{bab:hasil_penelitian_lilith} % Pastikan label unik jika perlu
 Bagian ini menyajikan hasil analisis terhadap aplikasi RAT Lilith, baik dalam versi asli maupun versi yang telah divirtualisasi menggunakan VxLang. Analisis mencakup evaluasi kesulitan \textit{reverse engineering} secara statis dan dinamis, serta dampak virtualisasi terhadap deteksi oleh layanan pemindaian \textit{malware} VirusTotal.
 
 \subsection{Analisis Statis dan Dinamis RAT Lilith}
-\label{subsec:analisis_statdin_lilith_updated} % Pastikan label unik jika perlu
+\label{subsec:analisis_statdin_lilith} % Pastikan label unik jika perlu
 Analisis statis menggunakan Ghidra dan analisis dinamis menggunakan x64dbg dilakukan pada kedua versi klien Lilith.
 \begin{itemize}
     \item \textbf{RAT Lilith Non-Virtualized:} Analisis terhadap versi asli Lilith relatif mudah dilakukan. \textit{String} terkait fungsionalitasnya (misalnya, perintah-perintah, pesan status) dapat ditemukan. Alur kontrol untuk pemrosesan perintah dan komunikasi jaringan dapat dilacak. Dengan pemahaman yang cukup, seorang analis dapat mengidentifikasi mekanisme \textit{keylogging}, cara kerja perintah \textit{remote control}, dan bagaimana data dikirimkan antara klien dan server.
@@ -402,7 +402,7 @@ Analisis statis menggunakan Ghidra dan analisis dinamis menggunakan x64dbg dilak
 \end{itemize}
 
 \subsection{Analisis Deteksi Malware RAT Lilith menggunakan VirusTotal}
-\label{subsec:analisis_virustotal_lilith_updated} % Pastikan label unik jika perlu
+\label{subsec:analisis_virustotal_lilith} % Pastikan label unik jika perlu
 Untuk mengevaluasi bagaimana virtualisasi kode VxLang mempengaruhi deteksi oleh perangkat lunak antivirus/antimalware, kedua versi \textit{executable} klien Lilith (asli dan virtualized) diunggah ke layanan VirusTotal. VirusTotal adalah layanan daring gratis yang menganalisis \textit{file} dan URL menggunakan lebih dari 70 \textit{engine} antivirus dan layanan pemindaian \textit{website blacklist}.
 
 \subsubsection{Hasil Analisis VirusTotal pada Lilith Non-Virtualized}

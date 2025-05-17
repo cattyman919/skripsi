@@ -29,7 +29,7 @@ Fondasi dari penelitian eksperimental ini adalah lingkungan pengembangan yang ko
 %-----------------------------------------------------------------------------%
 Bagian ini berfokus pada pengembangan aplikasi yang mensimulasikan proses login pengguna, yang kemudian menjadi subjek analisis \f{reverse engineering} sebelum dan sesudah penerapan VxLang. Pendekatan analisis mencakup analisis statis menggunakan Ghidra dan analisis dinamis menggunakan x64dbg, keduanya bertujuan mengidentifikasi dan mencoba mem-\textit{bypass} logika autentikasi.
 
-Diagram alur persiapan \f{executable} disajikan pada Gambar \ref{fig:flow_auth_prep_rev}. Proses analisis statis dan dinamis, termasuk upaya \textit{bypass}, diilustrasikan pada Gambar \ref{fig:flow_auth_analysis_rev}. Analisis dinamis dimulai dengan langkah serupa analisis statis, yaitu mencari \textit{string} atau pola kode yang relevan di dalam \textit{debugger} (x64dbg) untuk membantu menemukan lokasi logika autentikasi. Setelah lokasi potensial ditemukan, \textit{breakpoint} dipasang. Upaya \textit{bypass} kemudian dilakukan baik secara statis (mem-\textit{patch} file \textit{executable} menggunakan Ghidra) maupun secara dinamis (mem-\textit{patch} instruksi \textit{jump} kondisional atau memanipulasi register/memori secara langsung di x64dbg saat program berjalan).
+Diagram alur persiapan \f{executable} disajikan pada Gambar \ref{fig:flow_auth_prep_rev}. Proses analisis statis dan dinamis, termasuk upaya \textit{bypass}, diilustrasikan pada Gambar \ref{fig:flow_auth_analysis_rev}. Proses ini melibatkan kompilasi kode sumber menjadi dua versi: versi asli (non-virtualized) dan versi \textit{intermediate} yang telah ditandai dengan makro VxLang dan ditautkan dengan pustaka VxLang (\texttt{vxlib64.lib}). Versi \textit{intermediate} ini kemudian diproses lebih lanjut menggunakan \textit{tool command-line} \texttt{vxlang.exe}. Konfigurasi lisensi vxlang ditangani melalui \textit{file} \texttt{vxlang.vxm} yang berada satu direktori dengan \textit{vxlang.exe}. Analisis dinamis dimulai dengan langkah serupa analisis statis, yaitu mencari \textit{string} atau pola kode yang relevan di dalam \textit{debugger} (x64dbg) untuk membantu menemukan lokasi logika autentikasi. Setelah lokasi potensial ditemukan, \textit{breakpoint} dipasang. Upaya \textit{bypass} kemudian dilakukan baik secara statis (mem-\textit{patch} file \textit{executable} menggunakan Ghidra) maupun secara dinamis (mem-\textit{patch} instruksi \textit{jump} kondisional atau memanipulasi register/memori secara langsung di x64dbg saat program berjalan).
 
 %--- DIAGRAM PERSIAPAN AUTH ---
 \begin{figure}[htbp]
@@ -252,7 +252,7 @@ const std::string &password, HWND /window/ = NULL) {
 %-----------------------------------------------------------------------------%
 \section{Implementasi Pengujian Performa}
 %-----------------------------------------------------------------------------%
-Pengujian ini mengukur dampak kuantitatif VxLang pada kecepatan eksekusi dan ukuran \f{executable}. Diagram alur untuk persiapan dan pelaksanaan pengujian performa disajikan pada Gambar \ref{fig:flow_perf_rev}.
+Diagram alur untuk persiapan dan pelaksanaan pengujian performa diilustrasikan pada Gambar \ref{fig:flow_perf_rev}. Serupa dengan persiapan \textit{executable} untuk studi kasus autentikasi, artefak untuk \textit{benchmark} performa juga disiapkan dalam dua versi: asli dan \textit{intermediate} yang ditandai VxLang. \textit{Executable intermediate} tersebut kemudian diproses oleh \textit{tool command-line} \texttt{vxlang.exe} untuk menghasilkan versi tervirtualisasi akhir yang diuji.
 
 %--- DIAGRAM PERF ---
 
@@ -382,50 +382,55 @@ VL_VIRTUALIZATION_END; // <-- Makro Akhir
 // ...
             \end{minted}
 		      \caption{Penempatan Makro VxLang pada Logika Autentikasi}
-		      \label{lst:vxlang_macro}
-	      \end{listing}
-	\item \bo{Konfigurasi Build CMake:} File \code{CMakeLists.txt} diatur untuk:
-	      \begin{itemize}
-		      \item Menambahkan definisi preprocessor \code{USE\_VL\_MACRO} saat flag CMake \code{USE\_VL\_MACRO} diaktifkan (\code{-DUSE\_VL\_MACRO=1}).
-		            \begin{minted}{cmake}
-if(USE_VL_MACRO)
-  add_compile_definitions(USE_VL_MACRO)
-  # ... Set output name ...
-else()
-  # ... Set output name standard ...
-endif()
-                \end{minted}
-		      \item Menautkan library \code{vxlib64.lib} ke semua target yang relevan.
-		            \begin{minted}{cmake}
-target_link_libraries(console PRIVATE vxlib64)
-target_link_libraries(QuickSort PRIVATE vxlib64)
-# ... (dan seterusnya untuk target lain)
-                \end{minted}
-		      \item Mengubah nama output menjadi \code{*\_vm.exe} jika \code{USE\_VL\_MACRO} aktif.
-		            \begin{minted}{cmake}
-if(USE_VL_MACRO)
-  set_target_properties(${TARGET_NAME} PROPERTIES OUTPUT_NAME "${TARGET_NAME}_vm")
-else()
-  set_target_properties(${TARGET_NAME} PROPERTIES OUTPUT_NAME "${TARGET_NAME}")
-endif()
-                \end{minted}
-	      \end{itemize}
-  \item \bo{Proses Kompilasi dan Virtualisasi Aktual:}
+          \end{listing}
+\item \bo{Konfigurasi Build CMake:} File \texttt{CMakeLists.txt} memegang peranan sentral dalam mengelola proses kompilasi untuk menghasilkan kedua jenis \textit{executable}: asli (non-virtualized) dan \textit{intermediate} (\texttt{*\_vm.exe}) yang siap diproses oleh VxLang. Konfigurasi ini mencakup:
       \begin{itemize}
-	      \item Build Asli: Jalankan \code{cmake -G Ninja -B build\_asli ..} diikuti \code{ninja -C build\_asli}. Ini menghasilkan \textit{executable} asli di \code{build\_asli/bin/}.
-	      \item Build Intermediate (\texttt{*\_vm.exe}): Jalankan \code{cmake -G Ninja -B build\_vm -DUSE\_VL\_MACRO=1 ..} diikuti \code{ninja -C build\_vm}. Ini menghasilkan \textit{executable intermediate} yang berisi penanda VxLang di \code{build\_vm/bin/}, contohnya \code{console\_vm.exe}.
-	      \item Proses Virtualisasi VxLang (\texttt{*\_vxm.exe}): Jalankan \textit{tool command-line} \texttt{vxlang.exe} secara langsung pada setiap file \textit{intermediate} yang relevan di direktori \texttt{build\_vm/bin/}. Contoh:
-            \begin{verbatim}
-cd build_vm/bin
-../../vxlang.exe console_vm.exe
-../../vxlang.exe app_qt_vm.exe
-../../vxlang.exe Lilith_Client_vm.exe
-REM ... dan seterusnya untuk target lain ...
-            \end{verbatim}
-            Proses ini secara otomatis menghasilkan file \textit{executable} akhir yang telah tervirtualisasi dengan nama \texttt{(nama\_target)\_vxm.exe} di direktori yang sama (misalnya, \texttt{console\_vxm.exe}, \texttt{app\_qt\_vxm.exe}, \texttt{Lilith\_Client\_vxm.exe}).
+        \item Definisi \textit{preprocessor} \texttt{USE\_VL\_MACRO}: Opsi ini, biasanya dikontrol melalui \textit{flag} CMake (misalnya, \texttt{-DUSE\_VL\_MACRO=1}), digunakan untuk mengaktifkan makro-makro VxLang (\texttt{VL\_VIRTUALIZATION\_BEGIN}, dll.) yang didefinisikan dalam \texttt{includes/vxlang/vxlib.h}. Jika \texttt{USE\_VL\_MACRO} tidak didefinisikan, makro-makro tersebut menjadi kosong sehingga tidak ada kode VxLang yang aktif.
+        \item Penautan Pustaka VxLang: Untuk \textit{build intermediate} (\texttt{*\_vm.exe}), pustaka statis VxLang (\texttt{vxlib64.lib}) perlu ditautkan. Pustaka ini berisi fungsi-fungsi yang dipanggil oleh makro VxLang saat \texttt{USE\_VL\_MACRO} aktif.
+        \item Penamaan Output: \textit{Build system} dikonfigurasi untuk menghasilkan nama \textit{file output} yang berbeda untuk versi asli dan versi \textit{intermediate}, misalnya \texttt{nama\_target.exe} untuk versi asli dan \texttt{nama\_target\_vm.exe} untuk versi \textit{intermediate}.
       \end{itemize}
-\end{enumerate}
+Sebagai ilustrasi, berikut adalah contoh penyederhanaan logika yang dapat ditemukan dalam \texttt{CMakeLists.txt} (fungsi \texttt{add\_project\_executables} pada proyek ini mengimplementasikan logika serupa secara lebih komprehensif):
 
+\begin{listing}[H]
+\begin{minted}[fontsize=\small]{cmake}
+# Contoh logika CMake untuk target 'console'
+# (Versi sederhana untuk ilustrasi)
+
+# Target Asli (Non-VM)
+add_executable(console src/console/console.cpp ...)
+set_target_properties(console PROPERTIES OUTPUT_NAME "console")
+# ... (tidak ada USE_VL_MACRO, tidak ada link ke vxlib64)
+
+# Target Intermediate (untuk VxLang)
+add_executable(console_vm_cmake_example src/console/console.cpp ...)
+target_compile_definitions(console_vm_cmake_example PRIVATE USE_VL_MACRO)
+target_link_libraries(console_vm_cmake_example PRIVATE vxlib64)
+set_target_properties(console_vm_cmake_example PROPERTIES OUTPUT_NAME "console_vm")
+\end{minted}
+\captionof{listing}{Contoh Ilustratif Konfigurasi CMake untuk Build Asli dan Intermediate VxLang}
+\label{lst:cmake_vxlang_integration_bab4}
+\end{listing}
+
+\item \bo{Proses Kompilasi dan Virtualisasi Aktual:} Proses keseluruhan untuk menghasilkan \textit{executable} tervirtualisasi melibatkan langkah-langkah berikut, yang diorkestrasi oleh kombinasi CMake, Ninja, dan skrip \texttt{virtualize.bat}:
+    \begin{itemize}
+        \item \textbf{Build Asli:} Jalankan perintah CMake (misalnya, \texttt{cmake -G Ninja -B build\_asli ..}) diikuti dengan perintah Ninja (\texttt{ninja -C build\_asli}). Proses ini akan menghasilkan \textit{executable} asli tanpa modifikasi VxLang di direktori \textit{output} yang ditentukan (misalnya, \texttt{build\_asli/bin/}).
+        \item \textbf{Build Intermediate (\texttt{*\_vm.exe}):} Jalankan perintah CMake dengan \textit{flag} untuk mengaktifkan VxLang (misalnya, \texttt{cmake -G Ninja -B build\_vm -DUSE\_VL\_MACRO=1 ..}) diikuti dengan perintah Ninja (\texttt{ninja -C build\_vm}). Proses ini menghasilkan \textit{executable intermediate} (misalnya, \texttt{console\_vm.exe}) di direktori \textit{output} yang sesuai. \textit{Executable} ini sudah mengandung penanda VxLang dari makro dan tertaut dengan \texttt{vxlib64.lib}.
+        \item \textbf{Proses Virtualisasi VxLang (\texttt{*\_vxm.exe}):} \textit{Executable intermediate} (\texttt{*\_vm.exe}) kemudian diproses menggunakan \textit{tool command-line} \texttt{vxlang.exe}. Skrip \texttt{virtualize.bat} dalam proyek ini mengotomatiskan langkah ini untuk semua target yang relevan. Contoh baris perintah yang mungkin dijalankan oleh skrip ini untuk target \texttt{console\_vm.exe} adalah:
+            \begin{listing}[H]
+            \begin{minted}[fontsize=\small]{batch}
+            REM Contoh dari virtualize.bat (disesuaikan untuk kejelasan)
+            set "vxlang_tool_path=vxlang\vxlang.exe"
+            set "intermediate_exe_path=bin\console\Release\console_vm.exe"
+            
+            REM Perintah aktual untuk menjalankan virtualisasi
+            %vxlang_tool_path% %intermediate_exe_path%
+            \end{minted}
+            \captionof{listing}{Contoh Baris Perintah dari Skrip untuk Menjalankan VxLang Tool}
+            \label{lst:virtualize_bat_example_bab4}
+            \end{listing}
+        Pemanggilan \texttt{vxlang.exe} pada \texttt{console\_vm.exe} akan menganalisis penanda virtualisasi, mengganti kode \textit{native} yang ditandai dengan representasi \textit{bytecode} internal, dan menyematkan \textit{runtime Virtual Machine} (VM) yang diperlukan. Proses ini secara otomatis menghasilkan \textit{file executable} akhir yang telah tervirtualisasi dengan nama yang dimodifikasi, yaitu \texttt{console\_vm.vxm.exe}, yang disimpan di direktori yang sama dengan \textit{file input}-nya. \textit{Executable} \texttt{*\_vxm.exe} inilah yang kemudian menjadi subjek utama pengujian keamanan dan analisis dampak performa dalam penelitian ini.
+    \end{itemize}
+\end{enumerate}
 
 \section{Studi Kasus: Aplikasi \textit{Remote Administration Tool} (RAT) Lilith}
 \label{sec:implementasi_lilith}
@@ -444,7 +449,19 @@ Proses persiapan \textit{executable} Lilith untuk analisis melibatkan langkah-la
         \begin{itemize}
             \item \textbf{Penandaan Kode:} Mengingat sifat invasif dan beragamnya fungsi dalam RAT, fokus virtualisasi adalah pada bagian-bagian krusial dari kode klien yang bertanggung jawab atas komunikasi, pemrosesan perintah, dan fungsionalitas inti lainnya. Makro \texttt{VL\_VIRTUALIZATION\_BEGIN} dan \texttt{VL\_VIRTUALIZATION\_END} dari VxLang SDK disisipkan untuk membungkus fungsi-fungsi atau blok-blok kode utama dalam \textit{source code} klien Lilith. Sebagai contoh, fungsi yang menangani pemrosesan paket dari server, fungsi yang menginisiasi koneksi, dan loop utama pemrosesan perintah klien ditandai untuk virtualisasi.
             \item \textbf{Build Intermediate:} Sama seperti aplikasi lainnya, versi \textit{intermediate} dari Lilith klien (\f{Lilith\_Client\_vm.exe}) dihasilkan dengan mengaktifkan \textit{flag} \texttt{USE\_VL\_MACRO} pada CMake dan menautkan dengan \texttt{vxlib64.lib}.
-            \item \textbf{Proses Virtualisasi VxLang:} \textit{Executable intermediate} (\f{Lilith\_Client\_vm.exe}) kemudian diproses langsung menggunakan \textit{tool command-line} \texttt{vxlang.exe} (misalnya, \texttt{vxlang.exe Lilith\_Client\_vm.exe}), menghasilkan \textit{executable} Lilith klien yang telah tervirtualisasi dengan nama \f{Lilith\_Client\_vxm.exe}.
-        \end{itemize}
+            % ... (setelah penjelasan build intermediate Lilith_Client_vm.exe) ...
+            \item \textbf{Proses Virtualisasi VxLang:} \textit{Executable intermediate} \texttt{Lilith\_Client\_vm.exe} kemudian diproses langsung menggunakan \textit{tool command-line} \texttt{vxlang.exe}, yang diotomatisasi melalui skrip \texttt{virtualize.bat}. Sebagai contoh, eksekusi perintah seperti:
+    \begin{listing}[H]
+    \begin{minted}[fontsize=\small]{batch}
+    REM Contoh dari virtualize.bat untuk Lilith Client
+    set "vxlang_tool_path=vxlang\vxlang.exe"
+    set "lilith_intermediate_path=bin\Lilith_Client\Release\Lilith_Client_vm.exe"
+    %vxlang_tool_path% %lilith_intermediate_path%
+    \end{minted}
+    \captionof{listing}{Contoh Perintah Virtualisasi untuk Lilith RAT Client}
+    \label{lst:virtualize_lilith_example_bab4}
+    \end{listing}
+akan menghasilkan \textit{executable} Lilith klien yang telah tervirtualisasi dengan nama \texttt{Lilith\_Client\_vm.vxm.exe}.
+\end{itemize} % Menutup itemize dari "Penerapan VxLang:"
     \item \textbf{Hasil:} Dua versi \textit{executable} klien Lilith disiapkan: \f{Lilith\_Client.exe} (asli/non-virtualized) dan \f{Lilith\_Client\_vm.exe} (tervirtualisasi). Kedua versi ini kemudian menjadi subjek analisis keamanan dan pemindaian VirusTotal yang diuraikan pada Bab \ref{bab:hasil_penelitian_lilith}. Server Lilith tetap digunakan dalam versi aslinya untuk menguji fungsionalitas klien.
 \end{enumerate}

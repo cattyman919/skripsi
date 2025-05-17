@@ -134,12 +134,21 @@
 \phantomsection
 \printbibliography[heading=bibintoc,title={\uppercase{Daftar Referensi}}]
 
-% Lampiran 
-%
+
+\newcounter{lastMainPage} % Buat counter untuk menyimpan nomor halaman terakhir
+\setcounter{lastMainPage}{\value{page}} % Simpan nomor halaman terakhir dari Daftar Referensi
+
 \appendix % This is a command to switch to appendix mode
 
+\clearpage % Pastikan kita memulai di halaman baru setelah halaman pembatas
+\pagenumbering{arabic} % Setel ulang penomoran ke angka Arab (ini akan mereset halaman ke 1)
+\setcounter{page}{\value{lastMainPage}} % Setel counter halaman ke nomor halaman terakhir Daftar Referensi
+\addtocounter{page}{1} % Tambah 1, sehingga halaman pertama konten lampiran
+                       % akan melanjutkan dari Daftar Referensi.
+
 \input{_internals/markLampiran} 
+
+
 \input{src/99-back_matter/lampiran}
-%\setcounter{page}{2}
 
 \end{document}

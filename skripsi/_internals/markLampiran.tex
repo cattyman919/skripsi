@@ -4,10 +4,17 @@
 % 
 % Hanya sebuah pembatas bertuliskan LAMPIRAN ditengah halaman. 
 % 
+\thispagestyle{empty} % Halaman pembatas ini TIDAK menampilkan nomor halaman
+\phantomsection % Penting untuk tautan hyperref yang benar di ToC
 
-\begin{titlepage}
-	\centering 
+\begin{center} % Menggunakan center daripada titlepage agar lebih sederhana
 	\vspace*{6cm}
 	\noindent \Huge{LAMPIRAN}
-	\addChapter{LAMPIRAN}
-\end{titlepage}
+\end{center}
+
+\phantomsection % Penting untuk tautan hyperref yang benar di ToC
+% Tambahkan "LAMPIRAN" ke Daftar Isi.
+% Nomor halaman yang akan diambil di sini adalah nomor halaman *setelah*
+% halaman pembatas ini selesai diproses dan \clearpage berikutnya di skripsi.tex
+% serta \setcounter dieksekusi. Ini akan menjadi nomor halaman KONTEN lampiran pertama.
+\addcontentsline{toc}{chapter}{LAMPIRAN}
