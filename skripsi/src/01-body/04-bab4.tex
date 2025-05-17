@@ -432,36 +432,55 @@ set_target_properties(console_vm_cmake_example PROPERTIES OUTPUT_NAME "console_v
     \end{itemize}
 \end{enumerate}
 
+%-----------------------------------------------------------------------------%
 \section{Studi Kasus: Aplikasi \textit{Remote Administration Tool} (RAT) Lilith}
-\label{sec:implementasi_lilith}
-Selain aplikasi studi kasus autentikasi dan \textit{benchmark} performa, penelitian ini juga melibatkan analisis terhadap aplikasi \textit{Remote Administration Tool} (RAT) bernama Lilith. Lilith adalah sebuah RAT \textit{open-source} yang dikembangkan menggunakan C++ untuk platform Windows, yang menyediakan berbagai fungsionalitas untuk administrasi jarak jauh, termasuk eksekusi perintah, \textit{keylogging}, dan persistensi \cite{LilithRAT}. Penggunaan Lilith dalam penelitian ini bertujuan untuk:
-\begin{enumerate}
-    \item Menguji apakah fungsionalitas kompleks dari sebuah aplikasi RAT tetap dapat berjalan normal setelah bagian kodenya divirtualisasi menggunakan VxLang.
-    \item Menganalisis efektivitas VxLang dalam mempersulit analisis statis dan dinamis terhadap aplikasi yang memiliki sifat \textit{malicious} atau \textit{dual-use}.
-    \item Mengevaluasi dampak virtualisasi kode VxLang terhadap tingkat deteksi oleh layanan pemindaian \textit{malware} seperti VirusTotal.
-\end{enumerate}
+\label{sec:implementasi_lilith} 
+%-----------------------------------------------------------------------------%
+Selain aplikasi studi kasus autentikasi dan \textit{benchmark} performa yang dikembangkan secara khusus, penelitian ini juga melibatkan analisis terhadap aplikasi \textit{Remote Administration Tool} (RAT) \textit{open-source} bernama Lilith. Penggunaan Lilith bertujuan untuk menguji efektivitas dan dampak VxLang pada perangkat lunak yang lebih kompleks dan memiliki karakteristik yang sering diasosiasikan dengan \textit{malware} atau \textit{Potentially Unwanted Application} (PUA).
 
-\subsection{Persiapan \textit{Executable} Lilith}
-Proses persiapan \textit{executable} Lilith untuk analisis melibatkan langkah-langkah berikut:
+\subsection{Deskripsi Singkat Lilith RAT}
+Lilith adalah sebuah RAT yang dikembangkan menggunakan C++ dan dirancang untuk platform Windows. Kode sumbernya tersedia secara publik \cite{LilithRAT}, memungkinkan untuk kompilasi dan modifikasi. Fungsionalitas utama yang ditawarkan oleh Lilith mencakup kemampuan untuk:
+\begin{itemize}
+    \item Membuat koneksi terbalik (\textit{reverse connection}) dari klien ke server.
+    \item Mengeksekusi perintah pada sistem klien secara jarak jauh melalui antarmuka \textit{command-line}.
+    \item Melakukan \textit{keylogging} untuk merekam ketikan papan ketik pada mesin klien.
+    \item Menyediakan mekanisme persistensi sederhana.
+    \item Mentransfer berkas antara server dan klien (fungsionalitas ini ada dalam kode sumbernya, meskipun mungkin tidak menjadi fokus utama pengujian virtualisasi dalam penelitian ini).
+\end{itemize}
+Karena fungsionalitas tersebut, Lilith RAT menjadi objek studi yang menarik untuk melihat bagaimana virtualisasi kode dapat mempersulit analisis terhadap perangkat lunak dengan potensi penggunaan ganda (\textit{dual-use}).
+
+\subsection{Persiapan \textit{Executable} Lilith untuk Analisis}
+Proses persiapan \textit{executable} klien Lilith untuk analisis virtualisasi mengikuti langkah-langkah serupa dengan aplikasi studi kasus lainnya, dengan penekanan pada identifikasi dan penandaan bagian kode yang kritikal.
+
 \begin{enumerate}
-    \item \textbf{Kompilasi Kode Sumber:} Kode sumber Lilith RAT diperoleh dari repositori publiknya dan dikompilasi menggunakan lingkungan pengembangan yang sama seperti aplikasi studi kasus lainnya (Clang/clang-cl, CMake, Ninja) untuk menghasilkan \textit{executable} klien Lilith (\f{Lilith\_Client.exe}).
-    \item \textbf{Penerapan VxLang:}
-        \begin{itemize}
-            \item \textbf{Penandaan Kode:} Mengingat sifat invasif dan beragamnya fungsi dalam RAT, fokus virtualisasi adalah pada bagian-bagian krusial dari kode klien yang bertanggung jawab atas komunikasi, pemrosesan perintah, dan fungsionalitas inti lainnya. Makro \texttt{VL\_VIRTUALIZATION\_BEGIN} dan \texttt{VL\_VIRTUALIZATION\_END} dari VxLang SDK disisipkan untuk membungkus fungsi-fungsi atau blok-blok kode utama dalam \textit{source code} klien Lilith. Sebagai contoh, fungsi yang menangani pemrosesan paket dari server, fungsi yang menginisiasi koneksi, dan loop utama pemrosesan perintah klien ditandai untuk virtualisasi.
-            \item \textbf{Build Intermediate:} Sama seperti aplikasi lainnya, versi \textit{intermediate} dari Lilith klien (\f{Lilith\_Client\_vm.exe}) dihasilkan dengan mengaktifkan \textit{flag} \texttt{USE\_VL\_MACRO} pada CMake dan menautkan dengan \texttt{vxlib64.lib}.
-            % ... (setelah penjelasan build intermediate Lilith_Client_vm.exe) ...
-            \item \textbf{Proses Virtualisasi VxLang:} \textit{Executable intermediate} \texttt{Lilith\_Client\_vm.exe} kemudian diproses langsung menggunakan \textit{tool command-line} \texttt{vxlang.exe}, yang diotomatisasi melalui skrip \texttt{virtualize.bat}. Sebagai contoh, eksekusi perintah seperti:
+    \item \bo{Akuisisi dan Kompilasi Kode Sumber Asli:} Kode sumber Lilith RAT (khususnya komponen klien) diunduh dari repositori publiknya. Kompilasi dilakukan menggunakan lingkungan pengembangan yang telah disiapkan (Clang/clang-cl, CMake, Ninja dengan standar C++17) untuk menghasilkan \textit{executable} klien Lilith versi asli (\texttt{Lilith\_Client.exe}). Komponen server Lilith juga dikompilasi dalam versi aslinya dan digunakan untuk menguji fungsionalitas klien.
+
+    \item \bo{Identifikasi dan Penandaan Kode Kritis dengan Makro VxLang:}
+    Mengingat kompleksitas Lilith, virtualisasi tidak diterapkan pada keseluruhan kode sumber klien. Sebaliknya, fokus diberikan pada fungsi-fungsi dan blok-blok kode yang dianggap paling krusial untuk operasional RAT dan yang paling mungkin menjadi target analisis oleh \textit{reverse engineer}. Makro \texttt{VL\_VIRTUALIZATION\_BEGIN} dan \texttt{VL\_VIRTUALIZATION\_END} dari VxLang SDK disisipkan secara strategis untuk membungkus bagian-bagian berikut dalam kode sumber klien Lilith (\texttt{src/Lilith/client/}):
+    \begin{itemize}
+        \item \textbf{Pemrosesan Perintah Inti:} Dalam fungsi seperti \texttt{Client::ProcessPacketType} (pada berkas \texttt{client.cpp}), logika yang menangani paket instruksi dari server dan memanggil fungsi \texttt{General::processCommand} divirtualisasi. Bagian yang memproses perintah CMD jarak jauh melalui objek \texttt{CMD::cmdptr} juga ditandai. Contoh penempatan makro secara ilustratif dapat dilihat pada Lampiran \ref{app:lilith_vxlang_macros_full} (Kode \ref{lst:lilith_vxlang_macros_appendix_full}).
+        \item \textbf{Inisialisasi dan Koneksi:} Bagian kode dalam konstruktor \texttt{Client::Client} atau fungsi \texttt{Client::Connect} yang bertanggung jawab untuk inisialisasi koneksi jaringan ke server juga dipertimbangkan untuk virtualisasi untuk mengaburkan detail mekanisme koneksi.
+        \item \textbf{Loop Utama Pemrosesan Paket:} Loop utama dalam \texttt{Client::ClientThread} yang terus menerus menerima dan memproses paket dari server menjadi target virtualisasi untuk mempersulit pemahaman alur kerja komunikasi.
+        \item \textbf{Fungsi Sensitif Tambahan:} Beberapa fungsi pendukung dalam \texttt{general.cpp} atau \texttt{cmdRedirect.cpp} yang terkait langsung dengan eksekusi perintah atau interaksi sistem juga ditandai, jika relevan.
+    \end{itemize}
+    Penempatan makro dilakukan dengan hati-hati untuk memastikan fungsionalitas utama tetap terjaga sambil memaksimalkan kesulitan analisis.
+
+    \item \bo{Build \textit{Executable Intermediate} (\texttt{Lilith\_Client\_vm.exe}):}
+    Setelah penandaan kode, klien Lilith dikompilasi ulang dengan mengaktifkan \textit{flag preprocessor} \texttt{USE\_VL\_MACRO} melalui konfigurasi CMake. \textit{Executable} yang dihasilkan (\texttt{Lilith\_Client\_vm.exe}) secara otomatis tertaut dengan pustaka VxLang (\texttt{vxlib64.lib}).
+
+    \item \bo{Proses Virtualisasi Akhir dengan VxLang Tool:}
+    \textit{Executable intermediate} \texttt{Lilith\_Client\_vm.exe} kemudian diproses menggunakan \textit{tool command-line} \texttt{vxlang.exe}. Proses ini diotomatisasi melalui skrip \texttt{virtualize.bat}, yang menjalankan perintah serupa dengan:
     \begin{listing}[H]
     \begin{minted}[fontsize=\small]{batch}
-    REM Contoh dari virtualize.bat untuk Lilith Client
-    set "vxlang_tool_path=vxlang\vxlang.exe"
-    set "lilith_intermediate_path=bin\Lilith_Client\Release\Lilith_Client_vm.exe"
-    %vxlang_tool_path% %lilith_intermediate_path%
+REM Contoh dari virtualize.bat untuk Lilith Client
+set "vxlang_tool_path=vxlang\vxlang.exe"
+set "lilith_intermediate_path=bin\Lilith_Client\Release\Lilith_Client_vm.exe"
+%vxlang_tool_path% %lilith_intermediate_path%
     \end{minted}
-    \captionof{listing}{Contoh Perintah Virtualisasi untuk Lilith RAT Client}
-    \label{lst:virtualize_lilith_example_bab4}
+    \captionof{listing}{Perintah Virtualisasi untuk Klien Lilith RAT} % Label diubah agar unik
+    \label{lst:virtualize_lilith_example_bab4_revised}
     \end{listing}
-akan menghasilkan \textit{executable} Lilith klien yang telah tervirtualisasi dengan nama \texttt{Lilith\_Client\_vm.vxm.exe}.
-\end{itemize} % Menutup itemize dari "Penerapan VxLang:"
-    \item \textbf{Hasil:} Dua versi \textit{executable} klien Lilith disiapkan: \f{Lilith\_Client.exe} (asli/non-virtualized) dan \f{Lilith\_Client\_vm.exe} (tervirtualisasi). Kedua versi ini kemudian menjadi subjek analisis keamanan dan pemindaian VirusTotal yang diuraikan pada Bab \ref{bab:hasil_penelitian_lilith}. Server Lilith tetap digunakan dalam versi aslinya untuk menguji fungsionalitas klien.
+    Perintah ini menghasilkan \textit{executable} klien Lilith yang telah tervirtualisasi sepenuhnya, yaitu \texttt{Lilith\_Client\_vm.vxm.exe}. Berkas inilah yang kemudian digunakan untuk pengujian fungsionalitas, analisis keamanan statis/dinamis, dan pengujian deteksi VirusTotal yang hasilnya dipaparkan pada Bab \ref{bab:hasil_penelitian_lilith}.
 \end{enumerate}
+
+Persiapan yang cermat ini memastikan bahwa kedua versi klien Lilith (asli dan tervirtualisasi) dapat dibandingkan secara adil untuk mengevaluasi dampak VxLang.

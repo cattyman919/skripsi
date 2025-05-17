@@ -3,12 +3,12 @@ LATEXMK = latexmk
 
 # Windows
 
-RMDIR = rd /s /q 
-RM = del /Q 
+#RMDIR = rd /s /q 
+#RM = del /Q 
 
 # Linux / Mac
-#RMDIR = rm -rf 
-#RM = rm -f  
+RMDIR = rm -rf 
+RM = rm -f  
 
 # Project-specific settings
 SKRIPSI = skripsi

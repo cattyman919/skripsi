@@ -385,8 +385,45 @@ Hasil pengukuran ukuran file pada \textit{release build} menunjukkan bahwa pener
 Peningkatan ukuran ini, seperti pada \textit{debug build}, kemungkinan besar disebabkan oleh penambahan \textit{interpreter} mesin virtual VxLang dan representasi \textit{bytecode} dari kode asli ke dalam \textit{executable} yang dilindungi. Peningkatan ini konsisten di semua jenis aplikasi yang diuji.
 
 \section{Analisis Aplikasi RAT Lilith dengan VxLang}
-\label{bab:hasil_penelitian_lilith} % Pastikan label unik jika perlu
-Bagian ini menyajikan hasil analisis terhadap aplikasi RAT Lilith, baik dalam versi asli maupun versi yang telah divirtualisasi menggunakan VxLang. Analisis mencakup evaluasi kesulitan \textit{reverse engineering} secara statis dan dinamis, serta dampak virtualisasi terhadap deteksi oleh layanan pemindaian \textit{malware} VirusTotal.
+\label{bab:hasil_penelitian_lilith} 
+Bagian ini menyajikan hasil analisis terhadap aplikasi RAT Lilith, baik dalam versi asli maupun versi yang telah divirtualisasi menggunakan VxLang. Analisis mencakup, pengujian fungsionalitas lilith RAT pada server dan client, evaluasi kesulitan \textit{reverse engineering} secara statis dan dinamis, serta dampak virtualisasi terhadap deteksi oleh layanan pemindaian \textit{malware} VirusTotal.
+
+\subsection{Pengujian Fungsionalitas Lilith RAT Tervirtualisasi}
+\label{subsec:fungsionalitas_lilith_virtualized}
+
+Untuk memastikan bahwa proses virtualisasi menggunakan VxLang tidak merusak fungsionalitas inti dari aplikasi yang kompleks seperti Lilith RAT, sebuah pengujian fungsional secara langsung dilakukan. Skenario pengujian ini dirancang untuk memverifikasi kemampuan operasional dasar klien Lilith yang telah divirtualisasi ketika berinteraksi dengan server Lilith dalam lingkungan jaringan lokal.
+
+\subsubsection{Skenario dan Konfigurasi Pengujian}
+Pengujian fungsionalitas Lilith RAT yang telah divirtualisasi dilakukan dengan konfigurasi sebagai berikut:
+\begin{itemize}
+    \item \bo{Server Lilith:} Dijalankan pada laptop pertama dengan alamat IP lokal \texttt{192.168.1.235}. Server Lilith mendengarkan koneksi masuk pada \textit{port} \texttt{1337}. Aplikasi server yang digunakan adalah versi asli yang tidak dimodifikasi (\texttt{Lilith\_Server.exe}).
+    \item \bo{Klien Lilith:} Dijalankan pada laptop kedua, yang berada dalam jaringan lokal yang sama, dengan alamat IP \texttt{192.168.1.15}. Aplikasi klien yang diuji adalah versi yang telah diproses dan divirtualisasi oleh VxLang (\texttt{Lilith\_Client\_vm.vxm.exe}).
+    \item \bo{Target Demonstrasi Fungsionalitas:} Untuk mendemonstrasikan kemampuan akses sistem berkas dan eksekusi perintah jarak jauh, sebuah berkas teks bernama \texttt{password.txt} dibuat pada direktori kerja aplikasi klien Lilith di laptop kedua. Berkas ini berisi \textit{string} sederhana: \texttt{"THIS IS A SECRET"}.
+\end{itemize}
+
+\subsubsection{Langkah-Langkah Demonstrasi dan Hasil Observasi}
+Setelah kedua aplikasi (server Lilith dan klien Lilith yang tervirtualisasi) dijalankan pada masing-masing laptop, serangkaian interaksi dilakukan dari terminal server, dan hasilnya diobservasi:
+\begin{enumerate}
+    \item \bo{Deteksi Koneksi Klien:} Terminal pada server Lilith segera menampilkan notifikasi bahwa koneksi dari klien telah berhasil dibuat, dengan pesan: \texttt{"Client Connected! ID: 0 | IP: 192.168.1.15"}. Ini mengkonfirmasi bahwa klien tervirtualisasi mampu melakukan inisiasi koneksi jaringan dengan benar.
+    \item \bo{Menghubungkan ke Sesi Klien:} Operator di sisi server memasukkan perintah \texttt{connect 0} untuk secara aktif terhubung dan mengontrol sesi klien dengan ID 0.
+    \item \bo{Aktivasi Kontrol Jarak Jauh (CMD):} Perintah \texttt{remoteControl cmd} kemudian dimasukkan oleh operator server. Terminal server merespons dengan pesan dari klien: \texttt{"ID [0]: CMD session opened."}, yang menandakan bahwa permintaan untuk membuka sesi \textit{command prompt} jarak jauh pada mesin klien telah berhasil diproses.
+    \item \bo{Akses ke Direktori Klien:} Setelah sesi CMD jarak jauh aktif, \textit{prompt command prompt} pada terminal server berubah, menunjukkan bahwa konteks eksekusi kini berada di direktori kerja aplikasi klien pada laptop kedua, yaitu \texttt{C:\textbackslash{}02\_College\textbackslash{}03\_Skripsi\_\textbackslash{}skripsi-project\textbackslash{}bin\textbackslash{}Lilith\_Client\textbackslash{}Release>}.
+    \item \bo{Verifikasi Isi Direktori:} Operator server menjalankan perintah \texttt{dir} dalam sesi CMD jarak jauh. Hasil dari perintah ini, yang ditampilkan di terminal server, mencantumkan berkas \texttt{password.txt} dalam daftar isi direktori klien, memvalidasi kemampuan untuk melakukan enumerasi direktori.
+    \item \bo{Membaca Isi Berkas Jarak Jauh:} Langkah terakhir adalah menjalankan perintah \texttt{type password.txt} pada terminal server. Perintah ini dieksekusi pada mesin klien, dan isinya (string \texttt{"THIS IS A SECRET"}) berhasil diambil dan ditampilkan kembali pada terminal server.
+\end{enumerate}
+Seluruh rangkaian interaksi ini, yang menunjukkan keberhasilan server dalam mengontrol klien tervirtualisasi dan mengakses berkasnya, didokumentasikan dalam bentuk tangkapan layar terminal server yang disajikan pada Gambar \ref{fig:lilith_demo_terminal_fungsionalitas}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{\Assets/lilith_demo.png} 
+    \caption{Demonstrasi Fungsionalitas Lilith RAT Tervirtualisasi dari Terminal Server: Koneksi, Akses CMD, dan Pembacaan Berkas.}
+    \label{fig:lilith_demo_terminal_fungsionalitas}
+\end{figure}
+
+\subsubsection{Analisis Hasil Pengujian Fungsionalitas}
+Demonstrasi fungsionalitas ini secara meyakinkan membuktikan bahwa proses virtualisasi kode menggunakan VxLang pada aplikasi Lilith RAT \textbf{tidak mengganggu atau merusak fungsionalitas intinya}. Klien Lilith yang telah divirtualisasi tetap mampu menjalankan operasi-operasi fundamental seperti membangun koneksi jaringan, menerima dan memproses perintah dari server, serta berinteraksi dengan sistem berkas pada mesin klien untuk membaca data.
+
+Temuan ini memiliki implikasi penting. Ini menunjukkan bahwa VxLang, sebagai sebuah teknik proteksi, dapat diterapkan pada aplikasi yang relatif kompleks dengan berbagai modul fungsional (seperti komunikasi jaringan, pemrosesan input/output, dan interaksi sistem operasi) tanpa menyebabkan kegagalan operasional. Kemampuan untuk mempertahankan fungsionalitas asli adalah prasyarat krusial sebelum mengevaluasi lebih lanjut efektivitas keamanan dan dampak performa dari sebuah teknik proteksi perangkat lunak. Jika proteksi merusak fungsi dasar aplikasi, maka teknik tersebut tidak praktis untuk digunakan, terlepas dari seberapa kuat tingkat keamanannya. Dalam kasus ini, Lilith RAT tervirtualisasi tetap menjadi alat yang fungsional, yang berarti analisis terhadap kesulitan \textit{reverse engineering} dan \textit{overhead} performa menjadi relevan dan bermakna.
 
 \subsection{Analisis Statis dan Dinamis RAT Lilith}
 \label{subsec:analisis_statdin_lilith} % Pastikan label unik jika perlu

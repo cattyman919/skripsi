@@ -38,8 +38,9 @@ Objek studi yang akan dikembangkan dan dianalisis dalam penelitian ini meliputi:
 \begin{enumerate}
     \item \bo{Aplikasi Studi Kasus Autentikasi:} Aplikasi simulasi login dalam tiga varian antarmuka (Konsol, Qt, Dear ImGui) dan dua mekanisme autentikasi (Kredensial \textit{hardcoded}, Kredensial via \textit{backend cloud}).
     \item \bo{Aplikasi Benchmark Performa:} Aplikasi untuk mengukur \textit{overhead} pada tugas spesifik (Algoritma QuickSort, Enkripsi AES-CBC-256, Ukuran File Dasar).
+    \item \bo{Studi Kasus Aplikasi Kompleks (Lilith RAT):} Sebuah \textit{Remote Administration Tool} (RAT) \textit{open-source} bernama Lilith \cite{LilithRAT} digunakan sebagai studi kasus tambahan. Tujuannya adalah untuk mengevaluasi efektivitas VxLang pada aplikasi yang lebih kompleks dengan beragam fungsionalitas, menguji integritas fungsional setelah virtualisasi, menganalisis kesulitan \textit{reverse engineering}-nya, serta mengamati dampaknya terhadap deteksi oleh layanan pemindaian \textit{malware}.
 \end{enumerate}
-Setiap objek studi akan dibuat dalam versi asli (non-\textit{virtualized}) dan versi \textit{virtualized} oleh VxLang untuk perbandingan.
+Setiap objek studi (termasuk klien Lilith RAT) akan dibuat dalam versi asli (non-\textit{virtualized}) dan versi \textit{virtualized} oleh VxLang untuk perbandingan. Server Lilith RAT akan digunakan dalam versi aslinya untuk pengujian fungsionalitas klien.
 
 %-----------------------------------------------------------------------------%
 \section{Instrumen dan Bahan Penelitian}
@@ -184,6 +185,17 @@ Pengujian ini bertujuan mengukur dampak kuantitatif VxLang pada kinerja eksekusi
 \end{figure}
 % --- Akhir TikZ Diagram ---
 Prosedur ini akan diulang untuk semua aplikasi \textit{benchmark} (QuickSort, Encryption, Size), baik untuk versi asli maupun versi \textit{virtualized}.
+
+\subsection{Pengujian Studi Kasus Lilith RAT}
+\label{subsec:prosedur_lilith_rat}
+Pengujian terhadap Lilith RAT bertujuan untuk mengevaluasi dampak virtualisasi VxLang pada aplikasi yang lebih kompleks dari segi fungsionalitas, kesulitan analisis, dan deteksi otomatis. Prosedur pengumpulan data untuk Lilith RAT mencakup:
+\begin{enumerate}
+    \item \bo{Persiapan Artefak Lilith RAT:} Meliputi kompilasi kode sumber klien Lilith versi asli dan versi \textit{intermediate} yang telah ditandai makro VxLang, diikuti pemrosesan dengan \textit{tool} VxLang untuk menghasilkan \textit{executable} klien tervirtualisasi. Detail implementasi disajikan pada Bab 4 (Sub-bab \ref{sec:implementasi_lilith}).
+    \item \bo{Pengujian Fungsionalitas:} Menjalankan klien Lilith tervirtualisasi dan server Lilith asli pada dua mesin terpisah dalam satu jaringan lokal. Skenario pengujian meliputi verifikasi koneksi, kemampuan menerima dan mengeksekusi perintah dari server (misalnya, akses \textit{command prompt} jarak jauh, enumerasi direktori, dan pembacaan isi berkas pada mesin klien). Observasi dicatat untuk memastikan fungsionalitas inti RAT tetap berjalan normal setelah virtualisasi.
+    \item \bo{Analisis Keamanan (Statis dan Dinamis):} Sama seperti pada aplikasi autentikasi, klien Lilith RAT versi asli dan tervirtualisasi akan dianalisis menggunakan Ghidra (statis) dan x64dbg (dinamis). Fokusnya adalah pada tingkat kesulitan untuk memahami alur kerja utama, mengidentifikasi fungsi-fungsi kritis (misalnya, komunikasi jaringan, pemrosesan perintah, \textit{keylogging}), dan potensi untuk memodifikasi perilaku. Catatan observasi kualitatif akan dibuat.
+    \item \bo{Analisis Deteksi VirusTotal:} Kedua versi \textit{executable} klien Lilith (asli dan tervirtualisasi) akan diunggah ke layanan VirusTotal. Hasil pemindaian dari berbagai \textit{engine} antivirus akan dicatat dan dibandingkan, meliputi jumlah deteksi, label ancaman, dan kategori ancaman yang diberikan.
+\end{enumerate}
+Data yang dikumpulkan dari pengujian Lilith RAT akan dianalisis secara kualitatif (untuk fungsionalitas dan kesulitan \textit{reverse engineering}) dan kuantitatif (untuk perbandingan hasil VirusTotal).
 
 %-----------------------------------------------------------------------------%
 \section{Teknik Analisis Data}

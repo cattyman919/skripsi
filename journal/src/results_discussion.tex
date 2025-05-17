@@ -52,11 +52,12 @@ These results strongly indicate that VxLang's code virtualization effectively hi
 \subsubsection{Analysis of Lilith RAT}
 Static and dynamic analysis were also performed on the Lilith RAT client (original vs. virtualized). Findings mirrored those from the authentication case studies:
 \begin{itemize}
-	\item \textbf{Non-Virtualized:} Analysis was feasible. Strings related to commands and functionality were identifiable. Control flow for network communication and command handling could be traced using Ghidra and x64dbg, allowing potential understanding of its mechanisms (e.g., keylogging, remote execution).
-	\item \textbf{Virtualized:} Analysis difficulty increased significantly. Ghidra failed to properly disassemble virtualized sections, showing numerous '???' entries and obscuring the logic. Dynamic tracing in x64dbg was severely hampered by the VM execution, making it hard to follow command processing or data flow.
-	\item \textbf{Functional Integrity:} Importantly, functional testing confirmed that the virtualized Lilith client remained fully operational, successfully connecting to the server and executing core RAT commands, despite the code transformation.
+    \item \textbf{Non-Virtualized:} Analysis was feasible. Strings related to commands and functionality were identifiable. Control flow for network communication and command handling could be traced using Ghidra and x64dbg, allowing potential understanding of its mechanisms (e.g., keylogging, remote execution).
+    \item \textbf{Virtualized:} Analysis difficulty increased significantly. Ghidra failed to properly disassemble virtualized sections, showing numerous '???' entries and obscuring the logic. Dynamic tracing in x64dbg was severely hampered by the VM execution, making it hard to follow command processing or data flow.
+    \item \textbf{Functional Integrity:} Importantly, functional testing confirmed that the virtualized Lilith client (\texttt{Lilith\_Client\_vm.vxm.exe}) remained fully operational. In a two-machine local network setup (client IP: \texttt{192.168.1.15}, server IP: \texttt{192.168.1.235} on port \texttt{1337}), the virtualized client successfully connected to the unmodified Lilith server. The server operator was able to establish a remote command prompt session on the client machine (which was identified as \texttt{C:\textbackslash{}... \textbackslash{}bin\textbackslash{}Lilith\_Client\textbackslash{}Release>}), list directory contents, and successfully read a predefined test file (\texttt{password.txt}) containing the string \texttt{"THIS IS A SECRET"}. This demonstrated that VxLang's virtualization preserved core RAT functionalities such as network communication, remote command execution, and file system interaction, despite the significant code transformation.
 \end{itemize}
 This indicates VxLang's virtualization hinders analysis even for complex, potentially malicious software, without necessarily breaking its intended functionality.
+
 \subsection{Performance and Size Overhead Results}
 
 \subsubsection{Execution Time Overhead}

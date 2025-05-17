@@ -32,7 +32,7 @@ Two categories of applications were developed and analyzed:
     \end{itemize}
 
 \subsubsection{Case Study: Lilith RAT}
-To further evaluate VxLang's effectiveness on more complex software potentially exhibiting malicious characteristics and to assess its impact on automated detection tools, a Remote Administration Tool (RAT) named Lilith \cite{LilithRAT} was included as an additional study object. The client component of this open-source C++ RAT was compiled and analyzed both in its original form and after applying VxLang virtualization to its core functions. Analysis focused on static/dynamic reverse engineering difficulty, functional integrity post-virtualization, and detection rates by antivirus engines via VirusTotal.
+To further evaluate VxLang's effectiveness on more complex software potentially exhibiting malicious characteristics and to assess its impact on automated detection tools, a Remote Administration Tool (RAT) named Lilith \cite{LilithRAT} was included as an additional study object. The client component of this open-source C++ RAT was compiled and analyzed both in its original form and after applying VxLang virtualization to its core functions. Analysis focused on static/dynamic reverse engineering difficulty, functional integrity post-virtualization, and detection rates by antivirus engines via VirusTotal. The Lilith server component remained unmodified and was used for functional testing of the client.
 
 \subsection{Instrumentation and Materials}
 \begin{itemize}
@@ -50,7 +50,7 @@ To further evaluate VxLang's effectiveness on more complex software potentially 
 For each authentication application (original and virtualized):
     \begin{enumerate}
         \item \textbf{Static Analysis (Ghidra):} Load executable, search for relevant strings (e.g., "Failed", "Authorized", potential credentials), analyze disassembly/decompilation around string references or entry points, identify conditional jumps controlling authentication success/failure, attempt static patching to bypass logic. Record qualitative observations on difficulty.
-        \item \textbf{Dynamic Analysis (x64dbg):} Run executable under debugger, search for strings/patterns at runtime, set breakpoints at suspected logic locations (identified via static analysis or runtime observation), step through execution, observe register/memory values, attempt runtime manipulation (patching conditional jumps, altering flags/memory) to bypass authentication. Record qualitative observations and success/failure of bypass attempts.
+        \item \textbf{Dynamic Analysis (x64dbg):} Run executable under debugger, search for strings/patterns at runtime, set breakpoints at suspected logic locations (identified via static analysis or runtime observation), step through execution, observe register/memory values, attempt runtime manipulation (patching conditional jumps) to bypass authentication. Record qualitative observations and success/failure of bypass attempts.
     \end{enumerate}
 
 \subsubsection{Performance Analysis}
@@ -59,6 +59,15 @@ For each benchmark application (original and virtualized):
         \item \textbf{Execution Time:} Run QuickSort benchmark 100 times per data size, record individual times. Run AES benchmark on 1GB data, record total encryption/decryption time. Use \texttt{std::chrono}. Calculate average, standard deviation (for QuickSort), and throughput (for AES).
         \item \textbf{File Size:} Measure the size of the final executable file in bytes using \texttt{std::filesystem::file\_size}.
     \end{enumerate}
+
+\subsubsection{Lilith RAT Analysis}
+\label{subsubsec:methodology_lilith_rat_journal} 
+For the Lilith RAT client (original and virtualized):
+\begin{enumerate}
+    \item \textbf{Functional Integrity Testing:} The virtualized client was tested for core RAT functionalities (connection to server, remote command execution, file system access) against an unmodified server on a local network (client IP: \texttt{192.168.1.15}, server IP: \texttt{192.168.1.235} on port \texttt{1337}) to ensure virtualization did not break essential operations. A test file (\texttt{password.txt} containing \texttt{"THIS IS A SECRET"}) on the client machine was used to verify remote file access.
+    \item \textbf{Security Analysis:} Similar static (Ghidra) and dynamic (x64dbg) analysis techniques as applied to authentication applications were used to assess reverse engineering difficulty of the RAT's core logic.
+    \item \textbf{VirusTotal Analysis:} Both original and virtualized client executables were submitted to VirusTotal to compare detection rates and threat characterizations by various antivirus engines.
+\end{enumerate}
 
 \subsection{Data Analysis Techniques}
 \begin{itemize}
