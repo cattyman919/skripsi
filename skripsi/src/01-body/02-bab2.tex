@@ -298,6 +298,72 @@ Rekayasa balik (reverse engineering) adalah proses menganalisis suatu sistem, ba
 	      \end{figure}
 \end{itemize}
 
+\subsection{Disassembler: Statis dan Dinamis}
+
+Disassembler adalah alat fundamental dalam rekayasa balik yang berfungsi untuk menerjemahkan kode mesin (urutan byte yang dieksekusi langsung oleh prosesor) kembali ke dalam bentuk bahasa assembly yang dapat dibaca manusia \cite{Sikorski2012}. Bahasa assembly adalah representasi simbolik tingkat rendah dari instruksi mesin, yang memberikan pandangan mendetail tentang operasi yang dilakukan oleh perangkat lunak. Pemahaman terhadap kode assembly hasil disassembly sangat krusial untuk menganalisis logika program, menemukan kerentanan, atau memahami bagaimana program berinteraksi dengan sistem. Terdapat dua pendekatan utama dalam disassembly: statis dan dinamis.
+
+\label{subsec:disassembler_statis}
+\subsubsection{Disassembler Statis}
+
+Disassembler statis bekerja dengan menganalisis berkas executable (atau library) secara langsung di disk, tanpa perlu menjalankan program tersebut \cite{Eilam2011}. Alat ini membaca urutan byte dari berkas dan mencoba untuk memetakannya ke instruksi-instruksi assembly yang sesuai dengan arsitektur target (misalnya, x86, x86-64, ARM).
+
+\paragraph{Cara Kerja Disassembler Statis:}
+Proses disassembly statis umumnya melibatkan beberapa teknik, di antaranya:
+
+\begin{itemize}
+\item \textbf{Linear Sweep Disassembly (Pembongkaran Sapuan Linier):} Ini adalah pendekatan paling sederhana. Disassembler memulai dari alamat awal segmen kode (atau titik masuk yang diketahui) dan secara berurutan menerjemahkan byte demi byte menjadi instruksi assembly \cite{Sikorski2012}. Pendekatan ini cepat tetapi memiliki kelemahan signifikan: ia tidak dapat dengan mudah membedakan antara kode dan data yang mungkin disisipkan di antara instruksi. Jika ada byte data yang secara keliru diinterpretasikan sebagai instruksi, sisa dari proses disassembly bisa menjadi tidak sinkron dan menghasilkan output yang salah.
+\item \textbf{Recursive Traversal Disassembly (Pembongkaran Penelusuran Rekursif):} Pendekatan ini lebih canggih dan akurat. Dimulai dari titik masuk yang diketahui, disassembler menelusuri alur kontrol program. Ketika instruksi percabangan (seperti \texttt{JMP}, \texttt{CALL}, atau \texttt{JNZ}) ditemui, disassembler akan mengikuti target dari percabangan tersebut dan melanjutkan proses disassembly dari sana \cite{Eilam2011, Ko2007}. Teknik ini lebih baik dalam membedakan antara kode dan data karena hanya bagian yang dapat dijangkau melalui alur kontrol yang dianggap sebagai kode. Namun, ia dapat menghadapi kesulitan dengan percabangan tidak langsung (indirect jumps/calls) yang targetnya ditentukan saat runtime, atau teknik anti-disassembly yang sengaja mengacaukan alur kontrol.
+\end{itemize}
+
+Disassembler statis seperti Ghidra \cite{Nat19} dan IDA Pro \cite{Hex91} menggunakan kombinasi teknik ini, ditambah dengan analisis heuristik dan pemahaman struktur format berkas (seperti PE untuk Windows atau ELF untuk Linux) untuk mengidentifikasi segmen kode, data, tabel impor/ekspor, dan simbol-simbol debug (jika ada).
+
+\paragraph{Keuntungan Disassembler Statis:}
+\begin{itemize}
+\item \textbf{Analisis Komprehensif:} Dapat menganalisis seluruh program (atau bagian besar darinya) tanpa perlu mengeksekusinya, memberikan gambaran umum struktur dan logika.
+\item \textbf{Keamanan:} Tidak ada risiko menjalankan kode berbahaya karena program tidak dieksekusi.
+\item \textbf{Reproduktifitas:} Hasil analisis konsisten karena didasarkan pada berkas yang tidak berubah.
+\end{itemize}
+
+\paragraph{Keterbatasan Disassembler Statis:}
+\begin{itemize}
+\item \textbf{Kode yang Dikemas (Packed) atau Dienkripsi:} Jika kode program dikemas (dikompresi dan mungkin dienkripsi) atau dilindungi oleh lapisan enkripsi, disassembler statis hanya akan melihat kode pembuka/dekriptornya, bukan kode asli program sampai kode tersebut didekripsi/dibuka saat runtime \cite{Sikorski2012}.
+\item \textbf{Kode yang Memodifikasi Diri Sendiri (Self-Modifying Code):} Disassembler statis tidak dapat secara akurat merepresentasikan kode yang mengubah instruksinya sendiri saat runtime.
+\item \textbf{Polimorfisme dan Metamorfisme:} Teknik yang digunakan malware untuk mengubah penampilan kode mereka di setiap infeksi atau eksekusi sangat menyulitkan analisis statis.
+\item \textbf{Percabangan Tidak Langsung dan Opaque Predicates:} Sulit untuk menentukan semua kemungkinan jalur eksekusi secara statis jika target lompatan atau kondisi percabangan sangat bergantung pada nilai runtime atau sengaja dibuat ambigu \cite{Eilam2011}.
+\item \textbf{Kegagalan pada Kode Tervirtualisasi:} Ini adalah poin krusial terkait VxLang. Ketika kode asli telah ditransformasi menjadi bytecode untuk sebuah Instruction Set Architecture (ISA) kustom yang dijalankan oleh Virtual Machine (VM) internal, disassembler statis seperti Ghidra akan gagal. Ghidra dirancang untuk memahami ISA standar (seperti x86-64). Ia akan mencoba menginterpretasikan bytecode kustom dari VxLang sebagai instruksi x86-64, yang tentu saja tidak valid. Akibatnya, Ghidra akan menampilkan urutan byte yang tidak dikenali (sering direpresentasikan sebagai '???' atau instruksi yang salah) dan tidak mampu merekonstruksi alur logika asli program yang telah divirtualisasi. Proses virtualisasi oleh VxLang secara efektif menyembunyikan kode asli dari analisis statis konvensional.
+\end{itemize}
+
+\label{subsec:disassembler_dinamis}
+\subsubsection{Disassembler Dinamis (Debugger)}
+
+Disassembler dinamis, atau lebih tepatnya disassembly yang dilakukan secara dinamis, biasanya merupakan fitur integral dari sebuah debugger seperti x64dbg \cite{Dun14}. Proses disassembly ini terjadi saat program sedang berjalan (atau dijeda) di bawah kontrol debugger.
+
+\paragraph{Cara Kerja Disassembler Dinamis:}
+Ketika program dieksekusi di dalam debugger, debugger memiliki akses penuh ke ruang memori proses tersebut.
+\begin{itemize}
+\item \textbf{Pembongkaran Instruksi Saat Ini:} Debugger membaca byte-byte memori pada alamat yang ditunjuk oleh Instruction Pointer (misalnya, register RIP pada arsitektur x86-64) dan menerjemahkannya menjadi instruksi assembly yang akan dieksekusi berikutnya \cite{Sikorski2012}. Ini dilakukan secara on-the-fly.
+\item \textbf{Penanganan Kode yang Di-unpack atau Didekripsi:} Jika program menggunakan packer atau enkripsi, disassembler dinamis akan melihat kode asli setelah packer tersebut selesai mengekstrak dan mendekripsi kode ke dalam memori.
+\item \textbf{Observasi Perubahan Kode:} Jika program menggunakan self-modifying code, disassembler dinamis (yang dipanggil berulang kali saat stepping) akan menampilkan instruksi yang benar-benar dieksekusi pada setiap langkah, bahkan jika instruksi tersebut baru saja dimodifikasi.
+\end{itemize}
+
+\paragraph{Keuntungan Disassembler Dinamis:}
+\begin{itemize}
+\item \textbf{Mengatasi Kode Terproteksi (Packed/Encrypted):} Sangat efektif untuk menganalisis kode yang baru muncul di memori setelah proses unpacking atau dekripsi runtime.
+\item \textbf{Menangani Self-Modifying Code:} Dapat melihat bentuk kode yang sebenarnya dieksekusi.
+\item \textbf{Analisis Berdasarkan Eksekusi Nyata:} Hanya menganalisis kode yang benar-benar dijalankan, yang bisa lebih fokus.
+\item \textbf{Visibilitas Simbol Runtime:} Debugger dinamis, seperti x64dbg, beroperasi pada proses yang sedang berjalan dan memiliki akses ke informasi simbol yang dimuat oleh sistem operasi. Ini mencakup simbol dari Dynamic Link Libraries (DLL) sistem (misalnya, fungsi API Windows dari \texttt{kernel32.dll}) yang diselesaikan oleh OS loader saat runtime. Jika tersedia, berkas simbol debug (seperti PDB untuk Windows) juga dapat dimuat oleh debugger untuk menampilkan simbol-simbol internal aplikasi.
+\end{itemize}
+
+\paragraph{Keterbatasan Disassembler Dinamis:}
+\begin{itemize}
+\item \textbf{Cakupan Terbatas:} Hanya bagian kode yang dieksekusi selama sesi debug yang dapat dianalisis. Mungkin ada bagian kode yang tidak pernah terjangkau.
+\item \textbf{Memakan Waktu:} Memerlukan interaksi manual untuk menelusuri kode, bisa lambat untuk program besar.
+\item \textbf{Teknik Anti-Debugging:} Program dapat menggunakan teknik untuk mendeteksi keberadaan debugger dan mengubah perilakunya atau menghentikan eksekusi \cite{Sikorski2012}.
+\item \textbf{Analisis Kode Tervirtualisasi oleh VxLang:} Meskipun x64dbg dapat melakukan disassembly terhadap instruksi-instruksi dari *interpreter* atau \textit{Virtual Machine} (VM) milik VxLang itu sendiri (karena VM tersebut adalah kode native), ia tidak akan secara langsung menampilkan kode asli Anda yang telah ditransformasi menjadi bytecode. Yang terlihat adalah kode dari VM yang sedang mengeksekusi bytecode tersebut. Jadi, meskipun x64dbg dapat melihat instruksi yang berjalan, instruksi tersebut bukanlah logika asli program dalam bentuk assembly aslinya, melainkan instruksi-instruksi dari lapisan virtualisasi VxLang. Ini tetap menyulitkan pemahaman logika asli secara langsung.
+\end{itemize}
+
+Secara ringkas, disassembler statis memberikan gambaran global namun rentan terhadap teknik obfuscation canggih seperti virtualisasi kode. Di sisi lain, disassembler dinamis (dalam debugger) dapat mengatasi beberapa bentuk proteksi runtime dan melihat simbol yang dimuat oleh OS, tetapi untuk kode yang divirtualisasi seperti oleh VxLang, ia akan menampilkan kode dari VM protektor, bukan kode asli yang telah diubah menjadi bytecode. Kegagalan Ghidra pada aplikasi yang divirtualisasi VxLang adalah karena Ghidra mengharapkan instruksi mesin standar, bukan bytecode dari ISA kustom yang hanya dipahami oleh VM VxLang.
+
 %-----------------------------------------------------------------------------%
 \section{\f{Obfuscation}}
 %-----------------------------------------------------------------------------%
