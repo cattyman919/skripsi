@@ -6,11 +6,7 @@ Bab ini menyajikan kerangka kerja metodologis yang digunakan untuk mencapai tuju
 %-----------------------------------------------------------------------------%
 \section{Pendekatan Penelitian}
 %-----------------------------------------------------------------------------%
-Penelitian ini menggunakan pendekatan \bo{eksperimental} dengan kombinasi metode \bo{kuantitatif} dan \bo{kualitatif}. Pendekatan eksperimental dipilih karena penelitian ini bertujuan untuk mengukur dan membandingkan efek dari suatu perlakuan (intervensi), yaitu penerapan \f{code virtualization} menggunakan VxLang, terhadap variabel dependen (tingkat kesulitan \f{reverse engineering} dan performa perangkat lunak).
-\begin{itemize}
-    \item Metode \bo{kuantitatif} akan digunakan untuk mengukur dampak virtualisasi pada performa perangkat lunak (waktu eksekusi dan ukuran file) serta mencatat keberhasilan/kegagalan upaya \textit{bypass} autentikasi sebagai indikator.
-    \item Metode \bo{kualitatif} akan digunakan untuk menganalisis dan mendeskripsikan tingkat kesulitan dalam melakukan \f{reverse engineering} (analisis statis dan dinamis) pada kode sebelum dan sesudah virtualisasi, berdasarkan observasi dan interpretasi peneliti.
-\end{itemize}
+Penelitian ini menggunakan pendekatan \bo{eksperimental kuantitatif}. Efektivitas VxLang dalam mempersulit \f{reverse engineering} akan dievaluasi secara kuantitatif dan melalui observasi sistematis. Ini mencakup pengukuran keberhasilan atau kegagalan upaya \textit{bypass} autentikasi, analisis terhadap kemampuan \textit{tool} analisis (\textit{disassembler}, \textit{debugger}) dalam memproses dan menginterpretasi kode (misalnya, jumlah instruksi yang berhasil di-\textit{disassemble}, jumlah \textit{string} kritis yang teridentifikasi), serta perbandingan waktu atau langkah yang diperlukan untuk mencapai tujuan analisis tertentu (jika dapat diukur secara konsisten). Observasi ini akan dicatat secara objektif untuk mendukung analisis.
 
 %-----------------------------------------------------------------------------%
 \section{Desain Eksperimen}
@@ -107,7 +103,7 @@ Pengujian ini bertujuan untuk mengevaluasi efektivitas VxLang dalam mempersulit 
 \begin{itemize}
     \item \bo{Analisis Statis (Ghidra):} Memuat \textit{executable}, mencari \textit{string} relevan, menganalisis \textit{disassembly/decompilation} untuk memahami alur kontrol, mengidentifikasi instruksi kondisional kritis, dan mencoba melakukan \textit{patching} statis untuk \textit{bypass} autentikasi.
     \item \bo{Analisis Dinamis (x64dbg):} Menjalankan \textit{executable} dalam \textit{debugger}, mencari \textit{string/pattern} saat \textit{runtime}, mengatur \textit{breakpoint}, mengamati alur eksekusi dan nilai memori/register, serta mencoba melakukan manipulasi \textit{runtime} (misalnya, \textit{patching on-the-fly} atau mengubah \textit{flags}/nilai) untuk \textit{bypass} autentikasi.
-    \item \bo{Pencatatan Observasi:} Mencatat temuan kualitatif mengenai tingkat kesulitan pada setiap langkah analisis (pencarian \textit{string}, pemahaman alur, identifikasi logika) dan mencatat keberhasilan atau kegagalan setiap upaya \textit{bypass} (statis dan dinamis).
+      \item \bo{Pencatatan Data dan Observasi:} Mencatat secara sistematis hasil dari setiap langkah analisis, termasuk: (a) keberhasilan atau kegagalan menemukan \textit{string} kritis, (b) jumlah instruksi atau fungsi yang dapat diidentifikasi oleh \textit{tool} analisis, (c) keberhasilan atau kegagalan upaya \textit{bypass} mekanisme autentikasi (baik secara statis maupun dinamis), dan (d) observasi objektif lainnya mengenai perilaku \textit{tool} analisis saat menghadapi kode yang tervirtualisasi dibandingkan dengan kode asli.
 \end{itemize}
 
 % --- TikZ Diagram: Alur Pengujian Autentikasi ---
@@ -192,18 +188,16 @@ Pengujian terhadap Lilith RAT bertujuan untuk mengevaluasi dampak virtualisasi V
 \begin{enumerate}
     \item \bo{Persiapan Artefak Lilith RAT:} Meliputi kompilasi kode sumber klien Lilith versi asli dan versi \textit{intermediate} yang telah ditandai makro VxLang, diikuti pemrosesan dengan \textit{tool} VxLang untuk menghasilkan \textit{executable} klien tervirtualisasi. Detail implementasi disajikan pada Bab 4 (Sub-bab \ref{sec:implementasi_lilith}).
     \item \bo{Pengujian Fungsionalitas:} Menjalankan klien Lilith tervirtualisasi dan server Lilith asli pada dua mesin terpisah dalam satu jaringan lokal. Skenario pengujian meliputi verifikasi koneksi, kemampuan menerima dan mengeksekusi perintah dari server (misalnya, akses \textit{command prompt} jarak jauh, enumerasi direktori, dan pembacaan isi berkas pada mesin klien). Observasi dicatat untuk memastikan fungsionalitas inti RAT tetap berjalan normal setelah virtualisasi.
-    \item \bo{Analisis Keamanan (Statis dan Dinamis):} Sama seperti pada aplikasi autentikasi, klien Lilith RAT versi asli dan tervirtualisasi akan dianalisis menggunakan Ghidra (statis) dan x64dbg (dinamis). Fokusnya adalah pada tingkat kesulitan untuk memahami alur kerja utama, mengidentifikasi fungsi-fungsi kritis (misalnya, komunikasi jaringan, pemrosesan perintah, \textit{keylogging}), dan potensi untuk memodifikasi perilaku. Catatan observasi kualitatif akan dibuat.
     \item \bo{Analisis Deteksi VirusTotal:} Kedua versi \textit{executable} klien Lilith (asli dan tervirtualisasi) akan diunggah ke layanan VirusTotal. Hasil pemindaian dari berbagai \textit{engine} antivirus akan dicatat dan dibandingkan, meliputi jumlah deteksi, label ancaman, dan kategori ancaman yang diberikan.
 \end{enumerate}
-Data yang dikumpulkan dari pengujian Lilith RAT akan dianalisis secara kualitatif (untuk fungsionalitas dan kesulitan \textit{reverse engineering}) dan kuantitatif (untuk perbandingan hasil VirusTotal).
 
 %-----------------------------------------------------------------------------%
 \section{Teknik Analisis Data}
 %-----------------------------------------------------------------------------%
 Data yang telah dikumpulkan akan dianalisis menggunakan teknik berikut:
 \begin{itemize}
-    \item \bo{Data Kualitatif (Keamanan):} Analisis deskriptif dan interpretatif berdasarkan catatan observasi untuk membandingkan tingkat kesulitan \f{reverse engineering} antara kelompok kontrol dan eksperimen.
-    \item \bo{Data Kuantitatif (Performa):} Perhitungan statistik deskriptif (rata-rata, standar deviasi), perhitungan \textit{overhead} waktu eksekusi (persentase), dan perhitungan peningkatan ukuran file. Data akan disajikan dalam tabel dan grafik perbandingan.
+    \item \bo{Analisis Keamanan (Efektivitas Proteksi):} Data hasil pengujian keamanan, seperti tingkat keberhasilan \textit{bypass} autentikasi, kemampuan \textit{tool} analisis dalam mengurai kode (misalnya, persentase \textit{string} kritis yang berhasil disembunyikan, jumlah fungsi yang tidak teridentifikasi pada kode tervirtualisasi dibandingkan kode asli), dan metrik kuantitatif lain yang relevan, akan dianalisis secara deskriptif dan komparatif. Observasi sistematis terhadap perilaku \textit{tool} (misalnya, kegagalan \textit{disassembly}, ketidakmampuan menemukan referensi silang) akan digunakan untuk memperkuat analisis kuantitatif dalam menilai efektivitas proteksi VxLang antara kelompok kontrol dan eksperimen.
+    \item \bo{Performa:} Perhitungan statistik deskriptif (rata-rata, standar deviasi), perhitungan \textit{overhead} waktu eksekusi (persentase), dan perhitungan peningkatan ukuran file. Data akan disajikan dalam tabel dan grafik perbandingan.
     \item \bo{Analisis Trade-off:} Sintesis hasil analisis keamanan dan performa untuk mengevaluasi keseimbangan antara peningkatan proteksi dan dampak pada kinerja.
 \end{itemize}
 Hasil analisis ini akan menjadi dasar penarikan kesimpulan.

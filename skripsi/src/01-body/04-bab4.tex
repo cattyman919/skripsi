@@ -484,3 +484,50 @@ set "lilith_intermediate_path=bin\Lilith_Client\Release\Lilith_Client_vm.exe"
 \end{enumerate}
 
 Persiapan yang cermat ini memastikan bahwa kedua versi klien Lilith (asli dan tervirtualisasi) dapat dibandingkan secara adil untuk mengevaluasi dampak VxLang.
+
+\subsection{Tantangan dalam Penempatan Makro VxLang pada Lilith RAT}
+\label{subsec:tantangan_makro_lilith}
+Proses penerapan makro virtualisasi VxLang pada kode sumber klien Lilith RAT mengungkapkan sebuah aspek krusial, yaitu sensitivitas fungsionalitas program terhadap penempatan makro yang kurang tepat. Meskipun tujuan utama virtualisasi adalah untuk melindungi bagian kode yang paling kritikal, pengalaman dalam studi kasus ini menunjukkan bahwa tidak semua blok kode dapat divirtualisasi secara langsung tanpa menimbulkan efek samping yang merugikan.
+
+Sebagai contoh, upaya awal untuk memvirtualisasi blok kode yang lebih besar atau yang memiliki interaksi kompleks dengan alur kontrol dan pemanggilan fungsi eksternal pada Lilith RAT menemui kendala. Salah satu observasi spesifik terjadi pada penanganan paket \texttt{PacketType::CMDCommand} dalam fungsi \texttt{Client::ProcessPacketType}. Ketika seluruh blok \texttt{case} untuk \texttt{CMDCommand} dibungkus dengan makro \texttt{VL\_VIRTUALIZATION\_BEGIN} dan \texttt{VL\_VIRTUALIZATION\_END}, seperti pada ilustrasi berikut:
+
+\begin{listing}[H]
+\begin{minted}[fontsize=\small]{cpp}
+// Ilustrasi penempatan makro yang awalnya menyebabkan masalah
+case PacketType::CMDCommand: {
+    VL_VIRTUALIZATION_BEGIN; //<- Awalnya di sini
+    std::string msg;
+    if (!GetString(msg)) // Fungsi untuk mendapatkan string dari jaringan
+      return false;
+
+    if (CMD::cmdptr != NULL) {
+      CMD::cmdptr->writeCMD(msg); // Fungsi untuk menulis perintah ke CMD
+    } else {
+      SendString("Initiate a CMD session first.", PacketType::Warning);
+    }
+    VL_VIRTUALIZATION_END; //<- Awalnya di sini
+    break;
+}
+\end{minted}
+\captionof{listing}{Contoh Ilustratif Penempatan Awal Makro VxLang pada Lilith RAT yang Menimbulkan Masalah Fungsionalitas}
+\label{lst:lilith_macro_problem_cmd}
+\end{listing}
+
+Penempatan makro seperti pada Kode \ref{lst:lilith_macro_problem_cmd} menyebabkan aplikasi klien Lilith mengalami \textit{crash} atau \textit{hang} ketika server mengirimkan perintah yang berkaitan dengan \texttt{PacketType::CMDCommand}. Fungsionalitas baru dapat dipulihkan ketika virtualisasi diterapkan secara lebih granular, misalnya dengan memindahkan makro untuk hanya membungkus pemanggilan fungsi spesifik di dalam logika tersebut, seperti di dalam fungsi \texttt{CMD::cmdptr->writeCMD(msg)} itu sendiri, bukan seluruh blok \texttt{case}.
+
+Kendala serupa juga ditemui pada bagian kode yang bertanggung jawab untuk mengirimkan respons perintah kembali ke server:
+\begin{listing}[H]
+\begin{minted}[fontsize=\small]{cpp}
+// Ilustrasi penempatan makro lain yang menyebabkan masalah
+ 
+VL_VIRTUALIZATION_BEGIN; //<- Penempatan ini menyebabkan hang/crash
+SendString(General::processCommand(msg), PacketType::Instruction);
+VL_VIRTUALIZATION_END;
+
+\end{minted}
+\captionof{listing}{Contoh Ilustratif Penempatan Makro VxLang Lain yang Menimbulkan Masalah}
+\label{lst:lilith_macro_problem_send}
+\end{listing}
+Ketika pemanggilan fungsi \texttt{SendString} (yang melibatkan operasi jaringan) bersama dengan \texttt{General::processCommand} divirtualisasi seperti pada Kode \ref{lst:lilith_macro_problem_send}, klien Lilith akan mengalami \textit{crash} dan terputus dari server saat server mencoba mengaktifkan fitur seperti \texttt{remoteControl cmd}.
+
+Temuan ini mengindikasikan bahwa \textit{tool} virtualisasi seperti VxLang mungkin memiliki interaksi yang kompleks dengan struktur kode tertentu, terutama yang melibatkan alur kontrol non-linear (seperti \texttt{switch-case}), operasi I/O, atau pemanggilan fungsi yang mengubah konteks eksekusi secara signifikan. Oleh karena itu, keberhasilan implementasi VxLang tidak hanya bergantung pada identifikasi bagian kode yang sensitif, tetapi juga pada eksperimen dan pengujian fungsional yang cermat untuk memastikan bahwa penempatan makro virtualisasi tidak merusak integritas operasional aplikasi. Hal ini menekankan pentingnya pendekatan virtualisasi yang selektif dan teruji.

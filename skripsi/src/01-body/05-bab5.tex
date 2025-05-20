@@ -165,54 +165,41 @@ Sama seperti pada analisis statis, celah keamanan dapat dieksploitasi dengan mem
 
 \subsubsection{Analisis Aplikasi Virtualized}
 
-Analisis dinamis pada aplikasi yang telah divirtualisasi menggunakan x64dbg menunjukkan tantangan yang serupa dengan analisis statis. Ketika mencari string seperti "Authentication Failed", \f{debugger} sering kali tidak dapat menemukannya dalam memori proses. Hal ini mengindikasikan bahwa string tersebut mungkin tidak disimpan dalam format yang jelas atau mungkin dienkripsi dan didekripsi hanya pada saat digunakan.
+Analisis dinamis pada aplikasi yang telah divirtualisasi menggunakan VxLang, khususnya pada aplikasi Qt (\texttt{app\_qt\_vm.vxm.exe}) menggunakan x64dbg, menunjukkan tantangan yang berbeda namun tetap signifikan dibandingkan versi non-virtualized. Observasi utama adalah sebagai berikut:
 
-Selain itu, x64dbg juga menampilkan banyak operasi dengan kategori ??? yang tidak dapat di-\f{disassemble}. Hal ini mempersulit pemahaman alur eksekusi dan fungsi-fungsi yang terlibat dalam proses autentikasi.
+\begin{itemize}
+    \item \textbf{Visibilitas Instruksi Native dari Virtual Machine (VM) VxLang:} Setelah aplikasi Qt yang tervirtualisasi dimuat sepenuhnya dan antarmuka pengguna telah muncul, x64dbg \textbf{mampu menampilkan urutan instruksi \textit{native} x86-64 yang valid} yang sedang dieksekusi. Sebagai contoh, pada suatu titik eksekusi, \textit{debugger} dapat menunjukkan instruksi-instruksi seperti:
+    \begin{listing}[H]
+        \begin{minted}[fontsize=\small, breaklines=true, escapeinside=||]{asm}
+sub rsp,48
+mov qword ptr ss:[rsp+40],r9
+mov dword ptr ss:[rsp+3C],r8d
+mov dword ptr ss:[rsp+38],edx
+mov qword ptr ss:[rsp+30],rcx
+mov rax,qword ptr ss:[rsp+30]
+mov qword ptr ss:[rsp+28],rax
+cmp dword ptr ss:[rsp+38],0
+jne app_qt_vm.vxm.7FF64A6A105D ; Contoh alamat lompatan dalam modul virtualized
+; ... (instruksi native lainnya dari VM VxLang) ...
+        \end{minted}
+        \caption{Contoh Snippet Assembly dari VM VxLang yang Terlihat di x64dbg Setelah Aplikasi Qt Virtualized Dimuat Penuh}
+        \label{lst:asm_dynamic_qt_vm_loaded_revised}
+    \end{listing}
+    Instruksi-instruksi ini bukanlah logika aplikasi asli dalam bentuk \textit{native}-nya, melainkan bagian dari \textit{interpreter} atau \textit{Virtual Machine} (VM) VxLang yang bertanggung jawab untuk mengambil, mendekode, dan mengeksekusi \textit{bytecode} aplikasi yang telah divirtualisasi. Pada tahap awal pemuatan, sebelum antarmuka aplikasi muncul, x64dbg mungkin menampilkan urutan instruksi yang tampak repetitif atau tidak jelas (misalnya, \code{add byte ptr ds:[rax],al} yang berulang), yang kemungkinan merupakan bagian dari proses inisialisasi atau \textit{loader} VxLang. 
 
-Lebih lanjut, melacak alur eksekusi saat memasukkan username dan password menjadi sangat sulit. Berikut adalah perbandingan \f{section} kode saat menerima \f{input} pada aplikasi konsol non-virtualized dan virtualized:
+    \item \textbf{Kesulitan Utama: Pelacakan String Kritis dan Logika Aplikasi yang Divirtualisasi:} Meskipun instruksi \textit{native} dari VM VxLang dapat dilihat, tantangan fundamental dalam analisis dinamis tetap ada:
+    \begin{itemize}
+        \item \textbf{Penyembunyian String Kritis:} \textit{String-string} krusial yang sengaja dimasukkan ke dalam blok virtualisasi dalam kode sumber (misalnya, "Authentication Failed" atau "Authentication Success") \textbf{tidak berhasil ditemukan} melalui fitur pencarian \textit{string references} atau pencarian memori standar di x64dbg saat aplikasi berjalan. Sebaliknya, \textit{string-string} lain yang berada di luar blok virtualisasi (misalnya, teks UI statis yang tidak dilindungi) umumnya masih dapat ditemukan. Ini menunjukkan efektivitas VxLang dalam menyembunyikan konstanta \textit{string} yang menjadi target proteksinya.
+        \item \textbf{Abstraksi Logika Aplikasi Inti:} Logika aplikasi yang sebenarnya (misalnya, proses perbandingan kredensial dan pengambilan keputusan autentikasi) telah ditransformasi menjadi representasi \textit{bytecode} internal yang hanya dipahami dan dieksekusi oleh VM VxLang. Oleh karena itu, seorang analis yang menggunakan x64dbg hanya melihat eksekusi dari instruksi-instruksi VM VxLang, bukan eksekusi langsung dari logika aplikasi dalam bentuk \textit{native} aslinya. Hal ini membuat pemahaman terhadap alur logika aplikasi yang sebenarnya dan identifikasi titik-titik keputusan krusial (seperti instruksi \textit{jump} kondisional yang menentukan hasil autentikasi) menjadi sangat sulit, jika bukan tidak mungkin, tanpa pemahaman mendalam mengenai arsitektur VM VxLang itu sendiri.
+    \end{itemize}
 
+    \item \textbf{Kegagalan Upaya Bypass Sederhana:} Sebagai akibat langsung dari abstraksi logika aplikasi ke dalam VM, upaya untuk melakukan \textit{bypass} mekanisme autentikasi melalui teknik \textit{patching runtime} sederhana (seperti memodifikasi satu instruksi \textit{jump} kondisional sebagaimana berhasil dilakukan pada versi non-virtualisasi) \textbf{menjadi tidak efektif}. Titik keputusan logika autentikasi tidak lagi terekspos sebagai instruksi \textit{native} yang mudah diidentifikasi dan dimodifikasi.
 
-\bo{Non-Virtualized:} Menampilkan panggilan standar ke fungsi I/O C++.
-\begin{listing}[H]
-    \begin{minted}[linenos=false]{asm}
-; ...
-mov rcx,qword ptr ds:[<...std::cout>]      ; Pointer ke std::cout
-lea rdx,qword ptr ds:[<"Enter username: ">] ; Pointer ke string prompt
-call <console. ... std::operator<< ...>    ; Panggil fungsi print (std::cout << prompt)
-; ...
-mov rcx,qword ptr ds:[<...std::cin>]       ; Pointer ke std::cin
-lea rdx,qword ptr ss:[rbp-28]              ; Pointer ke buffer input string
-call <console. ... std::operator>> ...>    ; Panggil fungsi read (std::cin >> buffer)
-; ...
-\end{minted}
-\caption{Snippet Assembly: Operasi Input/Output Standar (Non-Virtualized)}
-\label{lst:asm_dynamic_io_nonvirt_snippet} % Pastikan label unik
-\end{listing}
+\end{itemize}
 
-\bo{Virtualized:} Menampilkan instruksi yang diobfuskasi dan sulit dikenali oleh debugger.
-\begin{listing}[H]
-    \begin{minted}[linenos=false]{asm}
-??? ; Operasi tidak dikenal
-jmp console_vm.vxm.7FF74CD97168 ; Lompatan internal VM?
-fcmovnu st(0),st(5) ; Operasi FPU tidak relevan?
-xor byte ptr ds:[rsi],ah ; Operasi XOR
-??? ; Operasi tidak dikenal
-jmp console_vm.vxm.7FF74CD48254 ; Lompatan pendek
-fstp st(0) ; Operasi FPU
-\end{minted}
-\caption{Snippet Assembly: Instruksi di Lokasi Input (Virtualized)}
-\label{lst:asm_dynamic_io_virt_snippet} % Pastikan label unik
-\end{listing}
+Temuan ini selaras dengan prinsip dasar \textit{code virtualization} yang dijelaskan pada Bab 2 (Sub-bab \ref{subsec:disassembler_dinamis}). Meskipun \textit{debugger} dinamis seperti x64dbg dapat me-\textit{disassemble} dan melangkah melalui instruksi \textit{native} dari \textit{interpreter} VM VxLang itu sendiri \cite{Sikorski2012}, logika aplikasi asli yang telah divirtualisasi tetap tersembunyi dalam bentuk \textit{bytecode}. Kemampuan x64dbg untuk menampilkan beberapa simbol API sistem yang mungkin dipanggil oleh VM tidak secara signifikan mempermudah rekonstruksi logika aplikasi asli yang telah ditransformasi.
 
-Perbandingan ini menunjukkan kontras yang jelas. Pada kode non-virtualized, panggilan ke fungsi I/O standar seperti \code{std::cout} dan \code{std::cin} mudah dikenali. Sebaliknya, pada kode yang telah divirtualisasi, instruksi assembly menjadi tidak jelas (\code{???}), diselingi dengan lompatan (\code{jmp}) dan operasi lain yang tampaknya tidak berhubungan langsung dengan I/O (\code{fcmovnu}, \code{xor}, \code{fstp}). Hal ini menyulitkan pelacakan alur eksekusi saat input dimasukkan. Lebih lanjut, observasi menunjukkan register RIP (\f{Instruction Pointer}) seringkali tampak "\f{stuck}" pada alamat tertentu dalam \textit{debugger}, mengindikasikan eksekusi kemungkinan terjadi di dalam \textit{interpreter} mesin virtual VxLang. Hal ini sangat menyulitkan untuk melacak alur eksekusi dan memahami apa yang sebenarnya terjadi di balik layar. 
-
-Perilaku yang diamati pada x64dbg ini konsisten dengan cara kerja \textit{disassembler} dinamis dan sifat dari kode yang tervirtualisasi, seperti yang telah dibahas pada Bab 2 (Sub-bab \ref{subsec:disassembler_dinamis}). Ketika aplikasi tervirtualisasi dijalankan di bawah x64dbg, \textit{debugger} melakukan \textit{disassembly on-the-fly} terhadap instruksi-instruksi \textit{native} yang dieksekusi oleh CPU \cite{Sikorski2012}. Dalam kasus kode yang dilindungi VxLang, instruksi \textit{native} yang terlihat oleh x64dbg bukanlah instruksi asli dari logika aplikasi yang divirtualisasi, melainkan instruksi-instruksi dari \textit{interpreter} atau \textit{Virtual Machine} (VM) milik VxLang itu sendiri. VM inilah yang bertanggung jawab untuk mengambil, mendekode, dan mengeksekusi \textit{bytecode} kustom aplikasi.
-
-Oleh karena itu, meskipun x64dbg berhasil me-\textit{disassemble} kode VM VxLang (karena VM itu sendiri adalah kode \textit{native} x86-64), alur logika aplikasi yang asli tetap tersembunyi dalam representasi \textit{bytecode}. Pengamatan bahwa register RIP tampak "stuck" atau melakukan lompatan yang sulit diikuti kemungkinan besar disebabkan oleh eksekusi yang terjadi di dalam loop interpretasi VM VxLang. String yang relevan dengan logika aplikasi mungkin juga telah dienkapsulasi atau diobfuskasi oleh VM dan tidak langsung terlihat di memori proses dalam bentuk aslinya.
-
-Mengenai visibilitas simbol, x64dbg sebagai \textit{debugger} dinamis memang memiliki kemampuan untuk mengakses informasi simbol yang dimuat oleh sistem operasi saat \textit{runtime}, terutama untuk Dynamic Link Libraries (DLL) sistem seperti \texttt{kernel32.dll} atau \texttt{user32.dll}, serta simbol dari berkas PDB jika tersedia. VxLang kemungkinan tidak memvirtualisasi panggilan langsung ke API sistem ini, sehingga x64dbg masih dapat mengidentifikasi dan menampilkan simbol-simbol tersebut. Namun, simbol-simbol internal aplikasi yang berada dalam blok kode yang telah divirtualisasi oleh VxLang (misalnya, nama fungsi atau variabel asli yang didefinisikan pengguna) sangat mungkin diobfuskasi atau dihilangkan sama sekali oleh proses virtualisasi. Oleh karena itu, meskipun beberapa simbol API sistem mungkin terlihat, hal ini tidak secara signifikan memudahkan rekonstruksi logika aplikasi asli yang telah ditransformasi menjadi \textit{bytecode} oleh VxLang.
-
-Perilaku ini mengindikasikan bahwa VxLang menggunakan teknik virtualisasi yang kompleks, yang secara signifikan menghambat analisis dinamis menggunakan metode tradisional seperti mencari string dan memantau alur eksekusi secara langsung. Konteks assembly yang lebih lengkap untuk perbandingan ini dapat dilihat di Lampiran \ref{app:kode_asm} (Kode \ref{lst:asm_dynamic_io_comparison_full}).
+Dengan demikian, meskipun instruksi \textit{native} dari VM VxLang dapat diobservasi saat \textit{runtime}, analisis dinamis terhadap bagian kode aplikasi yang telah divirtualisasi dengan VxLang tetap menghadirkan tantangan besar dalam hal melacak data sensitif (seperti \textit{string} status autentikasi) dan memahami serta memanipulasi alur logika aplikasi inti. Ini secara signifikan meningkatkan kompleksitas dan waktu yang dibutuhkan untuk melakukan \textit{reverse engineering} yang bertujuan untuk \textit{bypass} atau modifikasi.
 
 \section{Analisis Performa \f{Overhead} VxLang}
 Hasil dari percobaan performa overhead dan perubahan ukuran file setelah penerapan virtualisasi kode menggunakan VxLang. Percobaan ini dilakukan pada algoritma Quick Sort dan enkripsi AES-CBC-256.
@@ -386,10 +373,10 @@ Peningkatan ukuran ini, seperti pada \textit{debug build}, kemungkinan besar dis
 
 \section{Analisis Aplikasi RAT Lilith dengan VxLang}
 \label{bab:hasil_penelitian_lilith} 
-Bagian ini menyajikan hasil analisis terhadap aplikasi RAT Lilith, baik dalam versi asli maupun versi yang telah divirtualisasi menggunakan VxLang. Analisis mencakup, pengujian fungsionalitas lilith RAT pada server dan client, evaluasi kesulitan \textit{reverse engineering} secara statis dan dinamis, serta dampak virtualisasi terhadap deteksi oleh layanan pemindaian \textit{malware} VirusTotal.
 
 \subsection{Pengujian Fungsionalitas Lilith RAT Tervirtualisasi}
 \label{subsec:fungsionalitas_lilith_virtualized}
+Bagian ini menyajikan hasil analisis terhadap aplikasi RAT Lilith, baik dalam versi asli maupun versi yang telah divirtualisasi menggunakan VxLang. Analisis berfokus pada pengujian fungsionalitas klien Lilith setelah virtualisasi untuk memastikan integritas operasionalnya, serta dampak virtualisasi terhadap deteksi oleh layanan pemindaian \textit{malware} VirusTotal.
 
 Untuk memastikan bahwa proses virtualisasi menggunakan VxLang tidak merusak fungsionalitas inti dari aplikasi yang kompleks seperti Lilith RAT, sebuah pengujian fungsional secara langsung dilakukan. Skenario pengujian ini dirancang untuk memverifikasi kemampuan operasional dasar klien Lilith yang telah divirtualisasi ketika berinteraksi dengan server Lilith dalam lingkungan jaringan lokal.
 
@@ -425,18 +412,7 @@ Demonstrasi fungsionalitas ini secara meyakinkan membuktikan bahwa proses virtua
 
 Temuan ini memiliki implikasi penting. Ini menunjukkan bahwa VxLang, sebagai sebuah teknik proteksi, dapat diterapkan pada aplikasi yang relatif kompleks dengan berbagai modul fungsional (seperti komunikasi jaringan, pemrosesan input/output, dan interaksi sistem operasi) tanpa menyebabkan kegagalan operasional. Kemampuan untuk mempertahankan fungsionalitas asli adalah prasyarat krusial sebelum mengevaluasi lebih lanjut efektivitas keamanan dan dampak performa dari sebuah teknik proteksi perangkat lunak. Jika proteksi merusak fungsi dasar aplikasi, maka teknik tersebut tidak praktis untuk digunakan, terlepas dari seberapa kuat tingkat keamanannya. Dalam kasus ini, Lilith RAT tervirtualisasi tetap menjadi alat yang fungsional, yang berarti analisis terhadap kesulitan \textit{reverse engineering} dan \textit{overhead} performa menjadi relevan dan bermakna.
 
-\subsection{Analisis Statis dan Dinamis RAT Lilith}
-\label{subsec:analisis_statdin_lilith} % Pastikan label unik jika perlu
-Analisis statis menggunakan Ghidra dan analisis dinamis menggunakan x64dbg dilakukan pada kedua versi klien Lilith.
-\begin{itemize}
-    \item \textbf{RAT Lilith Non-Virtualized:} Analisis terhadap versi asli Lilith relatif mudah dilakukan. \textit{String} terkait fungsionalitasnya (misalnya, perintah-perintah, pesan status) dapat ditemukan. Alur kontrol untuk pemrosesan perintah dan komunikasi jaringan dapat dilacak. Dengan pemahaman yang cukup, seorang analis dapat mengidentifikasi mekanisme \textit{keylogging}, cara kerja perintah \textit{remote control}, dan bagaimana data dikirimkan antara klien dan server.
-    \item \textbf{RAT Lilith Virtualized:} Sejalan dengan temuan pada aplikasi studi kasus autentikasi, versi Lilith yang telah divirtualisasi menunjukkan peningkatan kesulitan analisis yang signifikan:
-        \begin{itemize}
-            \item \textbf{Analisis Statis (Ghidra):} Sebagian besar instruksi dalam fungsi-fungsi yang divirtualisasi tidak dapat di-\textit{disassemble} dengan benar oleh Ghidra, menghasilkan banyak blok kode yang ditandai sebagai '???' atau instruksi yang tidak valid. \textit{String-string} penting yang diobservasi pada versi asli menjadi sulit atau tidak mungkin ditemukan. Memahami alur logika utama dan fungsionalitas spesifik seperti \textit{keylogging} atau penanganan perintah menjadi sangat terhambat.
-            \item \textbf{Analisis Dinamis (x64dbg):} Pelacakan eksekusi pada bagian yang divirtualisasi juga sangat sulit. Seperti pada kasus sebelumnya, \textit{Instruction Pointer} (RIP) seringkali tampak melakukan lompatan yang tidak terduga atau berputar dalam blok kode kecil, yang mengindikasikan eksekusi oleh VM internal VxLang. Upaya untuk memasang \textit{breakpoint} pada fungsi-fungsi inti menjadi kurang efektif karena fungsi asli telah ditransformasi menjadi \textit{bytecode}.
-        \end{itemize}
-    \item \textbf{Fungsionalitas Aplikasi:} Meskipun mengalami virtualisasi, pengujian fungsionalitas menunjukkan bahwa klien Lilith yang tervirtualisasi \textbf{tetap dapat berjalan dengan normal}. Klien mampu terhubung ke server, menerima perintah, menjalankan fungsi seperti \textit{remote command execution} dan \textit{keylogging}, serta mengirimkan hasilnya kembali ke server. Hal ini menunjukkan bahwa VxLang berhasil memvirtualisasi kode tanpa merusak fungsionalitas inti dari aplikasi yang kompleks seperti RAT.
-\end{itemize}
+Penting untuk dicatat bahwa keberhasilan fungsionalitas klien Lilith yang tervirtualisasi ini dicapai setelah melalui beberapa iterasi penyesuaian penempatan makro VxLang. Sebagaimana telah diuraikan pada Bab \ref{subsec:tantangan_makro_lilith}, upaya awal untuk memvirtualisasi blok kode yang lebih besar atau yang melibatkan interaksi I/O jaringan secara langsung dalam lingkup virtualisasi seringkali menyebabkan ketidakstabilan aplikasi atau kegagalan fungsional. Sebagai contoh, pembungkusan langsung seluruh blok \texttt{case} dalam penanganan paket atau pemanggilan fungsi pengiriman data jaringan (\texttt{SendString}) dengan makro virtualisasi mengakibatkan \textit{crash}. Fungsionalitas yang stabil baru tercapai ketika makro virtualisasi diterapkan secara lebih hati-hati dan selektif pada bagian-bagian kode yang lebih terisolasi atau pada level pemanggilan fungsi tertentu yang tidak secara langsung mengelola state I/O kompleks. Temuan ini menyoroti bahwa meskipun virtualisasi dapat diterapkan pada aplikasi kompleks seperti Lilith RAT, prosesnya memerlukan pertimbangan teknis yang mendalam mengenai interaksi antara kode yang divirtualisasi dengan sisa sistem dan batasan dari \textit{tool} virtualisasi itu sendiri.
 
 \subsection{Analisis Deteksi Malware RAT Lilith menggunakan VirusTotal}
 \label{subsec:analisis_virustotal_lilith} % Pastikan label unik jika perlu
