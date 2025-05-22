@@ -205,7 +205,7 @@ Dengan demikian, meskipun instruksi \textit{native} dari VM VxLang dapat diobser
 Hasil dari percobaan performa overhead dan perubahan ukuran file setelah penerapan virtualisasi kode menggunakan VxLang. Percobaan ini dilakukan pada algoritma Quick Sort dan enkripsi AES-CBC-256.
 
 \subsection{Hasil Pengujian Performa \f{Quick Sort}}
-Tabel \ref{tab:quick_sort_performance} menyajikan hasil pengukuran waktu rata-rata dan standar deviasi dari algoritma Quick Sort yang dijalankan sebanyak 100 kali untuk setiap ukuran array, baik sebelum maupun sesudah virtualisasi menggunakan VxLang. Data virtualisasi untuk ukuran array di atas 1.000.000 elemen tidak tersedia dalam log pengujian \textit{release build} ini.
+Tabel \ref{tab:quick_sort_performance} menyajikan hasil pengukuran waktu rata-rata dan standar deviasi dari algoritma Quick Sort yang dijalankan sebanyak 100 kali untuk setiap ukuran array, baik sebelum maupun sesudah virtualisasi menggunakan VxLang. 
 
 \begin{table}[H] % Ganti H dengan htbp jika ingin float
     \centering
@@ -279,13 +279,13 @@ Tabel \ref{tab:quick_sort_performance} menyajikan hasil pengukuran waktu rata-ra
     \label{fig:quick_sort_performance}
 \end{figure}
 
-Berdasarkan Tabel \ref{tab:quick_sort_performance} dan Gambar \ref{fig:quick_sort_performance}, terlihat adanya peningkatan waktu eksekusi yang sangat signifikan pada algoritma Quick Sort setelah divirtualisasi menggunakan VxLang, bahkan pada \textit{release build}. Peningkatan ini konsisten terjadi seiring dengan bertambahnya ukuran array. Sebagai contoh:
+Berdasarkan Tabel \ref{tab:quick_sort_performance} dan Gambar \ref{fig:quick_sort_performance}, terlihat adanya peningkatan waktu eksekusi yang sangat signifikan pada algoritma Quick Sort setelah divirtualisasi menggunakan VxLang. Peningkatan ini konsisten terjadi seiring dengan bertambahnya ukuran array. Sebagai contoh:
 \begin{itemize}
     \item Untuk array berukuran 100 elemen, waktu eksekusi rata-rata meningkat dari 0.01 ms menjadi 2.74 ms, yang menunjukkan \textit{overhead} sekitar 27,300\%.
     \item Untuk array berukuran 100.000 elemen, waktu eksekusi meningkat dari 15.12 ms menjadi 3.080.30 ms, dengan \textit{overhead} sekitar 20,272\%.
     \item Untuk array terbesar yang diuji pada versi virtualisasi (1.000.000 elemen), waktu eksekusi meningkat dari 218.32 ms menjadi 33.292.91 ms, menghasilkan \textit{overhead} sekitar 15,150\%.
 \end{itemize}
-Peningkatan standar deviasi juga menunjukkan bahwa waktu eksekusi pada versi virtualisasi menjadi lebih bervariasi, terutama pada ukuran array yang lebih besar. Hal ini mengindikasikan adanya \textit{overhead} yang substansial dan kurang prediktabilitas yang diperkenalkan oleh mesin virtual VxLang dalam mengeksekusi instruksi virtual dibandingkan dengan eksekusi kode \textit{native}. Meskipun \textit{overhead} ini mungkin sedikit lebih rendah dibandingkan dengan \textit{debug build} sebelumnya (misalnya, untuk 1 juta elemen, \textit{overhead debug build} adalah sekitar 20.860\%), nilainya tetap sangat tinggi dan menunjukkan dampak performa yang berat.
+Peningkatan standar deviasi juga menunjukkan bahwa waktu eksekusi pada versi virtualisasi menjadi lebih bervariasi, terutama pada ukuran array yang lebih besar. Hal ini mengindikasikan adanya \textit{overhead} yang substansial dan kurang prediktabilitas yang diperkenalkan oleh mesin virtual VxLang dalam mengeksekusi instruksi virtual dibandingkan dengan eksekusi kode \textit{native}. 
 
 \subsection{Hasil Pengujian Performa Enkripsi AES-CBC-256}
 Tabel \ref{tab:aes_performance} menyajikan hasil benchmarking enkripsi AES-CBC-256 dengan 1.000.000 blok data (total 976 MB), sebelum dan sesudah virtualisasi menggunakan VxLang.
@@ -315,10 +315,10 @@ Tabel \ref{tab:aes_performance} menyajikan hasil benchmarking enkripsi AES-CBC-2
   \end{tabular}
 \end{table}
 
-Hasil pengujian enkripsi AES-CBC-256 pada \textit{release build} juga menunjukkan \textit{overhead} performa yang signifikan setelah penerapan VxLang.
+Hasil pengujian enkripsi AES-CBC-256  menunjukkan \textit{overhead} performa yang signifikan setelah penerapan VxLang.
 \begin{itemize}
-    \item Total waktu enkripsi meningkat dari 1.878.52 ms menjadi 9.330.73 ms, yang merupakan peningkatan sekitar 396.7\%.
-    \item Total waktu dekripsi mengalami peningkatan dari 1.304.75 ms menjadi 8.649.74 ms, atau sekitar 562.9\%.
+    \item Total waktu enkripsi meningkat dari 1,878.52 ms menjadi 9,330.73 ms, yang merupakan peningkatan sekitar 396.7\%.
+    \item Total waktu dekripsi mengalami peningkatan dari 1,304.75 ms menjadi 8,649.74 ms, atau sekitar 562.9\%.
 \end{itemize}
 Peningkatan waktu eksekusi ini berdampak langsung pada penurunan \textit{throughput} (kecepatan pemrosesan data):
 \begin{itemize}
@@ -326,7 +326,7 @@ Peningkatan waktu eksekusi ini berdampak langsung pada penurunan \textit{through
     \item \textit{Throughput} dekripsi menurun dari 748.46 MB/s menjadi 112.90 MB/s (penurunan sekitar 84.9\%).
     \item \textit{Throughput} gabungan (rata-rata enkripsi dan dekripsi) menurun dari 634.16 MB/s menjadi 108.78 MB/s, yang merupakan penurunan sekitar 82.8\%.
 \end{itemize}
-Hasil ini mengkonfirmasi bahwa virtualisasi kode dengan VxLang memperkenalkan \textit{overhead} yang cukup besar pada operasi komputasi intensif seperti enkripsi, bahkan dalam \textit{release build} yang umumnya lebih teroptimasi dibandingkan \textit{debug build}. Perbandingkan dengan \textit{debug build} sebelumnya (enkripsi +384\%, dekripsi +510\%, throughput gabungan turun 82%), angka-angka pada \textit{release build} ini menunjukkan pola \textit{overhead} yang serupa dan tetap signifikan.
+Hasil ini mengkonfirmasi bahwa virtualisasi kode dengan VxLang memperkenalkan \textit{overhead} yang cukup besar pada operasi komputasi intensif seperti enkripsi. 
 
 \subsection{Hasil Pengujian Ukuran File}
 Tabel \ref{tab:file_size} menyajikan ukuran file \f{executable} (dalam KB) untuk berbagai program sebelum dan sesudah virtualisasi menggunakan VxLang.
@@ -363,13 +363,13 @@ Tabel \ref{tab:file_size} menyajikan ukuran file \f{executable} (dalam KB) untuk
   \end{tabular}
 \end{table}
 
-Hasil pengukuran ukuran file pada \textit{release build} menunjukkan bahwa penerapan virtualisasi kode menggunakan VxLang secara konsisten meningkatkan ukuran file \textit{executable}.
+Hasil pengukuran ukuran file menunjukkan bahwa penerapan virtualisasi kode menggunakan VxLang secara konsisten meningkatkan ukuran file \textit{executable}.
 \begin{itemize}
     \item Untuk program-program kecil dan sederhana seperti \texttt{quick\_sort} (98 KB menjadi 1.537 KB, peningkatan sekitar 15.7x), \texttt{console} (92 KB menjadi 1.577 KB, peningkatan sekitar 17.1x), dan \texttt{Lilith\_Client} (84 KB menjadi 1.554 KB, peningkatan sekitar 18.5x), peningkatannya sangat signifikan, seringkali lebih dari 15 kali lipat.
     \item Untuk aplikasi GUI yang lebih besar atau yang menggunakan library eksternal seperti \texttt{app\_imgui} (1.675 KB menjadi 2.330 KB, peningkatan sekitar 1.39x) dan \texttt{app\_qt\_cloud} (315 KB menjadi 1.671 KB, peningkatan sekitar 5.3x), persentase peningkatannya lebih kecil, namun absolutnya tetap menunjukkan penambahan ukuran yang cukup besar (ratusan hingga ribuan KB).
     \item Aplikasi \texttt{size} yang dirancang dengan aset data tersemat besar (97.771 KB) menunjukkan peningkatan ukuran yang relatif paling kecil secara persentase (menjadi 112.324 KB, peningkatan sekitar 1.15x atau 15\%), namun ini tetap berarti penambahan sekitar 14.5 MB. Ini mengindikasikan bahwa \textit{overhead} utama berasal dari \textit{runtime} VxLang itu sendiri, dan dampaknya lebih terasa pada aplikasi kecil.
 \end{itemize}
-Peningkatan ukuran ini, seperti pada \textit{debug build}, kemungkinan besar disebabkan oleh penambahan \textit{interpreter} mesin virtual VxLang dan representasi \textit{bytecode} dari kode asli ke dalam \textit{executable} yang dilindungi. Peningkatan ini konsisten di semua jenis aplikasi yang diuji.
+Peningkatan ukuran ini, kemungkinan besar disebabkan oleh penambahan \textit{interpreter} mesin virtual VxLang dan representasi \textit{bytecode} dari kode asli ke dalam \textit{executable} yang dilindungi. Peningkatan ini konsisten di semua jenis aplikasi yang diuji.
 
 \section{Analisis Aplikasi RAT Lilith dengan VxLang}
 \label{bab:hasil_penelitian_lilith} 

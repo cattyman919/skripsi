@@ -222,21 +222,10 @@ ret
     \end{minted}
 \end{itemize}
 
-\subsection{Control Flow Graph}
-Graf Alur Kendali (Control Flow Graph atau CFG) adalah representasi grafis dari alur kendali suatu program. CFG memvisualisasikan bagaimana eksekusi program berjalan melalui berbagai blok kode, menggambarkan urutan eksekusi, percabangan, dan perulangan \cite{Myi19}. CFG sangat penting dalam analisis statis kode, reverse engineering, dan optimisasi kode \cite{Rou05}. Dalam CFG, blok dasar (basic blocks) direpresentasikan sebagai simpul (nodes) dan transisi antar blok dasar direpresentasikan sebagai sisi/garis (edges). Contohnya dapat dilihat pada Gambar \ref{F:graph}.
-
-\begin{figure}
-	\centering
-	\includegraphics[width=1\textwidth]
-	{\Assets/control_flow_graph.png}
-	\caption{Contoh Control Flow Graph \cite{Gom}}
-	\label{F:graph}
-\end{figure}
-
 %-----------------------------------------------------------------------------%
 \section{Rekayasa balik (\f{Reverse Engineering})}
 %-----------------------------------------------------------------------------%
-Rekayasa balik (reverse engineering) adalah proses menganalisis suatu sistem, baik perangkat lunak, perangkat keras, atau sistem lainnya, untuk mengidentifikasi komponen-komponennya dan interaksi antar komponen, serta memahami cara kerja sistem tersebut tanpa akses ke dokumentasi asli atau kode sumber \cite{Has18}.  Tujuannya beragam, mulai dari pemahaman fungsionalitas, analisis keamanan untuk menemukan kerentanan, pemulihan desain, hingga modifikasi dan peningkatan sistem. Rekayasa balik dapat diterapkan pada berbagai skenario, misalnya untuk menganalisis malware, memahami format file yang tidak terdokumentasi, mempelajari teknik yang digunakan oleh pesaing atau modifikasi fungsionalitas perangkat lunak.
+Rekayasa balik (reverse engineering) adalah proses menganalisis suatu sistem, baik perangkat lunak, perangkat keras, atau sistem lainnya, untuk mengidentifikasi komponen-komponennya dan interaksi antar komponen, serta memahami cara kerja sistem tersebut tanpa akses ke kode sumber \cite{gee24}.  Tujuannya beragam, mulai dari pemahaman fungsionalitas, analisis keamanan untuk menemukan kerentanan, pemulihan desain, hingga modifikasi dan peningkatan sistem. Rekayasa balik dapat diterapkan pada berbagai skenario, misalnya untuk menganalisis malware, memahami format file yang tidak terdokumentasi, mempelajari teknik yang digunakan oleh pesaing atau modifikasi fungsionalitas perangkat lunak.
 
 \subsection{Jenis Analisis Rekayasa Balik}
 \begin{enumerate}
@@ -388,9 +377,9 @@ Teknik ini mengubah kode sumber yang dapat dibaca manusia, sehingga sulit dipaha
 	      \end{itemize}
 	\item \bi{Data obfuscation:} menyembunyikan cara data disimpan dan diproses.
 	      \begin{itemize}
-		      \item \bi{Data encocding \cite{Ert05,Fuk08,Kov13}:} Mengubah representasi data, misalnya mengenkripsi string atau mengubah nilai numerik dengan operasi matematika. Ini membuat data asli sulit dikenali langsung.
-		      \item \bi{Instruction Substitution \cite{LeD12,Dar10}} Mengganti instruksi yang sederhana dengan instruksi yang lebih kompleks atau setara, tetapi lebih sulit dipahami.
-		      \item \bi{Mixed boolean arithmetic \cite{Liu21,Sch22,Zho07}} Menggunakan operasi boolean (AND, OR, XOR, NOT) yang dikombinasikan dengan operasi aritmatika untuk membuat logika program lebih kompleks dan sulit diurai.
+		      \item \bi{Data encocding \cite{Ert05}:} Mengubah representasi data, misalnya mengenkripsi string atau mengubah nilai numerik dengan operasi matematika. Ini membuat data asli sulit dikenali langsung.
+		      \item \bi{Instruction Substitution \cite{Dar10}} Mengganti instruksi yang sederhana dengan instruksi yang lebih kompleks atau setara, tetapi lebih sulit dipahami.
+		      \item \bi{Mixed boolean arithmetic \cite{Liu21,Sch22}} Menggunakan operasi boolean (AND, OR, XOR, NOT) yang dikombinasikan dengan operasi aritmatika untuk membuat logika program lebih kompleks dan sulit diurai.
 	      \end{itemize}
 	\item \bi{Control flow obfuscation:} mempersulit logika program.
 	      \begin{itemize}
