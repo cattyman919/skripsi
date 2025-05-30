@@ -5,56 +5,96 @@ This section presents the results of the security analysis and performance measu
 The effectiveness of VxLang virtualization was evaluated through static and dynamic analysis attempts to understand and bypass the authentication logic in the case study applications.
 
 \subsubsection{Static Analysis (Ghidra)}
-\begin{itemize}
-	\item \textbf{Non-Virtualized Binaries:} Analysis of non-virtualized binaries was generally straightforward. Relevant strings and control flow for authentication logic were typically identifiable. For instance, in the non-virtualized \texttt{app\_qt.exe}, while a specific recent Ghidra analysis reported an unusually low count of 0 instructions and only 2 functions (possibly an analytical anomaly for that run, with 1279 defined data entries and 226 symbols, compiler identified as `clangwindows`, size 125,864 bytes), the typical expectation for such binaries is observable logic. Standard comparison instructions and conditional jumps were readily found in other non-virtualized samples (see Appendix Listings \ref{lst:asm_static_nonvirt_full}, \ref{lst:asm_static_cloud_full}), making static patching feasible.
+Static analysis of non-virtualized binaries using Ghidra was generally straightforward. Relevant strings (e.g., "Authentication Failed") and control flow for authentication logic were typically identifiable. For instance, in non-virtualized binaries, standard comparison instructions and conditional jumps controlling authentication were readily found (see Appendix Listings \ref{lst:asm_static_nonvirt_full}, \ref{lst:asm_static_cloud_full} in the full thesis for detailed examples), making static patching feasible.
 
-	\item \textbf{Virtualized Binaries:} Static analysis proved significantly more challenging for binaries processed by VxLang.
-	      \begin{itemize}
-		      \item \textit{Instruction and Function Obscuration:} For the virtualized \texttt{app\_qt\_vm.vxm.exe}, Ghidra consistently failed to recognize standard x86-64 instructions, reporting 0 instructions and 0 functions. This starkly contrasts even with the anomalous low detection in the original, indicating a fundamental transformation of the code into a format uninterpretable by standard disassembly.
-		      \item \textit{Data and Symbol Reduction:} Critical data was obscured. The count of defined data entries in \texttt{app\_qt\_vm.vxm.exe} dropped to 174 from 1279 in the original, and symbols decreased from 226 to 33. This impedes the identification of code sections via string or symbol searches. The compiler was also reported as `unknown`.
-		      \item \textit{File Size Increase:} The file size for \texttt{app\_qt\_vm.vxm.exe} increased substantially to 2,008,495 bytes from 125,864 bytes (approximately 15.95 times larger), indicative of the embedded VM and bytecode.
-		      \item \textit{Control Flow Obscurity:} The clear structure of conditional checks and jumps seen in original, easily analyzable code was replaced by opaque sequences, rendering static identification and patching of the core authentication logic nearly impossible. The control flow graph became fragmented and uninformative.
-	      \end{itemize}
-Static analysis proved significantly more challenging for binaries processed by VxLang. The observed failure of Ghidra to recognize standard x86-64 instructions (reporting 0 instructions and functions for \texttt{app\_qt\_vm.vxm.exe}) and the drastic reduction in defined data and symbols are direct consequences of code virtualization. As outlined in Section \ref{sec:related_work}, static disassemblers are designed for native ISAs \cite{Sikorski2012, Eilam2011}. VxLang transforms the original code into a custom bytecode format, rendering it uninterpretable by Ghidra, which attempts to map these bytes to an x86-64 ISA for which they are not valid \cite{Ko2007}. The substantial file size increase further indicates the embedding of the VM runtime and the transformed bytecode.
-	      Static bypass attempts on virtualized binaries were unsuccessful due to the inability to locate and comprehend the relevant control flow logic. Consequently, static identification and patching of the core authentication logic became practically impossible. The figures referenced (e.g., Fig. \ref{fig:ghidra_summary_qt_journal} and Fig. \ref{fig:ghidra_summary_qt_vm_journal} in the main thesis document) visually demonstrate these differences.
-\end{itemize}
+Conversely, static analysis proved significantly more challenging for binaries processed by VxLang. Table \ref{tab:ghidra_summary_journal_en} summarizes key metrics from Ghidra analysis for representative applications, illustrating the impact of virtualization.
 
+% --- ENGLISH: GHIDRA STATIC ANALYSIS SUMMARY TABLE (JOURNAL) ---
+\begin{table}[!t]
+    \centering
+    \caption{Ghidra Static Analysis Metrics Comparison (Non-Virtualized vs. Virtualized)}
+    \label{tab:ghidra_summary_journal_en}
+    \resizebox{\columnwidth}{!}{%
+    \begin{tabular}{@{}llrrrr@{}}
+        \toprule
+        \textbf{Application} & \textbf{Version} & \textbf{Instructions} & \textbf{Functions} & \textbf{Defined Data} & \textbf{Symbols} \\
+        \midrule
+        \multirow{3}{*}{app\_qt (GUI)} & Non-Virt. & 6104 & 538 & 1578 & 2113 \\
+                                 \cmidrule(lr){2-6}
+                                 & Virtualized & 214 & 25 & 174 & 103 \\
+                                 \cmidrule(lr){2-6}
+                                 & Change \% & \bo{-96.49\%} & \bo{-95.35\%} & \bo{-88.97\%} & \bo{-95.13\%} \\
+        \midrule
+        \multirow{3}{*}{console (CLI)} & Non-Virt. & 3090 & 261 & 726 & 1018 \\
+                                 \cmidrule(lr){2-6}
+                                 & Virtualized & 174 & 20 & 146 & 88 \\
+                                 \cmidrule(lr){2-6}
+                                 & Change \% & \bo{-94.37\%} & \bo{-92.34\%} & \bo{-79.89\%} & \bo{-91.36\%} \\
+        \midrule
+        \multirow{3}{*}{encryption (Benchmark)} & Non-Virt. & 6282 & 368 & 849 & 1920 \\
+                                 \cmidrule(lr){2-6}
+                                 & Virtualized & 159 & 20 & 155 & 77 \\
+                                 \cmidrule(lr){2-6}
+                                 & Change \% & \bo{-97.47\%} & \bo{-94.57\%} & \bo{-81.74\%} & \bo{-95.99\%} \\
+        \bottomrule
+    \end{tabular}%
+    }
+\end{table}
+% --- END ENGLISH: GHIDRA STATIC ANALYSIS SUMMARY TABLE (JOURNAL) ---
 
-% --- Ghidra Summary Figures (Journal) ---
-\begin{figure}[!t]
-	\centering
-	\includegraphics[width=0.9\linewidth]{../assets/pics/app_qt_summary_result.jpeg}
-	\caption{Ghidra Analysis Summary for \texttt{app\_qt.exe} (Non-Virtualized).}
-	\label{fig:ghidra_summary_qt_journal}
-\end{figure}
-
-\begin{figure}[!t]
-	\centering
-	\includegraphics[width=0.9\linewidth]{../assets/pics/app_qt_vm_summary_result.jpeg}
-	\caption{Ghidra Analysis Summary for \texttt{app\_qt\_vm.exe} (Virtualized, showing data for app\_qt\_vxm.exe structure).}
-	\label{fig:ghidra_summary_qt_vm_journal}
-\end{figure}
+The data in Table \ref{tab:ghidra_summary_journal_en} consistently shows a drastic reduction (typically >90\%) in the number of recognizable instructions, functions, defined data, and symbols in virtualized binaries. For instance, the \texttt{app\_qt} application saw its recognizable instructions decrease from 6104 to 214 (a \bo{-96.49\%} change) and functions from 538 to 25 (a \bo{-95.35\%} change) after virtualization. This starkly contrasts with non-virtualized versions, indicating a fundamental transformation of the code into a format uninterpretable by standard disassembly. This reduction in identifiable program elements severely impedes static analysis, making it nearly impossible to locate and comprehend the relevant control flow logic for authentication or other critical functions. Static bypass attempts on virtualized binaries were consequently unsuccessful. These findings align with the understanding that static disassemblers struggle with custom bytecode ISAs introduced by virtualization \cite{Sikorski2012, Eilam2011, Ko2007}. The file size also increased substantially (e.g., \texttt{app\_qt.exe} from 122 KB to 1,578 KB after virtualization, a ~13x increase), indicative of the embedded VM and bytecode.
 
 \subsubsection{Dynamic Analysis (x64dbg)}
+Dynamic analysis of non-virtualized binaries using x64dbg was generally straightforward. Setting breakpoints based on string references or near conditional jumps identified during static analysis proved effective. Stepping through the code clearly revealed comparison logic and conditional jumps, and runtime patching successfully bypassed authentication.
+
+For VxLang-virtualized binaries, dynamic analysis presented a more nuanced challenge, as summarized by key metrics in Table \ref{tab:x64dbg_summary_journal_en}.
+
+% --- ENGLISH: X64DBG DYNAMIC ANALYSIS SUMMARY TABLE (JOURNAL) ---
+\begin{table}[!t]
+    \centering
+    \caption{x64dbg Dynamic Analysis Metrics Comparison (Non-Virtualized vs. Virtualized)}
+    \label{tab:x64dbg_summary_journal_en}
+    \resizebox{\columnwidth}{!}{%
+    \begin{tabular}{@{}llrrrl@{}}
+        \toprule
+        \textbf{Application} & \textbf{Version} & \textbf{Instr. Count (Observed)} & \textbf{Mem. Sections} & \textbf{Def. Symbols} & \textbf{Key Str. Found} \\
+        \midrule
+        \multirow{3}{*}{app\_qt (GUI)} & Non-VM & 8022 & 7 & 209 & Yes \\
+                                 \cmidrule(lr){2-6}
+                                 & VM & 8011 & 10 & 15 & No \\
+                                 \cmidrule(lr){2-6}
+                                 & Change \% & -0.14\% & +42.86\% & \bo{-92.82\%} & - \\
+        \midrule
+        \multirow{3}{*}{console (CLI)} & Non-VM & 5797 & 6 & 88 & Yes \\
+                                 \cmidrule(lr){2-6}
+                                 & VM & 5843 & 9 & 12 & No \\
+                                 \cmidrule(lr){2-6}
+                                 & Change \% & +0.79\% & +50.00\% & \bo{-86.36\%} & - \\
+        \midrule
+        \multirow{3}{*}{encryption (Benchmark)} & Non-VM & 8336 & 6 & 94 & Yes \\
+                                 \cmidrule(lr){2-6}
+                                 & VM & 8207 & 9 & 13 & No \\
+                                 \cmidrule(lr){2-6}
+                                 & Change \% & -1.55\% & +50.00\% & \bo{-86.17\%} & - \\
+        \bottomrule
+    \end{tabular}%
+    }
+\end{table}
+% --- END ENGLISH: X64DBG DYNAMIC ANALYSIS SUMMARY TABLE (JOURNAL) ---
+
+Key observations from dynamic analysis of virtualized binaries include:
 \begin{itemize}
-    \item \textbf{Non-Virtualized Binaries:} Dynamic analysis of non-virtualized binaries using x64dbg was generally straightforward. Setting breakpoints based on string references or near conditional jumps identified during static analysis proved effective. Stepping through the code clearly revealed the comparison logic and the execution of conditional jumps. Runtime patching of these jump instructions directly in x64dbg successfully bypassed authentication mechanisms, corroborating static analysis findings. (See example context in thesis Appendix Listing \ref{lst:asm_dynamic_nonvirt_full}).
-
-    \item \textbf{Virtualized Binaries:} Dynamic analysis of VxLang-virtualized binaries (e.g., \texttt{app\_qt\_vm.vxm.exe}) presented a more nuanced challenge.
-    \begin{itemize}
-        \item \textit{Visibility of Native VM Instructions:} Once the virtualized Qt application was fully loaded and its GUI rendered, x64dbg \textbf{was able to display valid native x86-64 instructions} being executed. Snippets such as \texttt{sub rsp,48}, \texttt{mov}, \texttt{cmp}, and \texttt{jne} (referring to addresses within the virtualized module, e.g., \texttt{app\_qt\_vm.vxm.7FF64A6A105D}) were observable. These instructions are understood to be part of the VxLang Virtual Machine (VM) interpreter itself, which is native code responsible for executing the virtualized application's bytecode. Initial, less clear instructions (e.g., repetitive \texttt{add byte ptr ds:[rax],al}) seen before the application fully loaded likely correspond to VxLang's loader or initialization routines. 
-
-        \item \textit{Persistent Obscurity of Critical Data and Application Logic:} Despite the visibility of the VM's native instructions, the core challenges in dynamic analysis persisted:
-            \begin{itemize}
-                \item \textbf{String Obfuscation:} Critical strings that were explicitly virtualized within the source code (e.g., "Authentication Failed", "Authentication Success") \textbf{could not be located} using standard string reference searches or memory scanning techniques within x64dbg during runtime. However, non-virtualized strings (e.g., static UI text not covered by VxLang macros) were generally still discoverable. This highlights VxLang's effectiveness in protecting targeted string literals.
-                \item \textbf{Abstraction of Application Logic:} The primary difficulty lay in the fact that the application's original logic (e.g., credential comparison, decision-making for authentication) was transformed into an internal bytecode representation executed by the VxLang VM. Therefore, x64dbg showed the execution of the VM's interpreter, not the direct native execution of the application's original high-level logic. Understanding how the VM's operations mapped back to the original application's semantics remained a significant hurdle.
-            \end{itemize}
-
-        \item \textit{Ineffectiveness of Simple Runtime Patching:} Consequently, attempts to bypass authentication by patching simple conditional jumps at runtime—a successful technique for non-virtualized versions—were \textbf{rendered ineffective}. The critical decision-making points of the application logic were no longer exposed as easily identifiable native instructions but were embedded within the VM's execution flow.
-    \end{itemize}
-    These dynamic analysis findings align with the principles of VM-based obfuscation \cite{Sikorski2012, Ore06}. While the debugger can step through the native code of the VM interpreter, the actual application logic is abstracted away into a custom bytecode, making direct analysis and manipulation of the original program flow exceptionally difficult without a deep understanding of the specific VM's architecture and its bytecode-to-native instruction mappings \cite{Sal18}.
+    \item \textbf{Visibility of Native VM Instructions:} Once the virtualized application was fully loaded, x64dbg displayed valid native x86-64 instructions. These instructions belong to the VxLang VM interpreter, not the original application's native logic. The observed instruction count (Table \ref{tab:x64dbg_summary_journal_en}) did not drastically change, reflecting VM activity rather than revealing the original program's complexity to the analyst.
+    \item \textbf{Increased Memory Sections:} The number of memory sections consistently increased (by 40-50\%), likely due to the VxLang runtime and bytecode.
+    \item \textbf{Persistent Obscurity of Critical Data and Application Logic:}
+        \begin{itemize}
+            \item \textbf{Key String Obfuscation:} Critical strings targeted for virtualization (e.g., "Authentication Failed") were \textbf{not found} using standard runtime searches in x64dbg (Table \ref{tab:x64dbg_summary_journal_en}, "Key Str. Found": No). This demonstrates effective runtime string protection.
+            \item \textbf{Drastic Reduction in Defined Symbols:} Observable defined symbols were significantly reduced (by >85\%), hampering contextual understanding and navigation.
+            \item \textbf{Abstraction of Application Logic:} The core application logic was transformed into internal bytecode executed by the VxLang VM. Debuggers show the VM's execution, not the direct native execution of the original logic, making it extremely difficult to trace or understand the application's intended behavior.
+        \end{itemize}
+    \item \textbf{Ineffectiveness of Simple Runtime Patching:} Consequently, attempts to bypass authentication by patching simple conditional jumps at runtime were rendered ineffective. The critical decision-making points were embedded within the VM's opaque execution flow.
 \end{itemize}
-
-These results strongly indicate that VxLang's code virtualization effectively hinders both static and dynamic reverse engineering attempts using standard tools and techniques.
+These dynamic analysis findings align with the principles of VM-based obfuscation \cite{Sikorski2012, Ore06}. While the debugger can step through the VM interpreter's native code, the actual application logic is abstracted away, making direct analysis and manipulation exceptionally difficult without deep knowledge of the VM's architecture \cite{Sal18}.
 
 \subsubsection{Analysis of Lilith RAT}
 

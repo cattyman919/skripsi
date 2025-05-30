@@ -83,45 +83,130 @@ Analisis serupa juga dilakukan pada aplikasi konsol dan ImGUI versi \f{cloud}, d
 
 \subsubsection{Analisis Aplikasi Virtualized}
 
-Analisis statis pada aplikasi yang telah divirtualisasi menggunakan VxLang menunjukkan tingkat kesulitan yang jauh lebih tinggi dibandingkan versi non-virtualized. Observasi kualitatif sebelumnya diperkuat oleh data kuantitatif yang diperoleh dari ringkasan analisis Ghidra terhadap \f{executable} \code{app\_qt.exe} (asli) dan \code{app\_qt\_vm.vxm.exe} (virtualized), seperti yang dirangkum dalam Gambar \ref{fig:ghidra_summary_qt_bab5} dan \ref{fig:ghidra_summary_qt_vm_bab5}.
+Analisis statis pada aplikasi yang telah divirtualisasi menggunakan VxLang menunjukkan tingkat kesulitan yang jauh lebih tinggi dibandingkan versi non-virtualized. Observasi kualitatif ini didukung secara kuat oleh data kuantitatif yang diperoleh dari ringkasan analisis Ghidra terhadap berbagai aplikasi studi kasus, seperti yang disajikan pada Tabel \ref{tab:ghidra_summary_auth_apps_bab5} dan Tabel \ref{tab:ghidra_summary_benchmark_apps_bab5}. Data komprehensif ini mengungkapkan dampak signifikan virtualisasi terhadap berbagai metrik yang relevan untuk analisis statis.
 
-Beberapa temuan kuantitatif dan kualitatif signifikan adalah:
+\noindent \textbf{Legenda untuk Tabel \ref{tab:ghidra_summary_auth_apps_bab5} dan \ref{tab:ghidra_summary_benchmark_apps_bab5}:}
 \begin{itemize}
-    \item \bo{Minimnya Informasi Struktural Terdeteksi pada Kedua Versi oleh Ghidra:}
-    Pada analisis terbaru ini, Ghidra melaporkan \textbf{0 instruksi} dan hanya \textbf{2 fungsi} yang terdeteksi pada \code{app\_qt.exe} (non-virtualized). Angka ini sangat rendah untuk aplikasi Qt fungsional dan mungkin mengindikasikan bahwa Ghidra tidak berhasil menyelesaikan analisisnya secara optimal pada \textit{run} spesifik ini untuk versi asli. Meskipun demikian, pada versi \code{app\_qt\_vm.vxm.exe} (virtualized), Ghidra secara konsisten juga melaporkan \textbf{0 instruksi} dan \textbf{0 fungsi}. Meskipun perbandingan langsung jumlah instruksi dan fungsi menjadi kurang menonjol akibat hasil rendah pada versi asli kali ini, hasil pada versi virtualized tetap mengindikasikan bahwa Ghidra tidak dapat menginterpretasikan atau me-\f{disassemble} \f{bytecode} yang dihasilkan oleh VxLang sebagai instruksi mesin x86-64 standar. Akibatnya, pemahaman alur kontrol program dan identifikasi blok logika menjadi hampir mustahil melalui analisis statis konvensional pada kode yang divirtualisasi.
-
-    \item \bo{Penurunan Drastis Data Terdefinisi dan Simbol pada Versi Virtualized:} Jumlah data yang terdefinisi (\f{Defined Data}) pada \code{app\_qt.exe} adalah 1279, sedangkan pada \code{app\_qt\_vm.vxm.exe} berkurang signifikan menjadi hanya 174. Demikian pula, jumlah simbol yang dikenali turun drastis dari 226 pada versi asli menjadi 33 pada versi virtualized. Penurunan ini secara kuantitatif mendukung observasi mengenai hilangnya \f{string-string} penting dan nama-nama fungsi atau variabel yang dapat membantu analisis, menunjukkan bahwa VxLang efektif menyembunyikan atau mengenkripsi data dan mengaburkan titik masuk serta referensi internal program.
-
-    \item \bo{Peningkatan Ukuran File yang Sangat Substansial:} Ukuran \f{executable} \code{app\_qt.exe} adalah 125.864 \textit{byte} (sekitar 122.9 KB), sedangkan \code{app\_qt\_vm.vxm.exe} meningkat secara masif menjadi 2.008.495 \textit{byte} (sekitar 1.91 MB). Peningkatan ukuran sekitar \textbf{15.95 kali lipat} ini kemungkinan besar disebabkan oleh penyertaan \f{runtime} atau \f{interpreter} mesin virtual VxLang beserta representasi \f{bytecode} dari kode asli yang divirtualisasi.
-
-    \item \bo{Perubahan Informasi Lainnya:} Jumlah tipe data yang teridentifikasi berubah dari 42 pada versi asli menjadi 39 pada versi virtualized. Informasi \f{compiler} yang terdeteksi untuk \code{app\_qt.exe} adalah `clangwindows`, sedangkan untuk \code{app\_qt\_vm.vxm.exe} menjadi `unknown`. Hal ini konsisten dengan proses virtualisasi yang mengaburkan metadata asli \f{executable}.
-
-    \item \bo{Operasi yang Tidak Diketahui Tetap Ada pada Versi Virtualized:} Meskipun ringkasan analisis Ghidra untuk versi virtualized menunjukkan 0 instruksi, saat menjelajahi kode secara manual, banyak operasi \f{assembly} yang tidak dikenali atau dikategorikan sebagai '???' tetap muncul, seperti yang diobservasi sebelumnya. Ini semakin memperkuat gagasan bahwa kode telah ditransformasi menjadi format yang tidak standar oleh VxLang.
+    \item \textbf{Aplikasi}: Nama aplikasi atau benchmark yang diuji.
+    \item \textbf{Versi}: Menunjukkan apakah aplikasi adalah versi asli (Non-Virt.) atau versi yang telah divirtualisasi oleh VxLang (Virtualized).
+    \item \textbf{Mem. Blocks}: Jumlah Blok Memori (\textit{Memory Blocks}) yang diidentifikasi oleh Ghidra.
+    \item \textbf{Instructions}: Jumlah Instruksi Mesin (\textit{Instructions}) yang berhasil di-\textit{disassemble} oleh Ghidra.
+    \item \textbf{Def. Data}: Jumlah Data Terdefinisi (\textit{Defined Data}) yang dikenali oleh Ghidra.
+    \item \textbf{Functions}: Jumlah Fungsi (\textit{Functions}) yang teridentifikasi oleh Ghidra.
+    \item \textbf{Symbols}: Jumlah Simbol (\textit{Symbols}) (misalnya, nama fungsi, variabel global) yang dikenali oleh Ghidra.
+    \item \textbf{Data Types}: Jumlah Tipe Data (\textit{Data Types}) yang diidentifikasi oleh Ghidra.
+    \item \textbf{Data Cat.}: Jumlah Kategori Data (\textit{Data Categories}) yang diklasifikasikan oleh Ghidra.
+    \item \textbf{Perubahan \%}: Persentase perubahan nilai metrik pada versi virtualisasi dibandingkan dengan versi non-virtualisasi. Nilai negatif menunjukkan penurunan.
 \end{itemize}
 
-% --- GAMBAR GHIDRA SUMMARY QT ASLI (BAB 5) ---
-\begin{figure}[H] % Ganti H dengan htbp jika ingin float
+% --- TABEL APLIKASI AUTENTIKASI ---
+\begin{table}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{\Assets/app_qt_summary_result.jpeg} % Sesuaikan path dan ukuran
-    \caption{Ringkasan Hasil Analisis Ghidra untuk \code{app\_qt.exe} (Non-Virtualized)}
-    \label{fig:ghidra_summary_qt_bab5}
-\end{figure}
-% --- AKHIR GAMBAR GHIDRA SUMMARY QT ASLI (BAB 5) ---
+    \caption{Perbandingan Metrik Analisis Statis Ghidra untuk Aplikasi Autentikasi (Non-Virtualized vs. Virtualized)}
+    \label{tab:ghidra_summary_auth_apps_bab5}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}llrrrrrrr@{}}
+        \toprule
+        \textbf{Aplikasi} & \textbf{Versi} & \textbf{Mem. Blocks} & \textbf{Instructions} & \textbf{Def. Data} & \textbf{Functions} & \textbf{Symbols} & \textbf{Data Types} & \textbf{Data Cat.} \\
+        \midrule
+        \multirow{3}{*}{app\_imgui} & Non-Virt. & 9 & 246329 & 11485 & 3005 & 33620 & 420 & 24 \\
+                                 \cmidrule(lr){2-9}
+                                 & Virtualized & 11 & 157 & 210 & 25 & 98 & 87 & 12 \\
+                                 \cmidrule(lr){2-9}
+                                 & Perubahan \% & +22.22\% & \bo{-99.94\%} & \bo{-98.17\%} & \bo{-99.17\%} & \bo{-99.71\%} & -79.29\% & -50.00\% \\
+        \midrule
+        \multirow{3}{*}{app\_imgui\_cloud} & Non-Virt. & 9 & 278461 & 13249 & 4063 & 42807 & 442 & 24 \\
+                                 \cmidrule(lr){2-9}
+                                 & Virtualized & 11 & 180 & 219 & 25 & 117 & 86 & 12 \\
+                                 \cmidrule(lr){2-9}
+                                 & Perubahan \% & +22.22\% & \bo{-99.94\%} & \bo{-98.35\%} & \bo{-99.38\%} & \bo{-99.73\%} & -80.54\% & -50.00\% \\
+        \midrule
+        \multirow{3}{*}{app\_qt} & Non-Virt. & 9 & 6104 & 1578 & 538 & 2113 & 366 & 24 \\
+                                 \cmidrule(lr){2-9}
+                                 & Virtualized & 11 & 214 & 174 & 25 & 103 & 68 & 8 \\
+                                 \cmidrule(lr){2-9}
+                                 & Perubahan \% & +22.22\% & \bo{-96.49\%} & \bo{-88.97\%} & \bo{-95.35\%} & \bo{-95.13\%} & -81.42\% & -66.67\% \\
+        \midrule
+        \multirow{3}{*}{app\_qt\_cloud} & Non-Virt. & 9 & 39844 & 3416 & 1700 & 11920 & 399 & 25 \\
+                                 \cmidrule(lr){2-9}
+                                 & Virtualized & 11 & 163 & 210 & 24 & 127 & 69 & 8 \\
+                                 \cmidrule(lr){2-9}
+                                 & Perubahan \% & +22.22\% & \bo{-99.59\%} & \bo{-93.85\%} & \bo{-98.59\%} & \bo{-98.93\%} & -82.71\% & -68.00\% \\
+        \midrule
+        \multirow{3}{*}{console} & Non-Virt. & 8 & 3090 & 726 & 261 & 1018 & 234 & 18 \\
+                                 \cmidrule(lr){2-9}
+                                 & Virtualized & 10 & 174 & 146 & 20 & 88 & 60 & 9 \\
+                                 \cmidrule(lr){2-9}
+                                 & Perubahan \% & +25.00\% & \bo{-94.37\%} & \bo{-79.89\%} & \bo{-92.34\%} & \bo{-91.36\%} & -74.36\% & -50.00\% \\
+        \midrule
+        \multirow{3}{*}{console\_cloud} & Non-Virt. & 8 & 36024 & 2556 & 1370 & 10529 & 277 & 18 \\
+                                 \cmidrule(lr){2-9}
+                                 & Virtualized & 10 & 167 & 173 & 20 & 81 & 66 & 9 \\
+                                 \cmidrule(lr){2-9}
+                                 & Perubahan \% & +25.00\% & \bo{-99.54\%} & \bo{-93.23\%} & \bo{-98.54\%} & \bo{-99.23\%} & -76.17\% & -50.00\% \\
+        \bottomrule
+    \end{tabular}%
+    }
+\end{table}
+% --- AKHIR TABEL APLIKASI AUTENTIKASI ---
 
-% --- GAMBAR GHIDRA SUMMARY QT VM (BAB 5) ---
-\begin{figure}[H] % Ganti H dengan htbp jika ingin float
+% --- TABEL APLIKASI BENCHMARK & LAINNYA ---
+\begin{table}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{\Assets/app_qt_vm_summary_result.jpeg} % Sesuaikan path dan ukuran
-    \caption{Ringkasan Hasil Analisis Ghidra untuk \code{app\_qt\_vm.vxm.exe} (Virtualized)}
-    \label{fig:ghidra_summary_qt_vm_bab5}
-\end{figure}
-% --- AKHIR GAMBAR GHIDRA SUMMARY QT VM (BAB 5) ---
+    \caption{Perbandingan Metrik Analisis Statis Ghidra untuk Aplikasi Benchmark dan Lainnya (Non-Virtualized vs. Virtualized)}
+    \label{tab:ghidra_summary_benchmark_apps_bab5}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}llrrrrrrr@{}}
+        \toprule
+        \textbf{Aplikasi} & \textbf{Versi} & \textbf{Mem. Blocks} & \textbf{Instructions} & \textbf{Def. Data} & \textbf{Functions} & \textbf{Symbols} & \textbf{Data Types} & \textbf{Data Cat.} \\
+        \midrule
+        \multirow{3}{*}{encryption} & Non-Virt. & 8 & 6282 & 849 & 368 & 1920 & 228 & 17 \\
+                                 \cmidrule(lr){2-9}
+                                 & Virtualized & 10 & 159 & 155 & 20 & 77 & 62 & 9 \\
+                                 \cmidrule(lr){2-9}
+                                 & Perubahan \% & +25.00\% & \bo{-97.47\%} & \bo{-81.74\%} & \bo{-94.57\%} & \bo{-95.99\%} & -72.81\% & -47.06\% \\
+        \midrule
+        \multirow{3}{*}{quick\_sort} & Non-Virt. & 8 & 4370 & 700 & 311 & 1472 & 229 & 17 \\
+                                 \cmidrule(lr){2-9}
+                                 & Virtualized & 10 & 265 & 146 & 20 & 109 & 60 & 9 \\
+                                 \cmidrule(lr){2-9}
+                                 & Perubahan \% & +25.00\% & \bo{-93.94\%} & \bo{-79.14\%} & \bo{-93.57\%} & \bo{-92.60\%} & -73.80\% & -47.06\% \\
+        \midrule
+        \multirow{3}{*}{size} & Non-Virt. & 9 & 698 & 936 & 419 & 2342 & 277 & 18 \\
+                                 \cmidrule(lr){2-9}
+                                 & Virtualized & 11 & 214 & 155 & 23 & 96 & 68 & 10 \\
+                                 \cmidrule(lr){2-9}
+                                 & Perubahan \% & +22.22\% & \bo{-69.34\%} & \bo{-83.44\%} & \bo{-94.51\%} & \bo{-95.90\%} & -75.45\% & -44.44\% \\
+        \bottomrule
+    \end{tabular}%
+    }
+\end{table}
+% --- AKHIR TABEL APLIKASI BENCHMARK & LAINNYA ---
 
-Temuan ini secara langsung mencerminkan keterbatasan fundamental dari \textit{disassembler} statis ketika dihadapkan pada kode yang telah mengalami transformasi signifikan seperti virtualisasi. Sebagaimana telah diuraikan pada Bab 2 (Sub-bab \ref{subsec:disassembler_statis}), Ghidra beroperasi dengan mencoba memetakan urutan byte dalam berkas \textit{executable} ke instruksi-instruksi \textit{assembly} yang sesuai dengan arsitektur x86-64 \cite{Sikorski2012, Eilam2011}. Proses virtualisasi oleh VxLang menggantikan segmen kode \textit{native} asli dengan \textit{bytecode} yang memiliki Instruction Set Architecture (ISA) kustom, yang dirancang untuk dieksekusi oleh \textit{Virtual Machine} (VM) internal VxLang.
+Data kuantitatif yang disajikan pada Tabel \ref{tab:ghidra_summary_auth_apps_bab5} dan Tabel \ref{tab:ghidra_summary_benchmark_apps_bab5} secara konsisten menunjukkan dampak signifikan dari virtualisasi kode menggunakan VxLang terhadap metrik-metrik analisis statis yang dihasilkan oleh Ghidra. Beberapa temuan utama dari data ini adalah:
 
-Akibatnya, ketika Ghidra melakukan analisis statis pada segmen kode yang tervirtualisasi, ia tidak lagi menemukan pola byte yang merepresentasikan instruksi x86-64 yang valid. Upayanya untuk menerapkan teknik seperti \textit{linear sweep} atau \textit{recursive traversal disassembly} \cite{Ko2007} menjadi tidak efektif karena struktur dan semantik kode telah diubah secara fundamental. Bytecode kustom VxLang akan tampak sebagai urutan data yang tidak berarti atau instruksi yang salah interpretasi ('???') bagi Ghidra. Penurunan drastis dalam jumlah data terdefinisi dan simbol yang dapat dikenali juga merupakan konsekuensi dari proses virtualisasi yang mengaburkan atau mengenkapsulasi informasi program asli ke dalam format internal VM. Dengan demikian, kegagalan Ghidra untuk merekonstruksi alur logika program dan mengidentifikasi fungsi atau data secara signifikan pada versi tervirtualisasi adalah dampak langsung dari ketidaksesuaian antara ISA yang diharapkan oleh \textit{disassembler} statis dan ISA kustom yang diemplementasikan oleh VxLang.
+\begin{itemize}
+    \item \textbf{Penurunan Drastis pada Metrik Kritis untuk Analisis:}
+    Untuk hampir semua aplikasi yang diuji, terjadi penurunan yang sangat signifikan (umumnya lebih dari \textbf{90\%}, dan seringkali mendekati \textbf{99\%}) pada jumlah \textbf{Instruksi} (\textit{Instructions}), \textbf{Fungsi} (\textit{Functions}), dan \textbf{Simbol} (\textit{Symbols}) yang dapat dikenali oleh Ghidra setelah aplikasi divirtualisasi. Jumlah \textbf{Data Terdefinisi} (\textit{Defined Data}) juga mengalami penurunan drastis, berkisar antara \textbf{79\%} hingga \textbf{98\%}.
+    Sebagai contoh spesifik, pada aplikasi \texttt{app\_imgui}, jumlah instruksi yang terdeteksi turun dari 246.329 menjadi hanya 157 (\bo{-99.94\%}), fungsi dari 3.005 menjadi 25 (\bo{-99.17\%}), dan simbol dari 33.620 menjadi 98 (\bo{-99.71\%}). Pola serupa terulang pada aplikasi autentikasi dan benchmark lainnya yang diuji.
+    Penurunan masif ini secara langsung mencerminkan efektivitas VxLang dalam mengaburkan struktur fundamental program pada tingkat biner. Ghidra, yang dirancang untuk menganalisis instruksi mesin standar (seperti x86-64), tidak mampu menginterpretasikan \textit{bytecode} kustom yang dihasilkan oleh proses virtualisasi VxLang. Akibatnya, sebagian besar kode asli menjadi "tidak terlihat" atau tidak dapat dipahami oleh \textit{disassembler}.
 
-Secara keseluruhan, data kuantitatif dari Ghidra ini, bahkan dengan anomali pada pendeteksian instruksi versi asli pada analisis terbaru, tetap memberikan bukti kuat bahwa \f{code virtualization} menggunakan VxLang secara efektif mengaburkan struktur fundamental program pada tingkat biner. Ketidakmampuan \f{disassembler/decompiler} seperti Ghidra untuk mengenali instruksi, fungsi, dan data secara signifikan pada versi virtualized meningkatkan kesulitan analisis statis. Identifikasi dan manipulasi logika autentikasi melalui pendekatan statis konvensional menjadi sangat tidak praktis dan kemungkinan besar tidak berhasil pada aplikasi yang telah divirtualisasi dengan VxLang.
+    \item \textbf{Perubahan pada Blok Memori (\textit{Memory Blocks}):}
+    Jumlah blok memori menunjukkan peningkatan moderat setelah virtualisasi, umumnya sekitar \textbf{11\%} hingga \textbf{25\%} untuk sebagian besar aplikasi yang tercantum. Peningkatan ini kemungkinan disebabkan oleh penambahan segmen memori baru yang digunakan oleh \textit{Virtual Machine} (VM) VxLang itu sendiri untuk menyimpan \textit{runtime} VM, \textit{bytecode} aplikasi, dan struktur data internal VM.
+
+    \item \textbf{Pengurangan Struktur Data Tambahan:}
+    Metrik seperti \textbf{Tipe Data} (\textit{Data Types}) dan \textbf{Kategori Data} (\textit{Data Categories}) juga menunjukkan penurunan yang konsisten, masing-masing berkisar antara \textbf{70\%-80\%} dan \textbf{40\%-60\%} pada aplikasi yang diuji. Ini mengindikasikan bahwa proses virtualisasi juga menyembunyikan atau mengubah cara struktur data internal dan metadata program dikenali oleh Ghidra, lebih lanjut mempersulit pemahaman terhadap organisasi data dalam aplikasi yang dilindungi.
+
+    \item \textbf{Konsistensi di Seluruh Aplikasi yang Dianalisis:}
+    Penting untuk dicatat bahwa pola perubahan ini konsisten di berbagai jenis aplikasi yang diuji dan disajikan dalam tabel, yaitu aplikasi autentikasi sederhana (konsol, Qt, ImGui) dan aplikasi \textit{benchmark} (enkripsi, \textit{quick sort}, ukuran). Hal ini menunjukkan bahwa dampak virtualisasi VxLang terhadap hasil analisis statis bersifat umum pada sampel aplikasi yang dipertahankan dalam analisis ini. Pengecualian kecil adalah pada metrik Instruksi untuk aplikasi \texttt{size} yang penurunannya "hanya" \textbf{-69.34\%}, kemungkinan karena sebagian besar ukuran \textit{file} \texttt{size} adalah data mentah yang disematkan, bukan kode yang dapat dieksekusi dan divirtualisasi.
+
+\end{itemize}
+
+Temuan kuantitatif ini secara meyakinkan mendukung observasi kualitatif bahwa \f{code virtualization} menggunakan VxLang sangat efektif dalam menghalangi analisis statis. Dengan menghilangkan atau mengaburkan sebagian besar instruksi, fungsi, simbol, dan data yang dapat dikenali, VxLang memaksa \textit{reverse engineer} untuk menghadapi representasi program yang sangat berbeda dan tidak terdokumentasi. Upaya untuk memahami alur logika, mengidentifikasi bagian kode yang relevan (misalnya, logika autentikasi), atau mencari kerentanan melalui analisis statis konvensional menjadi sangat tidak praktis dan kemungkinan besar tidak akan berhasil tanpa pemahaman mendalam tentang arsitektur internal VM VxLang dan pemetaan \textit{bytecode}-nya.
+
+Kesulitan ini timbul karena, sebagaimana telah diuraikan pada Bab 2 (Sub-bab \ref{subsec:disassembler_statis}), \textit{disassembler} statis seperti Ghidra mengandalkan kemampuannya untuk memetakan urutan byte ke instruksi \textit{assembly} yang diketahui untuk arsitektur target \cite{Sikorski2012, Eilam2011}. Virtualisasi kode menggantikan kode \textit{native} ini dengan \textit{bytecode} dari ISA kustom, yang tidak dapat diinterpretasikan dengan benar oleh Ghidra \cite{Ko2007}. Hasilnya adalah hilangnya informasi struktural program, seperti yang tercermin dalam penurunan drastis metrik-metrik yang diukur.
+
+Secara keseluruhan, data kuantitatif dari ringkasan analisis Ghidra ini memberikan bukti kuat bahwa \f{code virtualization} menggunakan VxLang secara signifikan meningkatkan kompleksitas analisis statis, menjadi penghalang utama bagi upaya \f{reverse engineering}.
 
 \subsection{Analisis Dinamis}
 Analisis dinamis dilakukan dengan menjalankan aplikasi di bawah \f{debugger} x64dbg untuk mengamati perilaku saat \f{runtime}. Tujuannya adalah untuk memverifikasi temuan dari analisis statis dan memahami bagaimana aplikasi berinteraksi dengan \f{input} pengguna, khususnya dalam proses autentikasi.
@@ -156,7 +241,7 @@ lea rdx, qword ptr ds:[<"Authentication Failed">]
 
 \end{minted}
 \caption{Snippet Assembly: Lompatan Kondisional Setelah Perbandingan Password (Dinamis, Non-Virtualized)}
-\label{lst:asm_dynamic_nonvirt_snippet} % Pastikan label unik
+\label{lst:asm_dynamic_nonvirt_snippet_rev} % Label disesuaikan
 \end{listing}
 
 Instruksi \code{test al, 1} memeriksa hasil perbandingan password. Jika password salah (misalnya, \code{al} adalah 0), instruksi \code{jne failure\_label} (Jump if Not Equal/Zero) akan dieksekusi, mengarahkan program ke blok yang menampilkan "Authentication Failed". Dalam analisis dinamis, \textit{debugger} seperti x64dbg memungkinkan \textit{patching on-the-fly}. Dengan mengubah instruksi \code{jne} menjadi \code{je} (Jump if Equal/Zero) atau \code{jmp} (lompatan tanpa syarat ke blok sukses), pemeriksaan password dapat dilewati secara efektif saat \textit{runtime}. Konteks assembly yang lebih lengkap dari sesi debugging ini dapat dilihat di Lampiran \ref{app:kode_asm} (Kode \ref{lst:asm_dynamic_nonvirt_full}).
@@ -165,41 +250,127 @@ Sama seperti pada analisis statis, celah keamanan dapat dieksploitasi dengan mem
 
 \subsubsection{Analisis Aplikasi Virtualized}
 
-Analisis dinamis pada aplikasi yang telah divirtualisasi menggunakan VxLang, khususnya pada aplikasi Qt (\texttt{app\_qt\_vm.vxm.exe}) menggunakan x64dbg, menunjukkan tantangan yang berbeda namun tetap signifikan dibandingkan versi non-virtualized. Observasi utama adalah sebagai berikut:
+Analisis dinamis pada aplikasi yang telah divirtualisasi menggunakan VxLang menghadirkan tantangan yang signifikan dibandingkan versi non-virtualized, meskipun beberapa aspek \textit{runtime} dapat diobservasi. Data kuantitatif dari analisis menggunakan x64dbg, seperti yang disajikan pada Tabel \ref{tab:x64dbg_summary_auth_apps_bab5_rev} dan Tabel \ref{tab:x64dbg_summary_benchmark_apps_bab5_rev}, memberikan gambaran lebih lanjut mengenai dampak virtualisasi.
 
+\noindent \textbf{Legenda untuk Tabel \ref{tab:x64dbg_summary_auth_apps_bab5_rev} dan \ref{tab:x64dbg_summary_benchmark_apps_bab5_rev}:}
 \begin{itemize}
-    \item \textbf{Visibilitas Instruksi Native dari Virtual Machine (VM) VxLang:} Setelah aplikasi Qt yang tervirtualisasi dimuat sepenuhnya dan antarmuka pengguna telah muncul, x64dbg \textbf{mampu menampilkan urutan instruksi \textit{native} x86-64 yang valid} yang sedang dieksekusi. Sebagai contoh, pada suatu titik eksekusi, \textit{debugger} dapat menunjukkan instruksi-instruksi seperti:
-    \begin{listing}[H]
-        \begin{minted}[fontsize=\small, breaklines=true, escapeinside=||]{asm}
-sub rsp,48
-mov qword ptr ss:[rsp+40],r9
-mov dword ptr ss:[rsp+3C],r8d
-mov dword ptr ss:[rsp+38],edx
-mov qword ptr ss:[rsp+30],rcx
-mov rax,qword ptr ss:[rsp+30]
-mov qword ptr ss:[rsp+28],rax
-cmp dword ptr ss:[rsp+38],0
-jne app_qt_vm.vxm.7FF64A6A105D ; Contoh alamat lompatan dalam modul virtualized
-; ... (instruksi native lainnya dari VM VxLang) ...
-        \end{minted}
-        \caption{Contoh Snippet Assembly dari VM VxLang yang Terlihat di x64dbg Setelah Aplikasi Qt Virtualized Dimuat Penuh}
-        \label{lst:asm_dynamic_qt_vm_loaded_revised}
-    \end{listing}
-    Instruksi-instruksi ini bukanlah logika aplikasi asli dalam bentuk \textit{native}-nya, melainkan bagian dari \textit{interpreter} atau \textit{Virtual Machine} (VM) VxLang yang bertanggung jawab untuk mengambil, mendekode, dan mengeksekusi \textit{bytecode} aplikasi yang telah divirtualisasi. Pada tahap awal pemuatan, sebelum antarmuka aplikasi muncul, x64dbg mungkin menampilkan urutan instruksi yang tampak repetitif atau tidak jelas (misalnya, \code{add byte ptr ds:[rax],al} yang berulang), yang kemungkinan merupakan bagian dari proses inisialisasi atau \textit{loader} VxLang. 
-
-    \item \textbf{Kesulitan Utama: Pelacakan String Kritis dan Logika Aplikasi yang Divirtualisasi:} Meskipun instruksi \textit{native} dari VM VxLang dapat dilihat, tantangan fundamental dalam analisis dinamis tetap ada:
-    \begin{itemize}
-        \item \textbf{Penyembunyian String Kritis:} \textit{String-string} krusial yang sengaja dimasukkan ke dalam blok virtualisasi dalam kode sumber (misalnya, "Authentication Failed" atau "Authentication Success") \textbf{tidak berhasil ditemukan} melalui fitur pencarian \textit{string references} atau pencarian memori standar di x64dbg saat aplikasi berjalan. Sebaliknya, \textit{string-string} lain yang berada di luar blok virtualisasi (misalnya, teks UI statis yang tidak dilindungi) umumnya masih dapat ditemukan. Ini menunjukkan efektivitas VxLang dalam menyembunyikan konstanta \textit{string} yang menjadi target proteksinya.
-        \item \textbf{Abstraksi Logika Aplikasi Inti:} Logika aplikasi yang sebenarnya (misalnya, proses perbandingan kredensial dan pengambilan keputusan autentikasi) telah ditransformasi menjadi representasi \textit{bytecode} internal yang hanya dipahami dan dieksekusi oleh VM VxLang. Oleh karena itu, seorang analis yang menggunakan x64dbg hanya melihat eksekusi dari instruksi-instruksi VM VxLang, bukan eksekusi langsung dari logika aplikasi dalam bentuk \textit{native} aslinya. Hal ini membuat pemahaman terhadap alur logika aplikasi yang sebenarnya dan identifikasi titik-titik keputusan krusial (seperti instruksi \textit{jump} kondisional yang menentukan hasil autentikasi) menjadi sangat sulit, jika bukan tidak mungkin, tanpa pemahaman mendalam mengenai arsitektur VM VxLang itu sendiri.
-    \end{itemize}
-
-    \item \textbf{Kegagalan Upaya Bypass Sederhana:} Sebagai akibat langsung dari abstraksi logika aplikasi ke dalam VM, upaya untuk melakukan \textit{bypass} mekanisme autentikasi melalui teknik \textit{patching runtime} sederhana (seperti memodifikasi satu instruksi \textit{jump} kondisional sebagaimana berhasil dilakukan pada versi non-virtualisasi) \textbf{menjadi tidak efektif}. Titik keputusan logika autentikasi tidak lagi terekspos sebagai instruksi \textit{native} yang mudah diidentifikasi dan dimodifikasi.
-
+    \item \textbf{Aplikasi}: Nama aplikasi atau benchmark yang diuji.
+    \item \textbf{Versi}: Menunjukkan apakah aplikasi adalah versi asli (Non-VM) atau versi yang telah divirtualisasi oleh VxLang (VM), atau persentase perubahan (Perubahan \%).
+    \item \textbf{Instr. Count}: Perkiraan Jumlah Instruksi (\textit{Instruction Count}) yang diobservasi selama sesi analisis dinamis di x64dbg.
+    \item \textbf{Mem. Sections}: Jumlah Segmen Memori (\textit{Memory Sections}) yang terdaftar oleh x64dbg.
+    \item \textbf{Def. Symbols}: Jumlah Simbol Terdefinisi (\textit{Defined Symbols}) yang dapat diobservasi di x64dbg.
+    \item \textbf{Key Str. Found}: Status penemuan \textit{string} kunci relevan saat analisis dinamis (Ya/Tidak/-).
 \end{itemize}
 
-Temuan ini selaras dengan prinsip dasar \textit{code virtualization} yang dijelaskan pada Bab 2 (Sub-bab \ref{subsec:disassembler_dinamis}). Meskipun \textit{debugger} dinamis seperti x64dbg dapat me-\textit{disassemble} dan melangkah melalui instruksi \textit{native} dari \textit{interpreter} VM VxLang itu sendiri \cite{Sikorski2012}, logika aplikasi asli yang telah divirtualisasi tetap tersembunyi dalam bentuk \textit{bytecode}. Kemampuan x64dbg untuk menampilkan beberapa simbol API sistem yang mungkin dipanggil oleh VM tidak secara signifikan mempermudah rekonstruksi logika aplikasi asli yang telah ditransformasi.
+% --- TABEL ANALISIS DINAMIS APLIKASI AUTENTIKASI (REVISED) ---
+\begin{table}[H]
+    \centering
+    \caption{Perbandingan Metrik Analisis Dinamis x64dbg untuk Aplikasi Autentikasi (Non-VM vs. VM)}
+    \label{tab:x64dbg_summary_auth_apps_bab5_rev}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}llrrrl@{}}
+        \toprule
+        \textbf{Aplikasi} & \textbf{Versi} & \textbf{Instr. Count} & \textbf{Mem. Sections} & \textbf{Def. Symbols} & \textbf{Key Str. Found} \\
+        \midrule
+        \multirow{3}{*}{app\_imgui} & Non-VM & 259046 & 7 & 251 & Ya \\
+                                 \cmidrule(lr){2-6}
+                                 & VM & 258923 & 10 & 19 & Tidak \\
+                                 \cmidrule(lr){2-6}
+                                 & Perubahan \% & -0.05\% & +42.86\% & \bo{-92.43\%} & - \\
+        \midrule
+        \multirow{3}{*}{app\_imgui\_cloud} & Non-VM & 296024 & 7 & 266 & Ya \\
+                                 \cmidrule(lr){2-6}
+                                 & VM & 295890 & 10 & 20 & Tidak \\
+                                 \cmidrule(lr){2-6}
+                                 & Perubahan \% & -0.05\% & +42.86\% & \bo{-92.48\%} & - \\
+        \midrule
+        \multirow{3}{*}{app\_qt} & Non-VM & 8022 & 7 & 209 & Ya \\
+                                 \cmidrule(lr){2-6}
+                                 & VM & 8011 & 10 & 15 & Tidak \\
+                                 \cmidrule(lr){2-6}
+                                 & Perubahan \% & -0.14\% & +42.86\% & \bo{-92.82\%} & - \\
+        \midrule
+        \multirow{3}{*}{app\_qt\_cloud} & Non-VM & 49692 & 7 & 231 & Ya \\
+                                 \cmidrule(lr){2-6}
+                                 & VM & 49744 & 10 & 19 & Tidak \\
+                                 \cmidrule(lr){2-6}
+                                 & Perubahan \% & +0.10\% & +42.86\% & \bo{-91.77\%} & - \\
+        \midrule
+        \multirow{3}{*}{console} & Non-VM & 5797 & 6 & 88 & Ya \\
+                                 \cmidrule(lr){2-6}
+                                 & VM & 5843 & 9 & 12 & Tidak \\
+                                 \cmidrule(lr){2-6}
+                                 & Perubahan \% & +0.79\% & +50.00\% & \bo{-86.36\%} & - \\
+        \midrule
+        \multirow{3}{*}{console\_cloud} & Non-VM & 44223 & 6 & 110 & Ya \\
+                                 \cmidrule(lr){2-6}
+                                 & VM & 44169 & 9 & 15 & Tidak \\
+                                 \cmidrule(lr){2-6}
+                                 & Perubahan \% & -0.12\% & +50.00\% & \bo{-86.36\%} & - \\
+        \bottomrule
+    \end{tabular}%
+    }
+\end{table}
+% --- AKHIR TABEL ANALISIS DINAMIS APLIKASI AUTENTIKASI (REVISED) ---
 
-Dengan demikian, meskipun instruksi \textit{native} dari VM VxLang dapat diobservasi saat \textit{runtime}, analisis dinamis terhadap bagian kode aplikasi yang telah divirtualisasi dengan VxLang tetap menghadirkan tantangan besar dalam hal melacak data sensitif (seperti \textit{string} status autentikasi) dan memahami serta memanipulasi alur logika aplikasi inti. Ini secara signifikan meningkatkan kompleksitas dan waktu yang dibutuhkan untuk melakukan \textit{reverse engineering} yang bertujuan untuk \textit{bypass} atau modifikasi.
+% --- TABEL ANALISIS DINAMIS APLIKASI BENCHMARK (REVISED) ---
+\begin{table}[H]
+    \centering
+    \caption{Perbandingan Metrik Analisis Dinamis x64dbg untuk Aplikasi Benchmark (Non-VM vs. VM)}
+    \label{tab:x64dbg_summary_benchmark_apps_bab5_rev}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}llrrrl@{}}
+        \toprule
+        \textbf{Aplikasi} & \textbf{Versi} & \textbf{Instr. Count} & \textbf{Mem. Sections} & \textbf{Def. Symbols} & \textbf{Key Str. Found} \\
+        \midrule
+        \multirow{3}{*}{encryption} & Non-VM & 8336 & 6 & 94 & Ya \\
+                                 \cmidrule(lr){2-6}
+                                 & VM & 8207 & 9 & 13 & Tidak \\
+                                 \cmidrule(lr){2-6}
+                                 & Perubahan \% & -1.55\% & +50.00\% & \bo{-86.17\%} & - \\
+        \midrule
+        \multirow{3}{*}{quick\_sort} & Non-VM & 6580 & 6 & 83 & Ya \\
+                                 \cmidrule(lr){2-6}
+                                 & VM & 6492 & 9 & 12 & Tidak \\
+                                 \cmidrule(lr){2-6}
+                                 & Perubahan \% & -1.34\% & +50.00\% & \bo{-85.54\%} & - \\
+        \midrule
+        \multirow{3}{*}{size} & Non-VM & 9948 & 7 & 95 & Ya \\
+                                 \cmidrule(lr){2-6}
+                                 & VM & 9870 & 10 & 12 & Tidak \\
+                                 \cmidrule(lr){2-6}
+                                 & Perubahan \% & -0.78\% & +42.86\% & \bo{-87.37\%} & - \\
+        \bottomrule
+    \end{tabular}%
+    }
+\end{table}
+% --- AKHIR TABEL ANALISIS DINAMIS APLIKASI BENCHMARK (REVISED) ---
+
+Observasi utama adalah sebagai berikut:
+\begin{itemize}
+    \item \textbf{Visibilitas Instruksi \textit{Native} dari \textit{Virtual Machine} (VM) VxLang vs. Jumlah Instruksi Teramati:}
+    Sebagaimana diobservasi secara kualitatif, setelah aplikasi tervirtualisasi dimuat sepenuhnya, x64dbg mampu menampilkan urutan instruksi \textit{native} x86-64 yang valid yang sedang dieksekusi. Instruksi-instruksi ini adalah bagian dari \textit{interpreter} VM VxLang. Data pada Tabel \ref{tab:x64dbg_summary_auth_apps_bab5_rev} dan Tabel \ref{tab:x64dbg_summary_benchmark_apps_bab5_rev} menunjukkan bahwa "Jumlah Instruksi" yang teramati selama sesi analisis pada versi tervirtualisasi seringkali tidak jauh berbeda dibandingkan versi non-virtualisasi. Perubahannya berkisar antara -1.55\% (pada \texttt{encryption}) hingga +0.79\% (pada \texttt{console}), yang menunjukkan bahwa jumlah total instruksi yang dilalui selama observasi tidak secara drastis berubah.
+    Penting untuk ditekankan bahwa jumlah instruksi ini pada versi VM tidak secara langsung merefleksikan kompleksitas atau kemudahan analisis logika aplikasi asli. Sebaliknya, angka ini lebih mencerminkan aktivitas VM VxLang itu sendiri dalam menjalankan \textit{bytecode}. Fakta bahwa instruksi \textit{native} VM terlihat tidak berarti logika aplikasi asli menjadi transparan.
+
+    \item \textbf{Peningkatan Jumlah Segmen Memori (\textit{Memory Sections}):}
+    Data secara konsisten menunjukkan peningkatan jumlah segmen memori untuk aplikasi yang divirtualisasi, yaitu sekitar \textbf{+42.86\%} untuk aplikasi yang awalnya memiliki 7 segmen memori (seperti \texttt{app\_imgui} dan \texttt{app\_qt}) dan \textbf{+50.00\%} untuk aplikasi yang awalnya memiliki 6 segmen memori (seperti \texttt{console} dan \texttt{encryption}). Peningkatan ini kemungkinan besar disebabkan oleh pemetaan segmen memori tambahan yang diperlukan oleh \textit{runtime} VxLang untuk VM itu sendiri, \textit{bytecode}, dan data internal lainnya.
+
+    \item \textbf{Penurunan Drastis Simbol Terdefinisi (\textit{Defined Symbols}):}
+    Salah satu dampak paling signifikan yang teramati secara kuantitatif adalah penurunan jumlah simbol terdefinisi yang dapat diobservasi oleh x64dbg. Untuk semua aplikasi yang diuji, terjadi penurunan drastis, umumnya lebih dari \textbf{85\%} (misalnya, \texttt{app\_imgui} dari 251 menjadi 19 simbol, perubahan \bo{-92.43\%}; \texttt{encryption} dari 94 menjadi 13 simbol, perubahan \bo{-86.17\%}). Hilangnya informasi simbolik ini sangat mempersulit upaya \textit{reverse engineer} untuk memahami konteks kode, menavigasi antar fungsi, atau mengidentifikasi variabel penting saat analisis dinamis.
+
+    \item \textbf{Kegagalan Menemukan \textit{String} Kunci (\textit{Key Strings Found}):}
+    Metrik ini menunjukkan efektivitas paling jelas dari VxLang dalam analisis dinamis. Untuk \textbf{semua} aplikasi yang divirtualisasi, \textit{string-string} kunci yang relevan dengan autentikasi (seperti "Authentication Failed", "Authorized", atau kredensial jika ada) \textbf{tidak berhasil ditemukan} melalui pencarian memori standar atau referensi \textit{string} di x64dbg saat aplikasi berjalan (ditandai sebagai "Tidak" pada tabel). Sebaliknya, pada semua versi non-virtualisasi, \textit{string} kunci ini dapat ditemukan ("Ya"). Ini membuktikan bahwa VxLang efektif dalam menyembunyikan atau mengenkripsi konstanta \textit{string} yang ditargetkan, bahkan dari inspeksi memori saat \textit{runtime}.
+
+    \item \textbf{Kesulitan Utama Tetap pada Abstraksi Logika Aplikasi:}
+    Meskipun instruksi \textit{native} dari VM VxLang dapat dilihat, tantangan fundamental dalam analisis dinamis tetap ada: logika aplikasi yang sebenarnya (misalnya, proses perbandingan kredensial dan pengambilan keputusan autentikasi) telah ditransformasi menjadi representasi \textit{bytecode} internal. Seorang analis yang menggunakan x64dbg hanya melihat eksekusi dari instruksi-instruksi VM VxLang, bukan eksekusi langsung dari logika aplikasi dalam bentuk \textit{native} aslinya. Hal ini membuat pemahaman terhadap alur logika aplikasi yang sebenarnya dan identifikasi titik-titik keputusan krusial menjadi sangat sulit tanpa pemahaman mendalam mengenai arsitektur VM VxLang.
+
+    \item \textbf{Kegagalan Upaya \textit{Bypass} Sederhana:}
+    Sebagai akibat langsung dari abstraksi logika aplikasi ke dalam VM dan hilangnya informasi kontekstual seperti simbol dan \textit{string} kunci, upaya untuk melakukan \textit{bypass} mekanisme autentikasi melalui teknik \textit{patching runtime} sederhana (seperti memodifikasi satu instruksi \textit{jump} kondisional sebagaimana berhasil dilakukan pada versi non-virtualisasi) menjadi tidak efektif. Titik keputusan logika autentikasi tidak lagi terekspos sebagai instruksi \textit{native} yang mudah diidentifikasi dan dimodifikasi.
+\end{itemize}
+
+Temuan kuantitatif dan kualitatif ini selaras dengan prinsip dasar \textit{code virtualization} yang dijelaskan pada Bab 2 (Sub-bab \ref{subsec:disassembler_dinamis}). Meskipun \textit{debugger} dinamis seperti x64dbg dapat me-\textit{disassemble} dan melangkah melalui instruksi \textit{native} dari \textit{interpreter} VM VxLang itu sendiri \cite{Sikorski2012}, logika aplikasi asli yang telah divirtualisasi tetap tersembunyi dalam bentuk \textit{bytecode}. Penurunan drastis simbol yang dapat diobservasi dan kegagalan menemukan \textit{string} kunci secara signifikan menghambat proses analisis.
+
+Dengan demikian, meskipun instruksi \textit{native} dari VM VxLang dapat diobservasi saat \textit{runtime}, analisis dinamis terhadap bagian kode aplikasi yang telah divirtualisasi dengan VxLang tetap menghadirkan tantangan besar dalam hal melacak data sensitif dan memahami serta memanipulasi alur logika aplikasi inti. Ini secara signifikan meningkatkan kompleksitas dan waktu yang dibutuhkan untuk melakukan \textit{reverse engineering} yang bertujuan untuk \textit{bypass} atau modifikasi.
 
 \section{Analisis Performa \f{Overhead} VxLang}
 Hasil dari percobaan performa overhead dan perubahan ukuran file setelah penerapan virtualisasi kode menggunakan VxLang. Percobaan ini dilakukan pada algoritma Quick Sort dan enkripsi AES-CBC-256.
