@@ -100,26 +100,28 @@ Bahasa pemrograman tingkat tinggi (high-level languages), seperti Python, Java, 
 
 \paragraph{Conditional Instructions:}
 \begin{itemize}
-	\item \bi{if statement:} Memungkinkan program membuat keputusan berdasarkan kondisi.
-	      \begin{minted}
-{c}     
+	\item \bi{if statement:} Memungkinkan program membuat keputusan berdasarkan kondisi, seperti pada contoh di Kode \ref{lst:if_example_cpp}.
+	      \begin{minted}{cpp}     
 if (x > 10) {
  std::cout << "x lebih besar dari 10" << std::endl;
 }
     \end{minted}
+    \captionof{listing}{Contoh Penggunaan Pernyataan \code{if} dalam C++}
+    \label{lst:if_example_cpp}
 
-	\item \bi{if-else statement:} Menyediakan jalur alternatif jika kondisi \textit{if} tidak terpenuhi.
-	      \begin{minted}
-{c}     
+	\item \bi{if-else statement:} Menyediakan jalur alternatif jika kondisi \textit{if} tidak terpenuhi, sebagaimana diilustrasikan pada Kode \ref{lst:ifelse_example_cpp}.
+	      \begin{minted}{cpp}     
 if (score >= 70) {
  std::cout << "Lulus" << std::endl;
 } else {
  std::cout << "Tidak Lulus" << std::endl;
 }
     \end{minted}
-	\item \bi{switch statement:} Memungkinkan percabangan ke banyak kasus.
-	      \begin{minted}
-{c}     
+    \captionof{listing}{Contoh Penggunaan Pernyataan \code{if-else} dalam C++}
+    \label{lst:ifelse_example_cpp}
+
+	\item \bi{switch statement:} Memungkinkan percabangan ke banyak kasus (lihat Kode \ref{lst:switch_example_cpp}).
+	      \begin{minted}{cpp}     
 int day = 2;
 switch (day) {
  case 1:
@@ -132,32 +134,37 @@ switch (day) {
  std::cout << "Hari lain" << std::endl;
 }
     \end{minted}
+    \captionof{listing}{Contoh Penggunaan Pernyataan \code{switch} dalam C++}
+    \label{lst:switch_example_cpp}
 \end{itemize}
 
 \paragraph{Loop Instructions:}
 \begin{itemize}
-	\item \bi{for loop:} Mengeksekusi blok kode sejumlah kali tertentu.
-	      \begin{minted}
-{c}     
+	\item \bi{for loop:} Mengeksekusi blok kode sejumlah kali tertentu, seperti tampak pada Kode \ref{lst:for_example_cpp}.
+	      \begin{minted}{cpp}     
 for (int i = 0; i < 5; i++) {
  std::cout << i << std::endl;
 }
     \end{minted}
-	\item \bi{while loop:} Mengeksekusi blok kode selama kondisi tertentu terpenuhi.
-	      \begin{minted}
-{c}     
+    \captionof{listing}{Contoh Penggunaan Perulangan \code{for} dalam C++}
+    \label{lst:for_example_cpp}
+
+	\item \bi{while loop:} Mengeksekusi blok kode selama kondisi tertentu terpenuhi (Kode \ref{lst:while_example_cpp}).
+	      \begin{minted}{cpp}     
 int count = 0;
 while (count < 5) {
  std::cout << count << std::endl;
  count++;
 }
     \end{minted}
+    \captionof{listing}{Contoh Penggunaan Perulangan \code{while} dalam C++}
+    \label{lst:while_example_cpp}
 \end{itemize}
 
 \paragraph{Jump Instructions (Indirect - Function Calls):}
 \begin{itemize}
-	\item \bi{Function call:} Memindahkan kontrol ke fungsi lain dan kembali setelah selesai.
-	      \begin{minted} {c}
+	\item \bi{Function call:} Memindahkan kontrol ke fungsi lain dan kembali setelah selesai, seperti pada contoh pemanggilan \code{myFunction} di Kode \ref{lst:function_call_example_cpp}.
+	      \begin{minted}{cpp}
 void myFunction() {
  std::cout << "Hello" << std::endl;
 }
@@ -166,6 +173,8 @@ int main() {
  return 0;
 }
     \end{minted}
+    \captionof{listing}{Contoh Pemanggilan Fungsi dalam C++}
+    \label{lst:function_call_example_cpp}
 \end{itemize}
 
 \subsubsection{\f{Low Level Languages}}
@@ -173,53 +182,61 @@ Bahasa pemrograman tingkat rendah (low-level languages), seperti Assembly langua
 
 \paragraph{Conditional Instructions:}
 \begin{itemize}
-	\item \bi{cmp (compare):} Membandingkan dua nilai dan mengatur flags (bendera) kondisi.
-	      \begin{minted}
-{asm}     
+	\item \bi{cmp (compare):} Membandingkan dua nilai dan mengatur flags (bendera) kondisi (Kode \ref{lst:cmp_example_asm}).
+	      \begin{minted}{asm}     
 cmp eax, 10
     \end{minted}
-	\item \bi{jle, jge, je, jne (conditional jumps):} Melompat ke label lain jika flags kondisi memenuhi syarat.
-	      \begin{minted}
-{asm}     
+    \captionof{listing}{Contoh Instruksi Perbandingan \code{cmp} dalam Assembly x86}
+    \label{lst:cmp_example_asm}
+
+	\item \bi{jle, jge, je, jne (conditional jumps):} Melompat ke label lain jika flags kondisi memenuhi syarat, seperti yang ditunjukkan pada Kode \ref{lst:cond_jump_example_asm}.
+	      \begin{minted}{asm}     
 jle less_or_equal ; Lompat jika kurang dari atau sama dengan
 jne not_equal ; Lompat jika tidak sama dengan
     \end{minted}
+    \captionof{listing}{Contoh Instruksi Lompatan Kondisional dalam Assembly x86}
+    \label{lst:cond_jump_example_asm}
 \end{itemize}
 
 \paragraph{Loop Instructions (Implementasi dengan Conditional Jumps):}
 \begin{itemize}
-	\item Menggunakan kombinasi instruksi perbandingan, pengurangan counter, dan conditional jump untuk membuat loop.
-	      \begin{minted}
-{asm}     
+	\item Menggunakan kombinasi instruksi perbandingan, pengurangan counter, dan conditional jump untuk membuat loop (lihat contoh pada Kode \ref{lst:loop_example_asm}).
+	      \begin{minted}{asm}     
 mov ecx, 5 ; set counter loop
 loop_start:
 ; instruksi dalam loop
 cmp ecx, 0
 jne loop_start
     \end{minted}
+    \captionof{listing}{Contoh Implementasi Perulangan Sederhana dalam Assembly x86}
+    \label{lst:loop_example_asm}
 \end{itemize}
 
 \paragraph{Jump Instructions (Direct):}
 \begin{itemize}
-	\item \bi{jmp (unconditional jump):} Lompat ke label tanpa syarat.
-	      \begin{minted}
-{asm}     
+	\item \bi{jmp (unconditional jump):} Lompat ke label tanpa syarat (Kode \ref{lst:jmp_example_asm}).
+	      \begin{minted}{asm}     
 jmp target_label
     \end{minted}
+    \captionof{listing}{Contoh Instruksi Lompatan Tanpa Syarat \code{jmp} dalam Assembly x86}
+    \label{lst:jmp_example_asm}
 \end{itemize}
 
 \paragraph{Jump Instructions (Indirect - function calls):}
 \begin{itemize}
-	\item \bi{call:} Melompat ke alamat fungsi dan menyimpan alamat return.
-	      \begin{minted}
-{asm}     
+	\item \bi{call:} Melompat ke alamat fungsi dan menyimpan alamat return (Kode \ref{lst:call_example_asm}).
+	      \begin{minted}{asm}     
 call function_address
     \end{minted}
-	\item \bi{ret:} Mengembalikan kontrol dari fungsi.
-	      \begin{minted}
-{asm}     
+    \captionof{listing}{Contoh Instruksi Pemanggilan Fungsi \code{call} dalam Assembly x86}
+    \label{lst:call_example_asm}
+
+	\item \bi{ret:} Mengembalikan kontrol dari fungsi (Kode \ref{lst:ret_example_asm}).
+	      \begin{minted}{asm}     
 ret
     \end{minted}
+    \captionof{listing}{Contoh Instruksi Pengembalian Fungsi \code{ret} dalam Assembly x86}
+    \label{lst:ret_example_asm}
 \end{itemize}
 
 %-----------------------------------------------------------------------------%
@@ -232,9 +249,9 @@ Rekayasa balik (reverse engineering) adalah proses menganalisis suatu sistem, ba
 	\item \bo{Analisis Statis}\\
 	      Analisis statis melibatkan pemeriksaan kode tanpa menjalankannya. Analisis statis berfokus pada struktur dan logika kode, mencari pola dan kerentanan \cite{Sec19}. Alat yang digunakan dalam analisis statis meliputi:
 	      \begin{itemize}
-		      \item \bi{Disassembler:}  Menerjemahkan kode mesin menjadi assembly code, sebuah representasi kode yang lebih mudah dibaca oleh manusia. Contoh: IDA Pro, Ghidra, Radare2.
-		      \item \bi{Decompiler:}  Menerjemahkan kode mesin atau bytecode kembali ke kode sumber tingkat tinggi (misalnya, C++ atau Java). Decompiler membantu memahami logika program secara lebih mudah.
-		      \item \bi{Code Analysis Tools:}  Alat yang digunakan untuk menganalisis kode secara otomatis, mencari kerentanan keamanan, pola kode yang buruk, dan masalah lainnya.
+		      \item \bi{Disassembler:}  Menerjemahkan kode mesin menjadi assembly code, sebuah representasi kode yang lebih mudah dibaca oleh manusia. Contoh: IDA Pro, Ghidra, Radare2.
+		      \item \bi{Decompiler:}  Menerjemahkan kode mesin atau bytecode kembali ke kode sumber tingkat tinggi (misalnya, C++ atau Java). Decompiler membantu memahami logika program secara lebih mudah.
+		      \item \bi{Code Analysis Tools:}  Alat yang digunakan untuk menganalisis kode secara otomatis, mencari kerentanan keamanan, pola kode yang buruk, dan masalah lainnya.
 	      \end{itemize}
 
 	      \begin{figure}
@@ -267,21 +284,21 @@ Rekayasa balik (reverse engineering) adalah proses menganalisis suatu sistem, ba
 	\item \bo{IDA Pro (Interactive Disassembler Pro):} Disassembler dan debugger komersial yang sangat populer dan powerful. IDA Pro mendukung berbagai arsitektur prosesor dan sistem operasi, menyediakan antarmuka yang canggih untuk analisis kode, dan mendukung plugin untuk ekstensibilitas \cite{Hex91}.
 	      \begin{figure}
 		      \centering
-		      \includegraphics[width=.6\textwidth]
+		      \includegraphics[width=.5\textwidth]
 		      {\Assets/IDA_pro.png}
 		      \caption{IDA Pro \cite{Hex91}}
 	      \end{figure}
 	\item \bo{Ghidra:} Framework reverse engineering open-source yang dikembangkan oleh NSA (National Security Agency). Ghidra menawarkan fitur yang setara dengan IDA Pro, termasuk disassembler, decompiler, dan debugger. Ghidra juga mendukung scripting dan ekstensibilitas melalui plugin \cite{Nat19}.
 	      \begin{figure}
 		      \centering
-		      \includegraphics[width=.4\textwidth]
+		      \includegraphics[width=.3\textwidth]
 		      {\Assets/Ghidra.png}
 		      \caption{Ghidra \cite{Nat19}}
 	      \end{figure}
 	\item \bo{x64dbg:} Debugger open-source untuk platform Windows. x64dbg menyediakan antarmuka yang modern dan user-friendly, serta mendukung plugin dan scripting. x64dbg fokus pada analisis malware dan reverse engineering aplikasi Windows \cite{Dun14}.
 	      \begin{figure}
 		      \centering
-		      \includegraphics[width=.5\textwidth]
+		      \includegraphics[width=.4\textwidth]
 		      {\Assets/x64Dbg.png}
 		      \caption{x64dbg \cite{Dun14}}
 	      \end{figure}
@@ -426,7 +443,7 @@ Set instruksi virtual ini merupakan kunci dari obfuscationnya yang digunakan unt
 
 \begin{figure}
 	\centering
-	\includegraphics[width=1\textwidth]
+	\includegraphics[width=0.7\textwidth]
 	{\Assets/multiple_virtualization.jpg}
 	\caption{Transformasi ISA x86 menjadi berbagai messin virtual \cite{Ore06}}
 \end{figure}
@@ -445,7 +462,7 @@ Proses eksekusi Code Virtualization pada program dapat dilihat pada Gambar \ref{
 
 \begin{figure}
 	\centering
-	\includegraphics[width=0.7\textwidth]
+	\includegraphics[width=0.6\textwidth]
 	{\Assets/virtualization_execution.png}
 	\caption{Alur eksekusi Code Virtualization \cite{Don20}}
 	\label{F:execution_virtualization}
@@ -453,7 +470,7 @@ Proses eksekusi Code Virtualization pada program dapat dilihat pada Gambar \ref{
 
 \begin{figure}
 	\centering
-	\includegraphics[width=0.7\textwidth]
+	\includegraphics[width=0.6\textwidth]
 	{\Assets/code_to_virtualized.png}
 	\caption{Transformasi kode asli menjadi kode virtual \cite{Don20}}
 	\label{F:transformation_virtualization}
@@ -505,9 +522,8 @@ Untuk menggunakan VxLang, pengembang dapat menggunakan Software Development Kit 
 Di dalam header SDK, terdapat beberapa Application Programming Interfaces (API) yang berperan penting dalam melakukan obfuscation kode. API-API ini memungkinkan pengembang untuk menerapkan berbagai teknik obfuscation secara terarah pada kode sumber. Berikut adalah penjelasan mengenai API-API tersebut:
 
 \begin{itemize}
-	\item \bo{VL\_OBFUSCATION\_BEGIN/END:} API ini digunakan untuk menambahkan kode dummy (kode palsu) di antara kode asli. Penambahan kode dummy ini bertujuan untuk mengganggu proses disassembly dan decompilation. Disassembly adalah proses menerjemahkan kode mesin kembali ke dalam bentuk assembly, sedangkan decompilation adalah proses menerjemahkan kode mesin atau bytecode ke dalam bahasa pemrograman tingkat tinggi. Dengan adanya kode dummy, reverse engineer akan kesulitan untuk memahami alur eksekusi program yang sebenarnya karena kode dummy tersebut akan muncul dalam hasil disassembly dan decompilation, sehingga mengaburkan kode asli.
-	      \begin{minted}
-{cpp}     
+	\item \bo{VL\_OBFUSCATION\_BEGIN/END:} API ini digunakan untuk menambahkan kode dummy (kode palsu) di antara kode asli. Penambahan kode dummy ini bertujuan untuk mengganggu proses disassembly dan decompilation. Disassembly adalah proses menerjemahkan kode mesin kembali ke dalam bentuk assembly, sedangkan decompilation adalah proses menerjemahkan kode mesin atau bytecode ke dalam bahasa pemrograman tingkat tinggi. Dengan adanya kode dummy, reverse engineer akan kesulitan untuk memahami alur eksekusi program yang sebenarnya karena kode dummy tersebut akan muncul dalam hasil disassembly dan decompilation, sehingga mengaburkan kode asli. Contoh penggunaannya dapat dilihat pada Kode \ref{lst:vx_obfuscation_api}.
+	      \begin{minted}{cpp}     
           void obfuscation_test(int x) {
 
             VL_OBFUSCATION_BEGIN;
@@ -518,9 +534,11 @@ Di dalam header SDK, terdapat beberapa Application Programming Interfaces (API) 
 
           }
     \end{minted}
-	\item \bo{VL\_CODE\_FLATTENING\_BEGIN/END:} API ini digunakan untuk mengacak urutan kode pada tingkat kedalaman yang sama. Proses ini juga melibatkan penambahan kode dummy dan membuat kode menjadi lebih sulit diinterpretasikan. Code flattening adalah teknik obfuscation yang mengubah struktur alur kontrol program menjadi lebih datar dan kompleks. Dengan mengacak urutan kode dan menambahkan kode dummy, reverse engineer akan kesulitan untuk merekonstruksi alur logika program yang sebenarnya.
-	      \begin{minted}
-{cpp}     
+    \captionof{listing}{Contoh Penggunaan Makro \code{VL\_OBFUSCATION\_BEGIN/END} dari VxLang SDK}
+    \label{lst:vx_obfuscation_api}
+
+	\item \bo{VL\_CODE\_FLATTENING\_BEGIN/END:} API ini digunakan untuk mengacak urutan kode pada tingkat kedalaman yang sama. Proses ini juga melibatkan penambahan kode dummy dan membuat kode menjadi lebih sulit diinterpretasikan. Code flattening adalah teknik obfuscation yang mengubah struktur alur kontrol program menjadi lebih datar dan kompleks. Dengan mengacak urutan kode dan menambahkan kode dummy, reverse engineer akan kesulitan untuk merekonstruksi alur logika program yang sebenarnya. Ilustrasi penggunaan makro ini ditunjukkan pada Kode \ref{lst:vx_flattening_api}.
+	      \begin{minted}{cpp}     
           void code_flattening_test(int x) {
 
             VL_CODE_FLATTENING_BEGIN;
@@ -531,9 +549,11 @@ Di dalam header SDK, terdapat beberapa Application Programming Interfaces (API) 
 
           }
     \end{minted}
-	\item \bo{VL\_VIRTUALIZATION\_BEGIN/END:} API ini digunakan untuk mengubah kode native yang ditentukan menjadi bytecode yang hanya dapat diinterpretasikan oleh Central Processing Unit (CPU) internal VxLang. Ini adalah inti dari teknik virtualisasi kode yang ditawarkan oleh VxLang. Kode native yang telah diubah menjadi bytecode tidak lagi dapat dieksekusi secara langsung oleh prosesor fisik, melainkan harus melalui interpreter mesin virtual VxLang. Ini secara signifikan meningkatkan kesulitan reverse engineering karena attacker harus memahami arsitektur dan set instruksi mesin virtual VxLang untuk dapat memahami kode yang dilindungi.
-	      \begin{minted}
-{cpp}     
+    \captionof{listing}{Contoh Penggunaan Makro \code{VL\_CODE\_FLATTENING\_BEGIN/END} dari VxLang SDK}
+    \label{lst:vx_flattening_api}
+
+	\item \bo{VL\_VIRTUALIZATION\_BEGIN/END:} API ini digunakan untuk mengubah kode native yang ditentukan menjadi bytecode yang hanya dapat diinterpretasikan oleh Central Processing Unit (CPU) internal VxLang. Ini adalah inti dari teknik virtualisasi kode yang ditawarkan oleh VxLang. Kode native yang telah diubah menjadi bytecode tidak lagi dapat dieksekusi secara langsung oleh prosesor fisik, melainkan harus melalui interpreter mesin virtual VxLang. Ini secara signifikan meningkatkan kesulitan reverse engineering karena attacker harus memahami arsitektur dan set instruksi mesin virtual VxLang untuk dapat memahami kode yang dilindungi. Kode \ref{lst:vx_virtualization_api} memberikan contoh implementasinya.
+	      \begin{minted}{cpp}     
           void virtualization_test(int x) {
 
             VL_VIRTUALIZATION_BEGIN;
@@ -544,6 +564,8 @@ Di dalam header SDK, terdapat beberapa Application Programming Interfaces (API) 
 
           }
     \end{minted}
+    \captionof{listing}{Contoh Penggunaan Makro \code{VL\_VIRTUALIZATION\_BEGIN/END} dari VxLang SDK}
+    \label{lst:vx_virtualization_api}
 
 \end{itemize}
 

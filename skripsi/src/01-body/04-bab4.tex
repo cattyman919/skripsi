@@ -36,7 +36,7 @@ Diagram alur persiapan \f{executable} disajikan pada Gambar \ref{fig:flow_auth_p
 	\centering
 	% Menggunakan scale daripada resizebox
 	\begin{tikzpicture}[
-			scale=0.85, transform shape, % Skala diagram & teks
+			scale=0.75, transform shape, % Skala diagram & teks
 			node distance=3cm and 2.2cm, % Jarak antar node
 			>=latex,
 			block/.style={rectangle, draw, fill=blue!10, text width=9em, text centered, rounded corners, minimum height=3em},
@@ -74,7 +74,7 @@ Diagram alur persiapan \f{executable} disajikan pada Gambar \ref{fig:flow_auth_p
 \begin{figure}[htbp]
 	\centering
 	\begin{tikzpicture}[
-			scale=0.8, transform shape,
+			scale=0.6, transform shape,
 			node distance=1.5cm and 1cm,
 			>=latex,
 			block/.style={rectangle, draw, fill=blue!10, text width=8em, text centered, rounded corners, minimum height=3em},
@@ -159,7 +159,7 @@ if (inputUsername.compare("seno") == 0 &&
 		      \item \bo{Varian Cloud (\code{src/console/console\_cloud.cpp}):} Menggunakan \code{send\_login\_request} dari \code{includes/cloud.hpp} untuk mengirim kredensial via HTTP POST ke \code{http://localhost:9090/login}.
 \begin{figure}[H]
 	          \centering
-	          \includegraphics[height=0.25\textheight]{\Assets/console_app.jpeg} % Sesuaikan height/width jika perlu
+	          \includegraphics[height=0.15\textheight]{\Assets/console_app.jpeg} % Sesuaikan height/width jika perlu
 	          \caption{Tampilan Aplikasi Autentikasi Varian Konsol saat dijalankan.}
 	          \label{fig:console_app_ui}
 	      \end{figure}
@@ -171,7 +171,7 @@ if (inputUsername.compare("seno") == 0 &&
 	      \end{itemize}
         \begin{figure}[H]
 	          \centering
-	          \includegraphics[height=0.3\textheight]{\Assets/qt_app.jpeg} % Sesuaikan height/width jika perlu
+	          \includegraphics[height=0.25\textheight]{\Assets/qt_app.jpeg} % Sesuaikan height/width jika perlu
 	          \caption{Tampilan Antarmuka Aplikasi Autentikasi Varian Qt.}
 	          \label{fig:qt_app_ui}
 	      \end{figure}
@@ -182,62 +182,14 @@ if (inputUsername.compare("seno") == 0 &&
 	      \end{itemize}
         \begin{figure}[H]
 	          \centering
-	          \includegraphics[height=0.5\textheight]{\Assets/imgui_app.jpeg} % Sesuaikan height/width jika perlu
+	          \includegraphics[height=0.15\textheight]{\Assets/imgui_app.jpeg} % Sesuaikan height/width jika perlu
 	          \caption{Tampilan Antarmuka Aplikasi Autentikasi Varian Dear ImGui.}
 	          \label{fig:imgui_app_ui}
 	      \end{figure}
 \end{enumerate}
 
 \bo{Implementasi Fungsi Permintaan Cloud (\code{cloud.hpp}):}
-Fungsi \code{send\_login\_request} bertanggung jawab untuk mengemas kredensial ke dalam format JSON dan mengirimkannya ke server \textit{backend} menggunakan library \code{libcurl}. Snippet berikut menyoroti langkah-langkah utamanya:
-\begin{listing}[H]
-	\begin{minted}{cpp}
-// Potongan dari includes/cloud.hpp
-bool send_login_request(const std::string &username,
-const std::string &password, HWND /window/ = NULL) {
-  CURL *curl;
-  CURLcode res;
-  std::string readBuffer;
-  std::string url = "http://localhost:9090/login";
-  
-  // 1. Buat payload JSON
-  nlohmann::json payload;
-  payload["username"] = username;
-  payload["password"] = password;
-  std::string jsonStr = payload.dump();
-  
-  curl = curl_easy_init();
-  if (curl) {
-    struct curl_slist *headers = nullptr;
-    headers = curl_slist_append(headers, "Content-Type: application/json");
-    
-    // 2. Konfigurasi request cURL (URL, Headers, Body, Callback, Timeout)
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, jsonStr.c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L); // Timeout 5 detik
-    
-    // 3. Kirim request
-    res = curl_easy_perform(curl);
-    
-    // 4. Cleanup cURL
-    curl_easy_cleanup(curl);
-    curl_slist_free_all(headers);
-    
-    // 5. Handle error cURL
-    if (res != CURLE_OK || readBuffer.empty()) {
-       // Error handling (misal: log error)
-       return false;
-    }
-  }
-  return false; // Gagal inisialisasi cURL
-}
-    \end{minted}
-	\caption{Implementasi Fungsi \code{send\_login\_request}}
-	\label{lst:send_login_request}
-\end{listing}
+Fungsi \code{send\_login\_request} bertanggung jawab untuk mengemas kredensial ke dalam format JSON dan mengirimkannya ke server \textit{backend} menggunakan library \code{libcurl}. 
 
 \subsection{Implementasi Sisi Server (Varian Cloud)}
 \f{Backend} API lokal untuk varian \f{cloud} diimplementasikan sebagai berikut:
@@ -480,7 +432,7 @@ set "lilith_intermediate_path=bin\Lilith_Client\Release\Lilith_Client_vm.exe"
     \captionof{listing}{Perintah Virtualisasi untuk Klien Lilith RAT} % Label diubah agar unik
     \label{lst:virtualize_lilith_example_bab4_revised}
     \end{listing}
-    Perintah ini menghasilkan \textit{executable} klien Lilith yang telah tervirtualisasi sepenuhnya, yaitu \texttt{Lilith\_Client\_vm.vxm.exe}. Berkas inilah yang kemudian digunakan untuk pengujian fungsionalitas, analisis keamanan statis/dinamis, dan pengujian deteksi VirusTotal yang hasilnya dipaparkan pada Bab \ref{bab:hasil_penelitian_lilith}.
+    Perintah ini menghasilkan \textit{executable} klien Lilith yang telah tervirtualisasi sepenuhnya, yaitu \texttt{Lilith\_Client\_vm.vxm.exe}. Berkas inilah yang kemudian digunakan untuk pengujian fungsionalitas, analisis keamanan statis/dinamis, dan pengujian deteksi VirusTotal yang hasilnya dipaparkan pada Bab \ref{bab:hasil_penelitian_malware}.
 \end{enumerate}
 
 Persiapan yang cermat ini memastikan bahwa kedua versi klien Lilith (asli dan tervirtualisasi) dapat dibandingkan secara adil untuk mengevaluasi dampak VxLang.
