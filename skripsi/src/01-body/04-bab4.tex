@@ -433,8 +433,8 @@ set_target_properties(console_vm_cmake_example PROPERTIES OUTPUT_NAME "console_v
 \end{enumerate}
 
 %-----------------------------------------------------------------------------%
-\section{Studi Kasus: Aplikasi \textit{Remote Administration Tool} (RAT) Lilith}
-\label{sec:implementasi_lilith} 
+\section{Studi Kasus: Aplikasi Potensial Berbahaya dan Malware}
+\label{sec:implementasi_lilith_dan_malware} 
 %-----------------------------------------------------------------------------%
 Selain aplikasi studi kasus autentikasi dan \textit{benchmark} performa yang dikembangkan secara khusus, penelitian ini juga melibatkan analisis terhadap aplikasi \textit{Remote Administration Tool} (RAT) \textit{open-source} bernama Lilith. Penggunaan Lilith bertujuan untuk menguji efektivitas dan dampak VxLang pada perangkat lunak yang lebih kompleks dan memiliki karakteristik yang sering diasosiasikan dengan \textit{malware} atau \textit{Potentially Unwanted Application} (PUA).
 
@@ -531,3 +531,16 @@ VL_VIRTUALIZATION_END;
 Ketika pemanggilan fungsi \texttt{SendString} (yang melibatkan operasi jaringan) bersama dengan \texttt{General::processCommand} divirtualisasi seperti pada Kode \ref{lst:lilith_macro_problem_send}, klien Lilith akan mengalami \textit{crash} dan terputus dari server saat server mencoba mengaktifkan fitur seperti \texttt{remoteControl cmd}.
 
 Temuan ini mengindikasikan bahwa \textit{tool} virtualisasi seperti VxLang mungkin memiliki interaksi yang kompleks dengan struktur kode tertentu, terutama yang melibatkan alur kontrol non-linear (seperti \texttt{switch-case}), operasi I/O, atau pemanggilan fungsi yang mengubah konteks eksekusi secara signifikan. Oleh karena itu, keberhasilan implementasi VxLang tidak hanya bergantung pada identifikasi bagian kode yang sensitif, tetapi juga pada eksperimen dan pengujian fungsional yang cermat untuk memastikan bahwa penempatan makro virtualisasi tidak merusak integritas operasional aplikasi. Hal ini menekankan pentingnya pendekatan virtualisasi yang selektif dan teruji.
+
+\subsection{Persiapan Sampel Malware Tambahan untuk Analisis VirusTotal}
+\label{subsec:persiapan_malware_tambahan}
+Selain Lilith RAT, penelitian ini melibatkan analisis dampak virtualisasi VxLang terhadap deteksi oleh VirusTotal untuk sembilan sampel \textit{malware} atau \textit{Potentially Unwanted Application} (PUA) tambahan. Sampel-sampel ini, yang diperoleh dari berbagai sumber repositori publik atau koleksi sampel analisis, adalah: \textit{Al-Khaser, donut, DripLoader, FilelessPELoader, JuicyPotato, ParadoxiaClient, PELoader, RunPE-In-Memory,} dan \textit{SigLoader}.
+
+Untuk setiap sampel \textit{malware/PUA} tersebut, dua versi \textit{executable} disiapkan untuk perbandingan di VirusTotal:
+\begin{enumerate}
+    \item \textbf{Versi Asli (Non-Virtualized):} Ini adalah berkas \textit{executable} asli dari sampel \textit{malware/PUA} yang bersangkutan, tanpa modifikasi atau pemrosesan lebih lanjut oleh VxLang.
+    \item \textbf{Versi Virtualized (VM):} Berkas \textit{executable} asli dari setiap sampel \textit{malware/PUA} kemudian diproses menggunakan \textit{tool command-line} \texttt{vxlang.exe}. Mengingat sifat \textit{closed-source} dari sebagian besar sampel ini dan tidak adanya kode sumber untuk penempatan makro SDK secara manual, proses virtualisasi dilakukan dengan mengarahkan \textit{tool} VxLang untuk memproses \textit{executable} secara keseluruhan. \textit{Tool} VxLang akan mencoba mengidentifikasi dan memvirtualisasi bagian-bagian kode yang dapat diprosesnya. Hasil dari proses ini adalah \textit{executable} baru (biasanya dengan sufiks \texttt{\_vxm.exe}) yang telah tervirtualisasi.
+\end{enumerate}
+Penting untuk dicatat bahwa efektivitas dan kelengkapan proses virtualisasi oleh \textit{tool} VxLang pada \textit{executable} biner tanpa penandaan makro manual dapat bervariasi tergantung pada struktur internal dan teknik proteksi (jika ada) yang sudah ada pada sampel \textit{malware} asli. Namun, pendekatan ini mensimulasikan skenario di mana pengguna VxLang mungkin mencoba melindungi \textit{executable} pihak ketiga atau \textit{legacy code} di mana modifikasi kode sumber tidak memungkinkan.
+
+Kedua versi (\textit{non-virtualized} dan \textit{virtualized}) dari masing-masing sepuluh sampel perangkat lunak (Lilith RAT dan sembilan sampel tambahan) kemudian diunggah ke VirusTotal untuk analisis perbandingan tingkat deteksi.

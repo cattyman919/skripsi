@@ -32,11 +32,16 @@ Eksperimen akan difokuskan pada dua aspek utama: analisis keamanan pada fungsi a
 %-----------------------------------------------------------------------------%
 Objek studi yang akan dikembangkan dan dianalisis dalam penelitian ini meliputi:
 \begin{enumerate}
-    \item \bo{Aplikasi Studi Kasus Autentikasi:} Aplikasi simulasi login dalam tiga varian antarmuka (Konsol, Qt, Dear ImGui) dan dua mekanisme autentikasi (Kredensial \textit{hardcoded}, Kredensial via \textit{backend cloud}).
+    \item \bo{Aplikasi Studi Kasus Autentikasi:} Aplikasi simulasi login dalam tiga varian antarmuka (Konsol, Qt, Dear ImGui) dan dua mekanisme autentikasi (Kredensial \textit{hardcoded}, Kredensial via \textit{backend cloud}). Aplikasi ini akan menjadi target utama untuk analisis \textit{reverse engineering} mendalam guna mengevaluasi efektivitas VxLang dalam mempersulit pemahaman dan manipulasi logika.
     \item \bo{Aplikasi Benchmark Performa:} Aplikasi untuk mengukur \textit{overhead} pada tugas spesifik (Algoritma QuickSort, Enkripsi AES-CBC-256, Ukuran File Dasar).
-    \item \bo{Studi Kasus Aplikasi Kompleks (Lilith RAT):} Sebuah \textit{Remote Administration Tool} (RAT) \textit{open-source} bernama Lilith \cite{LilithRAT} digunakan sebagai studi kasus tambahan. Tujuannya adalah untuk mengevaluasi efektivitas VxLang pada aplikasi yang lebih kompleks dengan beragam fungsionalitas, menguji integritas fungsional setelah virtualisasi, menganalisis kesulitan \textit{reverse engineering}-nya, serta mengamati dampaknya terhadap deteksi oleh layanan pemindaian \textit{malware}.
+    \item \bo{Studi Kasus Aplikasi Potensial Berbahaya dan Malware:} 
+    Kelompok objek studi ini bertujuan untuk mengevaluasi dampak virtualisasi VxLang pada perangkat lunak yang lebih kompleks dan memiliki karakteristik yang sering diasosiasikan dengan \textit{malware} atau \textit{Potentially Unwanted Application} (PUA). Ini mencakup:
+        \begin{itemize}
+            \item \textbf{Lilith RAT:} Sebuah \textit{Remote Administration Tool} (RAT) \textit{open-source} \cite{LilithRAT}. Klien Lilith RAT akan diuji fungsionalitasnya secara menyeluruh setelah virtualisasi untuk memastikan integritas operasional. Selain itu, baik versi asli maupun tervirtualisasi akan dianalisis dampaknya terhadap deteksi oleh layanan pemindaian VirusTotal.
+            \item \textbf{Sembilan Sampel Malware/PUA Tambahan:} Untuk memperluas analisis dampak terhadap deteksi otomatis, sembilan sampel \textit{malware} atau PUA lainnya akan disertakan. Sampel-sampel ini adalah: \textit{Al-Khaser, donut, DripLoader, FilelessPELoader, JuicyPotato, ParadoxiaClient, PELoader, RunPE-In-Memory,} dan \textit{SigLoader}. Untuk sampel-sampel ini, fokus utama adalah perbandingan tingkat deteksi oleh VirusTotal antara versi asli (non-virtualized) dan versi yang telah diproses dengan VxLang.
+        \end{itemize}
 \end{enumerate}
-Setiap objek studi (termasuk klien Lilith RAT) akan dibuat dalam versi asli (non-\textit{virtualized}) dan versi \textit{virtualized} oleh VxLang untuk perbandingan. Server Lilith RAT akan digunakan dalam versi aslinya untuk pengujian fungsionalitas klien.
+Semua objek studi (aplikasi autentikasi, benchmark, klien Lilith RAT, dan sembilan sampel malware/PUA lainnya) akan disiapkan dalam versi asli (non-\textit{virtualized}) dan versi \textit{virtualized} oleh VxLang untuk perbandingan. Server Lilith RAT akan digunakan dalam versi aslinya untuk pengujian fungsionalitas klien.
 
 %-----------------------------------------------------------------------------%
 \section{Instrumen dan Bahan Penelitian}
@@ -182,13 +187,14 @@ Pengujian ini bertujuan mengukur dampak kuantitatif VxLang pada kinerja eksekusi
 % --- Akhir TikZ Diagram ---
 Prosedur ini akan diulang untuk semua aplikasi \textit{benchmark} (QuickSort, Encryption, Size), baik untuk versi asli maupun versi \textit{virtualized}.
 
-\subsection{Pengujian Studi Kasus Lilith RAT}
-\label{subsec:prosedur_lilith_rat}
-Pengujian terhadap Lilith RAT bertujuan untuk mengevaluasi dampak virtualisasi VxLang pada aplikasi yang lebih kompleks dari segi fungsionalitas, kesulitan analisis, dan deteksi otomatis. Prosedur pengumpulan data untuk Lilith RAT mencakup:
+\subsection{Pengujian Studi Kasus Aplikasi Potensial Berbahaya dan Malware}
+\label{subsec:prosedur_malware_analysis} % Label disesuaikan
+Pengujian terhadap Lilith RAT dan sembilan sampel \textit{malware/PUA} lainnya bertujuan untuk mengevaluasi dampak virtualisasi VxLang pada aplikasi yang lebih kompleks dari segi fungsionalitas (khusus untuk Lilith RAT), kesulitan analisis (khusus untuk Lilith RAT), dan deteksi otomatis oleh layanan pemindaian \textit{malware}. Prosedur pengumpulan data mencakup:
 \begin{enumerate}
-    \item \bo{Persiapan Artefak Lilith RAT:} Meliputi kompilasi kode sumber klien Lilith versi asli dan versi \textit{intermediate} yang telah ditandai makro VxLang, diikuti pemrosesan dengan \textit{tool} VxLang untuk menghasilkan \textit{executable} klien tervirtualisasi. Detail implementasi disajikan pada Bab 4 (Sub-bab \ref{sec:implementasi_lilith}).
-    \item \bo{Pengujian Fungsionalitas:} Menjalankan klien Lilith tervirtualisasi dan server Lilith asli pada dua mesin terpisah dalam satu jaringan lokal. Skenario pengujian meliputi verifikasi koneksi, kemampuan menerima dan mengeksekusi perintah dari server (misalnya, akses \textit{command prompt} jarak jauh, enumerasi direktori, dan pembacaan isi berkas pada mesin klien). Observasi dicatat untuk memastikan fungsionalitas inti RAT tetap berjalan normal setelah virtualisasi.
-    \item \bo{Analisis Deteksi VirusTotal:} Kedua versi \textit{executable} klien Lilith (asli dan tervirtualisasi) akan diunggah ke layanan VirusTotal. Hasil pemindaian dari berbagai \textit{engine} antivirus akan dicatat dan dibandingkan, meliputi jumlah deteksi, label ancaman, dan kategori ancaman yang diberikan.
+    \item \bo{Persiapan Artefak Lilith RAT:} Meliputi kompilasi kode sumber klien Lilith versi asli dan versi \textit{intermediate} yang telah ditandai makro VxLang, diikuti pemrosesan dengan \textit{tool} VxLang untuk menghasilkan \textit{executable} klien tervirtualisasi. Detail implementasi disajikan pada Bab 4 (Sub-bab \ref{sec:implementasi_lilith_dan_malware}).
+    \item \bo{Persiapan Sampel Malware/PUA Tambahan:} Sembilan sampel \textit{malware/PUA} lainnya (\textit{Al-Khaser, donut, DripLoader, FilelessPELoader, JuicyPotato, ParadoxiaClient, PELoader, RunPE-In-Memory, SigLoader}) juga disiapkan dalam dua versi: versi asli (non-virtualized) dan versi yang telah diproses menggunakan \textit{tool command-line} \texttt{vxlang.exe} untuk menghasilkan \textit{executable} tervirtualisasi. Proses virtualisasi untuk sampel-sampel ini bertujuan untuk menerapkan proteksi VxLang pada bagian-bagian kode yang dianggap relevan atau pada keseluruhan \textit{executable} jika memungkinkan, mengikuti praktik serupa dengan yang diterapkan pada objek studi lainnya.
+    \item \bo{Pengujian Fungsionalitas (Spesifik Lilith RAT):} Menjalankan klien Lilith tervirtualisasi dan server Lilith asli pada dua mesin terpisah dalam satu jaringan lokal. Skenario pengujian meliputi verifikasi koneksi, kemampuan menerima dan mengeksekusi perintah dari server (misalnya, akses \textit{command prompt} jarak jauh, enumerasi direktori, dan pembacaan isi berkas pada mesin klien). Observasi dicatat untuk memastikan fungsionalitas inti RAT tetap berjalan normal setelah virtualisasi.
+    \item \bo{Analisis Deteksi VirusTotal:} Semua sepuluh sampel perangkat lunak (klien Lilith RAT dan sembilan sampel \textit{malware/PUA} lainnya), baik dalam versi asli (\textit{non-virtualized}) maupun versi yang telah tervirtualisasi oleh VxLang, akan diunggah ke layanan VirusTotal. Hasil pemindaian dari berbagai \textit{engine} antivirus akan dicatat dan dibandingkan, meliputi jumlah total deteksi oleh \textit{engine} VirusTotal.
 \end{enumerate}
 
 %-----------------------------------------------------------------------------%
