@@ -94,7 +94,7 @@ Key observations from dynamic analysis of virtualized binaries include:
         \end{itemize}
     \item \textbf{Ineffectiveness of Simple Runtime Patching:} Consequently, attempts to bypass authentication by patching simple conditional jumps at runtime were rendered ineffective. The critical decision-making points were embedded within the VM's opaque execution flow.
 \end{itemize}
-These dynamic analysis findings align with the principles of VM-based obfuscation \cite{Sikorski2012, Ore06}. While the debugger can step through the VM interpreter's native code, the actual application logic is abstracted away, making direct analysis and manipulation exceptionally difficult without deep knowledge of the VM's architecture \cite{Sal18}.
+These dynamic analysis findings align with the principles of VM-based obfuscation \cite{Sikorski2012, Ore06}. While the debugger can step through the VM interpreter's native code, the actual application logic is abstracted away, making direct analysis and manipulation exceptionally difficult without deep knowledge of the VM's architecture \cite{Salwan2018SymbolicDeobfuscation}.
 
 \subsubsection{Analysis of Potentially Malicious Software and VirusTotal Detection}
 To evaluate VxLang's impact on more complex software and automated detection, ten software samples, including the Lilith RAT client \cite{LilithRAT} and nine other publicly available malware/PUA samples (\textit{Al-Khaser, donut, DripLoader, FilelessPELoader, JuicyPotato, ParadoxiaClient, PELoader, RunPE-In-Memory, SigLoader}), were analyzed. For the Lilith RAT, after careful, iterative placement of VxLang macros targeting critical functions, functional testing confirmed that the virtualized client remained fully operational, successfully connecting to its server and executing remote commands. This demonstrated VxLang's capability to preserve core functionalities in complex applications if applied precisely.
@@ -109,133 +109,133 @@ However, for the other five samples, such as \textit{JuicyPotato} (9 to 20 detec
 The performance impact was measured using QuickSort and AES benchmarks.
 
 \begin{itemize}
-	\item \textbf{QuickSort:} As shown in Table \ref{tab:quick_sort_performance_journal} and Fig. \ref{fig:quick_sort_performance_journal}, virtualization introduced substantial execution time overhead. The overhead increased with data size, ranging from approximately 27,300\% for 100 elements (0.01 ms to 2.74 ms) to about 15,150\% for 1,000,000 elements (218.32 ms to 33,292.91 ms). This indicates a significant constant overhead plus a scaling factor imposed by the VM's interpretation loop for the recursive sorting function.
-	      \begin{table}[!t]
-		      \centering
-		      \caption{Quick Sort Execution Time Results (ms)}
-		      \label{tab:quick_sort_performance_journal}
-		      \resizebox{\columnwidth}{!}{%
-			      \begin{tabular}{@{}lrrrr@{}}
-				      \toprule
-				      \multirow{2}{*}{\textbf{Array Size}} & \multicolumn{2}{c}{\textbf{Non-Virtualized}} & \multicolumn{2}{c}{\textbf{Virtualized}}                                        \\
-				      \cmidrule(lr){2-3} \cmidrule(lr){4-5}
-				                                           & \textbf{Avg Time}                            & \textbf{Std Dev}                         & \textbf{Avg Time} & \textbf{Std Dev} \\
-				      \midrule
-				      100                                  & 0.01                                         & 0.00                                     & 2.74              & 0.38             \\
-				      1,000                                & 0.08                                         & 0.00                                     & 27.35             & 1.25             \\
-				      5,000                                & 0.54                                         & 0.05                                     & 144.44            & 8.25             \\
-				      10,000                               & 1.24                                         & 0.08                                     & 295.77            & 13.68            \\
-				      50,000                               & 6.98                                         & 0.51                                     & 1,556.15          & 122.81           \\
-				      100,000                              & 15.12                                        & 1.26                                     & 3,080.30          & 303.02           \\
-				      500,000                              & 104.44                                       & 7.30                                     & 14,298.92         & 374.98           \\
-				      1,000,000                            & 218.32                                       & 8.10                                     & 33,292.91         & 4,342.93         \\
-				      \bottomrule
-			      \end{tabular}
-		      } % End resizebox
-	      \end{table}
+    \item \textbf{QuickSort:} As shown in Table \ref{tab:quick_sort_performance_journal} and Fig. \ref{fig:quick_sort_performance_journal}, virtualization introduced substantial execution time overhead. The overhead increased with data size, ranging from approximately 27,300\% for 100 elements (0.01 ms to 2.74 ms) to about 15,150\% for 1,000,000 elements (218.32 ms to 33,292.91 ms). This indicates a significant constant overhead plus a scaling factor imposed by the VM's interpretation loop for the recursive sorting function.
+          \begin{table}[!t]
+              \centering
+              \caption{Quick Sort Execution Time Results (ms)}
+              \label{tab:quick_sort_performance_journal}
+              \resizebox{\columnwidth}{!}{%
+                  \begin{tabular}{@{}lrrrr@{}}
+                      \toprule
+                      \multirow{2}{*}{\textbf{Array Size}} & \multicolumn{2}{c}{\textbf{Non-Virtualized}} & \multicolumn{2}{c}{\textbf{Virtualized}}                                        \\
+                      \cmidrule(lr){2-3} \cmidrule(lr){4-5}
+                                                           & \textbf{Avg Time}                            & \textbf{Std Dev}                         & \textbf{Avg Time} & \textbf{Std Dev} \\
+                      \midrule
+                      100                                  & 0.01                                         & 0.00                                     & 2.74              & 0.38             \\
+                      1,000                                & 0.08                                         & 0.00                                     & 27.35             & 1.25             \\
+                      5,000                                & 0.54                                         & 0.05                                     & 144.44            & 8.25             \\
+                      10,000                               & 1.24                                         & 0.08                                     & 295.77            & 13.68            \\
+                      50,000                               & 6.98                                         & 0.51                                     & 1,556.15          & 122.81           \\
+                      100,000                              & 15.12                                        & 1.26                                     & 3,080.30          & 303.02           \\
+                      500,000                              & 104.44                                       & 7.30                                     & 14,298.92         & 374.98           \\
+                      1,000,000                            & 218.32                                       & 8.10                                     & 33,292.91         & 4,342.93         \\
+                      \bottomrule
+                  \end{tabular}
+              } % End resizebox
+          \end{table}
 
-	      \begin{figure}[!t]
-		      \centering
-		      \begin{tikzpicture}
-			      \begin{axis}[
-					      width=0.95\columnwidth,
-					      height=6cm,
-					      xlabel={Array Size},
-					      ylabel={Avg. Exec. Time (ms)},
-					      xmode=log,
-					      log basis x={10},
-					      ymode=log,
-					      log basis y={10},
-					      legend pos=north west,
-					      grid=major,
-					      tick label style={font=\tiny},
-					      label style={font=\small},
-					      legend style={font=\tiny}
-				      ]
-				      \addplot coordinates {
-						      (100, 0.01)
-						      (1000, 0.08)
-						      (5000, 0.54)
-						      (10000, 1.24)
-						      (50000, 6.98)
-						      (100000, 15.12)
-						      (500000, 104.44)
-						      (1000000, 218.32)
-					      };
-				      \addlegendentry{Non-Virtualized};
+          \begin{figure}[!t]
+              \centering
+              \begin{tikzpicture}
+                  \begin{axis}[
+                          width=0.95\columnwidth,
+                          height=6cm,
+                          xlabel={Array Size},
+                          ylabel={Avg. Exec. Time (ms)},
+                          xmode=log,
+                          log basis x={10},
+                          ymode=log,
+                          log basis y={10},
+                          legend pos=north west,
+                          grid=major,
+                          tick label style={font=\tiny},
+                          label style={font=\small},
+                          legend style={font=\tiny}
+                      ]
+                      \addplot coordinates {
+                              (100, 0.01)
+                              (1000, 0.08)
+                              (5000, 0.54)
+                              (10000, 1.24)
+                              (50000, 6.98)
+                              (100000, 15.12)
+                              (500000, 104.44)
+                              (1000000, 218.32)
+                          };
+                      \addlegendentry{Non-Virtualized};
 
-				      \addplot coordinates {
-						      (100, 2.74)
-						      (1000, 27.35)
-						      (5000, 144.44)
-						      (10000, 295.77)
-						      (50000, 1556.15)
-						      (100000, 3080.30)
-						      (500000, 14298.92)
-						      (1000000, 33292.91)
-					      };
-				      \addlegendentry{Virtualized};
-			      \end{axis}
-		      \end{tikzpicture}
-		      \caption{Quick Sort Execution Time Comparison (Log-Log Scale).}
-		      \label{fig:quick_sort_performance_journal}
-	      \end{figure}
+                      \addplot coordinates {
+                              (100, 2.74)
+                              (1000, 27.35)
+                              (5000, 144.44)
+                              (10000, 295.77)
+                              (50000, 1556.15)
+                              (100000, 3080.30)
+                              (500000, 14298.92)
+                              (1000000, 33292.91)
+                          };
+                      \addlegendentry{Virtualized};
+                  \end{axis}
+              \end{tikzpicture}
+              \caption{Quick Sort Execution Time Comparison (Log-Log Scale).}
+              \label{fig:quick_sort_performance_journal}
+          \end{figure}
 
 
-	\item \textbf{AES Encryption:} Table \ref{tab:aes_performance_journal} shows that the total time for encrypting 976MB of data increased by approximately 396.7\% (1878.52 ms to 9330.73 ms), and decryption time increased by about 562.9\% (1304.75 ms to 8649.74 ms). Consequently, the combined throughput dropped dramatically from 634.16 MB/s to 108.78 MB/s (an 82.8\% reduction). This confirms a significant overhead for cryptographic operations.
-	      \begin{table}[!t]
-		      \centering
-		      \caption{AES-256-CBC Performance Results (976MB Data)}
-		      \label{tab:aes_performance_journal}
-		      \resizebox{\columnwidth}{!}{%
-			      \begin{tabular}{@{}lrr@{}}
-				      \toprule
-				      \textbf{Metric}              & \textbf{Non-Virtualized} & \textbf{Virtualized} \\
-				      \midrule
-				      Total Encryption Time (ms)   & 1,878.52                 & 9,330.73             \\
-				      Total Decryption Time (ms)   & 1,304.75                 & 8,649.74             \\
-				      Avg. Encrypt Time/Block (ms) & 0.00188                  & 0.00933              \\
-				      Avg. Decrypt Time/Block (ms) & 0.00130                  & 0.00865              \\
-				      Encrypt Throughput (MB/s)    & 519.86                   & 104.66               \\
-				      Decrypt Throughput (MB/s)    & 748.46                   & 112.90               \\
-				      Combined Throughput (MB/s)   & 634.16                   & 108.78               \\
-				      \bottomrule
-			      \end{tabular}
-		      } % End resizebox
-	      \end{table}
+    \item \textbf{AES Encryption:} Table \ref{tab:aes_performance_journal} shows that the total time for encrypting 976MB of data increased by approximately 396.7\% (1878.52 ms to 9330.73 ms), and decryption time increased by about 562.9\% (1304.75 ms to 8649.74 ms). Consequently, the combined throughput dropped dramatically from 634.16 MB/s to 108.78 MB/s (an 82.8\% reduction). This confirms a significant overhead for cryptographic operations.
+          \begin{table}[!t]
+              \centering
+              \caption{AES-256-CBC Performance Results (976MB Data)}
+              \label{tab:aes_performance_journal}
+              \resizebox{\columnwidth}{!}{%
+                  \begin{tabular}{@{}lrr@{}}
+                      \toprule
+                      \textbf{Metric}              & \textbf{Non-Virtualized} & \textbf{Virtualized} \\
+                      \midrule
+                      Total Encryption Time (ms)   & 1,878.52                 & 9,330.73             \\
+                      Total Decryption Time (ms)   & 1,304.75                 & 8,649.74             \\
+                      Avg. Encrypt Time/Block (ms) & 0.00188                  & 0.00933              \\
+                      Avg. Decrypt Time/Block (ms) & 0.00130                  & 0.00865              \\
+                      Encrypt Throughput (MB/s)    & 519.86                   & 104.66               \\
+                      Decrypt Throughput (MB/s)    & 748.46                   & 112.90               \\
+                      Combined Throughput (MB/s)   & 634.16                   & 108.78               \\
+                      \bottomrule
+                  \end{tabular}
+              } % End resizebox
+          \end{table}
 
 \end{itemize}
 
 \subsubsection{File Size Overhead}
 Table \ref{tab:file_size_journal} shows a consistent increase in executable file size after virtualization. For smaller console/benchmark programs (\texttt{quick\_sort}, \texttt{encryption}, \texttt{console}, \texttt{Lilith\_Client}), the size increased by over 15-18 times (from ~80-110 KB to ~1.5-1.6 MB). For larger GUI applications (\texttt{app\_imgui} from 1,675 KB to 2,330 KB; \texttt{app\_qt} from 122 KB to 1,578 KB) and the benchmark with embedded data (\texttt{size} from 97,771 KB to 112,324 KB), the relative increase was smaller but still significant. This overhead is primarily attributed to the inclusion of the VxLang VM runtime and the bytecode representation of the original code.
 \begin{table}[H]
-	\centering
-	\caption{Executable File Size Comparison (KB)}
-	\label{tab:file_size_journal}
-	\resizebox{\columnwidth}{!}{
-		\begin{tabular}{@{}lrr@{}}
-			\toprule
-			\textbf{Program}  & \textbf{Non-Virtualized (KB)} & \textbf{Virtualized (KB)} \\
-			\midrule
-			quick\_sort       & 98                            & 1,537                     \\
-			encryption        & 110                           & 1,507                     \\
-			size              & 97,771                        & 112,324                   \\
-			console           & 92                            & 1,577                     \\
-			console\_cloud    & 281                           & 1,695                     \\
-			app\_imgui        & 1,675                         & 2,330                     \\
-			app\_imgui\_cloud & 1,860                         & 2,418                     \\
-			app\_qt           & 122                           & 1,578                     \\
-			app\_qt\_cloud    & 315                           & 1,671                     \\
-			Lilith\_Client    & 84                            & 1,554                     \\
-			\bottomrule
-		\end{tabular}
-	}
+    \centering
+    \caption{Executable File Size Comparison (KB)}
+    \label{tab:file_size_journal}
+    \resizebox{\columnwidth}{!}{
+        \begin{tabular}{@{}lrr@{}}
+            \toprule
+            \textbf{Program}  & \textbf{Non-Virtualized (KB)} & \textbf{Virtualized (KB)} \\
+            \midrule
+            quick\_sort       & 98                            & 1,537                     \\
+            encryption        & 110                           & 1,507                     \\
+            size              & 97,771                        & 112,324                   \\
+            console           & 92                            & 1,577                     \\
+            console\_cloud    & 281                           & 1,695                     \\
+            app\_imgui        & 1,675                         & 2,330                     \\
+            app\_imgui\_cloud & 1,860                         & 2,418                     \\
+            app\_qt           & 122                           & 1,578                     \\
+            app\_qt\_cloud    & 315                           & 1,671                     \\
+            Lilith\_Client    & 84                            & 1,554                     \\
+            \bottomrule
+        \end{tabular}
+    }
 \end{table}
 
 \subsection{Discussion}
 The experimental results clearly demonstrate the core trade-off inherent in using VxLang's code virtualization.
 
-\textbf{Security Enhancement and Detection Evasion:} VxLang provides a substantial barrier against common reverse engineering techniques. The transformation into interpreted bytecode neutralizes standard static analysis tools like Ghidra, which rely on recognizable native instruction patterns \cite{Eilam2011, Ko2007}, and significantly complicates dynamic analysis with tools like x64dbg, as the underlying logic is executed by an opaque VM \cite{Sikorski2012}. This aligns with the established understanding that VM-based obfuscation fundamentally alters the code structure beyond the interpretation capabilities of standard disassemblers \cite{Ore06, Sal18}. Furthermore, the VirusTotal analysis on ten malware/PUA samples revealed a nuanced impact: while VxLang could reduce signature-based detections for some samples, it led to increased detections for others, likely due to the virtualization layer itself being flagged. This highlights a complex interplay between obfuscation and evolving AV detection heuristics \cite{Ore06, Sal18, Rou13}.
+\textbf{Security Enhancement and Detection Evasion:} VxLang provides a substantial barrier against common reverse engineering techniques. The transformation into interpreted bytecode neutralizes standard static analysis tools like Ghidra, which rely on recognizable native instruction patterns \cite{Eilam2011, Ko2007}, and significantly complicates dynamic analysis with tools like x64dbg, as the underlying logic is executed by an opaque VM \cite{Sikorski2012}. This aligns with the established understanding that VM-based obfuscation fundamentally alters the code structure beyond the interpretation capabilities of standard disassemblers \cite{Ore06, Salwan2018SymbolicDeobfuscation}. Furthermore, the VirusTotal analysis on ten malware/PUA samples revealed a nuanced impact: while VxLang could reduce signature-based detections for some samples, it led to increased detections for others, likely due to the virtualization layer itself being flagged. This highlights a complex interplay between obfuscation and evolving AV detection heuristics \cite{Ore06, Salwan2018SymbolicDeobfuscation, Rou13}.
 
 \textbf{Performance Cost:} The security and evasion benefits come at a steep price in terms of performance. The interpretation overhead significantly slows down virtualized code, especially for computationally intensive tasks (QuickSort overhead of ~15,000\% for 1M elements; AES throughput reduction of ~83\%), potentially rendering indiscriminate application impractical due to severe speed degradation.
 

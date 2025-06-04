@@ -101,7 +101,7 @@ Bahasa pemrograman tingkat tinggi (high-level languages), seperti Python, Java, 
 \paragraph{Conditional Instructions:}
 \begin{itemize}
 	\item \bi{if statement:} Memungkinkan program membuat keputusan berdasarkan kondisi, seperti pada contoh di Kode \ref{lst:if_example_cpp}.
-	      \begin{minted}{cpp}     
+	      \begin{minted}{cpp}
 if (x > 10) {
  std::cout << "x lebih besar dari 10" << std::endl;
 }
@@ -110,7 +110,7 @@ if (x > 10) {
     \label{lst:if_example_cpp}
 
 	\item \bi{if-else statement:} Menyediakan jalur alternatif jika kondisi \textit{if} tidak terpenuhi, sebagaimana diilustrasikan pada Kode \ref{lst:ifelse_example_cpp}.
-	      \begin{minted}{cpp}     
+	      \begin{minted}{cpp}
 if (score >= 70) {
  std::cout << "Lulus" << std::endl;
 } else {
@@ -121,7 +121,7 @@ if (score >= 70) {
     \label{lst:ifelse_example_cpp}
 
 	\item \bi{switch statement:} Memungkinkan percabangan ke banyak kasus (lihat Kode \ref{lst:switch_example_cpp}).
-	      \begin{minted}{cpp}     
+	      \begin{minted}{cpp}
 int day = 2;
 switch (day) {
  case 1:
@@ -141,7 +141,7 @@ switch (day) {
 \paragraph{Loop Instructions:}
 \begin{itemize}
 	\item \bi{for loop:} Mengeksekusi blok kode sejumlah kali tertentu, seperti tampak pada Kode \ref{lst:for_example_cpp}.
-	      \begin{minted}{cpp}     
+	      \begin{minted}{cpp}
 for (int i = 0; i < 5; i++) {
  std::cout << i << std::endl;
 }
@@ -150,7 +150,7 @@ for (int i = 0; i < 5; i++) {
     \label{lst:for_example_cpp}
 
 	\item \bi{while loop:} Mengeksekusi blok kode selama kondisi tertentu terpenuhi (Kode \ref{lst:while_example_cpp}).
-	      \begin{minted}{cpp}     
+	      \begin{minted}{cpp}
 int count = 0;
 while (count < 5) {
  std::cout << count << std::endl;
@@ -183,14 +183,14 @@ Bahasa pemrograman tingkat rendah (low-level languages), seperti Assembly langua
 \paragraph{Conditional Instructions:}
 \begin{itemize}
 	\item \bi{cmp (compare):} Membandingkan dua nilai dan mengatur flags (bendera) kondisi (Kode \ref{lst:cmp_example_asm}).
-	      \begin{minted}{asm}     
+	      \begin{minted}{asm}
 cmp eax, 10
     \end{minted}
     \captionof{listing}{Contoh Instruksi Perbandingan \code{cmp} dalam Assembly x86}
     \label{lst:cmp_example_asm}
 
 	\item \bi{jle, jge, je, jne (conditional jumps):} Melompat ke label lain jika flags kondisi memenuhi syarat, seperti yang ditunjukkan pada Kode \ref{lst:cond_jump_example_asm}.
-	      \begin{minted}{asm}     
+	      \begin{minted}{asm}
 jle less_or_equal ; Lompat jika kurang dari atau sama dengan
 jne not_equal ; Lompat jika tidak sama dengan
     \end{minted}
@@ -201,7 +201,7 @@ jne not_equal ; Lompat jika tidak sama dengan
 \paragraph{Loop Instructions (Implementasi dengan Conditional Jumps):}
 \begin{itemize}
 	\item Menggunakan kombinasi instruksi perbandingan, pengurangan counter, dan conditional jump untuk membuat loop (lihat contoh pada Kode \ref{lst:loop_example_asm}).
-	      \begin{minted}{asm}     
+	      \begin{minted}{asm}
 mov ecx, 5 ; set counter loop
 loop_start:
 ; instruksi dalam loop
@@ -215,7 +215,7 @@ jne loop_start
 \paragraph{Jump Instructions (Direct):}
 \begin{itemize}
 	\item \bi{jmp (unconditional jump):} Lompat ke label tanpa syarat (Kode \ref{lst:jmp_example_asm}).
-	      \begin{minted}{asm}     
+	      \begin{minted}{asm}
 jmp target_label
     \end{minted}
     \captionof{listing}{Contoh Instruksi Lompatan Tanpa Syarat \code{jmp} dalam Assembly x86}
@@ -225,14 +225,14 @@ jmp target_label
 \paragraph{Jump Instructions (Indirect - function calls):}
 \begin{itemize}
 	\item \bi{call:} Melompat ke alamat fungsi dan menyimpan alamat return (Kode \ref{lst:call_example_asm}).
-	      \begin{minted}{asm}     
+	      \begin{minted}{asm}
 call function_address
     \end{minted}
     \captionof{listing}{Contoh Instruksi Pemanggilan Fungsi \code{call} dalam Assembly x86}
     \label{lst:call_example_asm}
 
 	\item \bi{ret:} Mengembalikan kontrol dari fungsi (Kode \ref{lst:ret_example_asm}).
-	      \begin{minted}{asm}     
+	      \begin{minted}{asm}
 ret
     \end{minted}
     \captionof{listing}{Contoh Instruksi Pengembalian Fungsi \code{ret} dalam Assembly x86}
@@ -448,7 +448,7 @@ Set instruksi virtual ini merupakan kunci dari obfuscationnya yang digunakan unt
 	\caption{Transformasi ISA x86 menjadi berbagai messin virtual \cite{Ore06}}
 \end{figure}
 
-Arsitektur umum mesin virtual untuk Code Virtualization memiliki komponen-komponen yang mirip dengan design CPU \cite{Sal18, Hac24}.
+Arsitektur umum mesin virtual untuk Code Virtualization memiliki komponen-komponen yang mirip dengan design CPU \cite{Salwan2018SymbolicDeobfuscation, Hac24}.
 \begin{enumerate}
 	\item \bi{VM entry:} Perannya untuk simpan konteks eksekusi native (seperti register CPU atau flag) dan transisi ke konteks mesin virtual.
 	\item \bi{Fetch:} Perannya adalah untuk mengambil, dari memori internal VM, opcode (virtual) yang akan ditiru, berdasarkan nilai Virtual Program Counter (vpc).
@@ -523,7 +523,7 @@ Di dalam header SDK, terdapat beberapa Application Programming Interfaces (API) 
 
 \begin{itemize}
 	\item \bo{VL\_OBFUSCATION\_BEGIN/END:} API ini digunakan untuk menambahkan kode dummy (kode palsu) di antara kode asli. Penambahan kode dummy ini bertujuan untuk mengganggu proses disassembly dan decompilation. Disassembly adalah proses menerjemahkan kode mesin kembali ke dalam bentuk assembly, sedangkan decompilation adalah proses menerjemahkan kode mesin atau bytecode ke dalam bahasa pemrograman tingkat tinggi. Dengan adanya kode dummy, reverse engineer akan kesulitan untuk memahami alur eksekusi program yang sebenarnya karena kode dummy tersebut akan muncul dalam hasil disassembly dan decompilation, sehingga mengaburkan kode asli. Contoh penggunaannya dapat dilihat pada Kode \ref{lst:vx_obfuscation_api}.
-	      \begin{minted}{cpp}     
+	      \begin{minted}{cpp}
           void obfuscation_test(int x) {
 
             VL_OBFUSCATION_BEGIN;
@@ -538,7 +538,7 @@ Di dalam header SDK, terdapat beberapa Application Programming Interfaces (API) 
     \label{lst:vx_obfuscation_api}
 
 	\item \bo{VL\_CODE\_FLATTENING\_BEGIN/END:} API ini digunakan untuk mengacak urutan kode pada tingkat kedalaman yang sama. Proses ini juga melibatkan penambahan kode dummy dan membuat kode menjadi lebih sulit diinterpretasikan. Code flattening adalah teknik obfuscation yang mengubah struktur alur kontrol program menjadi lebih datar dan kompleks. Dengan mengacak urutan kode dan menambahkan kode dummy, reverse engineer akan kesulitan untuk merekonstruksi alur logika program yang sebenarnya. Ilustrasi penggunaan makro ini ditunjukkan pada Kode \ref{lst:vx_flattening_api}.
-	      \begin{minted}{cpp}     
+	      \begin{minted}{cpp}
           void code_flattening_test(int x) {
 
             VL_CODE_FLATTENING_BEGIN;
@@ -553,7 +553,7 @@ Di dalam header SDK, terdapat beberapa Application Programming Interfaces (API) 
     \label{lst:vx_flattening_api}
 
 	\item \bo{VL\_VIRTUALIZATION\_BEGIN/END:} API ini digunakan untuk mengubah kode native yang ditentukan menjadi bytecode yang hanya dapat diinterpretasikan oleh Central Processing Unit (CPU) internal VxLang. Ini adalah inti dari teknik virtualisasi kode yang ditawarkan oleh VxLang. Kode native yang telah diubah menjadi bytecode tidak lagi dapat dieksekusi secara langsung oleh prosesor fisik, melainkan harus melalui interpreter mesin virtual VxLang. Ini secara signifikan meningkatkan kesulitan reverse engineering karena attacker harus memahami arsitektur dan set instruksi mesin virtual VxLang untuk dapat memahami kode yang dilindungi. Kode \ref{lst:vx_virtualization_api} memberikan contoh implementasinya.
-	      \begin{minted}{cpp}     
+	      \begin{minted}{cpp}
           void virtualization_test(int x) {
 
             VL_VIRTUALIZATION_BEGIN;
