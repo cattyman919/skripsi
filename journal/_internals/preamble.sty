@@ -59,15 +59,16 @@
 \usepackage{hyperref} % Creates hyperlinks in the document
 \hypersetup{ % Configuration for hyperref (moved from journal.tex)
     colorlinks=true,
-    linkcolor=blue,    % Warna untuk tautan internal (misal: ke section, gambar)
-    filecolor=magenta, % Warna untuk tautan ke file lokal
-    urlcolor=cyan,     % Warna untuk URL eksternal
-    citecolor=blue,    % cite color
+    linkcolor=black,    % Warna untuk tautan internal (misal: ke section, gambar)
+    filecolor=black, % Warna untuk tautan ke file lokal
+    urlcolor=black,     % Warna untuk URL eksternal
+    citecolor=black,    % cite color
     pdftitle={Effectiveness of Code Virtualization using VxLang}, % Example title
     pdfpagemode=FullScreen, % Example setting
     pdfauthor={Seno Pamungkas Rahman}, % Add author metadata
     bookmarksopen=true,
-    bookmarksnumbered=true
+    bookmarksnumbered=true,
+    pdfborder={0 0 0} % Menghilangkan border jika colorlinks=false (opsional, tapi baik jika colorlinks=true)
     }
 
 % *** PLOTTING PACKAGES ***

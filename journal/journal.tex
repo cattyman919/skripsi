@@ -22,21 +22,22 @@
 \title{\journalTitle}
 
 % --- Author Information ---
-\author{\IEEEauthorblockN{\authorOne\IEEEauthorrefmark{1}} % Use refmark if needed for affiliations/notes
-        % , \IEEEauthorblockN{Author Two Name\IEEEauthorrefmark{2}} % Add other authors
-\IEEEauthorblockA{\textit{\authorOneAffiliation} \\ Email: \authorOneEmail}
-% \IEEEauthorblockA{\IEEEauthorrefmark{2}\textit{Affiliation Author Two}} % Corresponding affiliation
-% --- Add more authors/affiliations as needed ---
+\author{
 
-\thanks{Manuscript received Month DD, YYYY; revised Month DD, YYYY. This work was supported in part by [Funding Agency, Grant Number, if any]. (Corresponding author: \correspondingAuthor.)} % Update or remove as appropriate
-% \thanks{\authorOne is with the Department of Electrical Engineering, Faculty of Engineering, Universitas Indonesia, Depok, 16424 Indonesia (e-mail: \authorOneEmail).} % Standard IEEE affiliation format
-% \thanks{Author Two is with ...} % Add other author affiliations if needed
+    \IEEEauthorblockN{
+        \authorOne\IEEEauthorrefmark{1}, % Menambahkan \IEEEauthorrefmark{2} untuk simbol † dan
+        \authorTwo\IEEEauthorrefmark{1}  % Menambahkan \IEEEauthorrefmark{2} untuk simbol †
+    }
+
+    \IEEEauthorblockA{
+        \IEEEauthorrefmark{1}\textit{\journalAffiliation} \\ % Afiliasi didahului oleh simbol †
+        % Baris email bisa tetap di sini atau dipindahkan ke \thanks jika diinginkan
+        % Untuk lebih mirip gambar, email mungkin lebih baik di \thanks atau dihilangkan dari blok utama ini jika mengikuti contoh gambar secara ketat.
+        % Namun, untuk standar IEEE, email seringkali disertakan. Kita pertahankan untuk saat ini.
+        Emails: \{\authorOneEmail, \authorTwoEmail\}
+    }
 }
 
-% --- Paper Headers ---
-% Optional: Customize headers for published version/preprint
-% \markboth{IEEE Transactions on Dependable and Secure Computing,~Vol.~XX, No.~XX, Month~YYYY}%
-% {Rahman: Analysis of VxLang Code Virtualization Effectiveness}
 
 % --- Make Title Area ---
 \maketitle
