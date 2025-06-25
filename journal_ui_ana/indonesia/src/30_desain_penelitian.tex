@@ -1,0 +1,70 @@
+% journal_ui_ana/indonesia/src/30_desain_penelitian.tex
+\section{Desain Penelitian dan Metodologi} % Judul bisa disesuaikan, "Desain Penelitian" atau "Metodologi"
+
+Penelitian ini menggunakan pendekatan eksperimental kuantitatif untuk mengevaluasi efektivitas virtualisasi kode menggunakan VxLang dalam mempersulit upaya rekayasa balik dan menganalisis \f{overhead} performa yang ditimbulkannya.
+
+\subsection{Desain Eksperimen}
+Desain eksperimen yang digunakan adalah perbandingan antara kelompok kontrol dan kelompok eksperimen.
+\begin{itemize}
+    \item \bo{Kelompok Kontrol:} Aplikasi studi kasus dan \f{benchmark} yang dikompilasi secara normal tanpa penerapan virtualisasi kode VxLang.
+    \item \bo{Kelompok Eksperimen:} Aplikasi dan \f{benchmark} yang sama, namun bagian kode kritikalnya telah diproses menggunakan virtualisasi kode VxLang.
+\end{itemize}
+Variabel independen adalah penerapan virtualisasi kode VxLang, sedangkan variabel dependen meliputi tingkat kesulitan rekayasa balik (analisis statis dan dinamis) dan dampak performa (waktu eksekusi dan ukuran berkas).
+
+\subsection{Objek Studi}
+Objek studi dalam penelitian ini mencakup:
+\begin{enumerate}
+    \item \bo{Aplikasi Studi Kasus Autentikasi:} Aplikasi simulasi login pengguna dikembangkan dalam beberapa varian antarmuka (Konsol, Qt, Dear ImGui) dan dua mekanisme autentikasi (kredensial \f{hardcoded} dan validasi berbasis \f{cloud}). Aplikasi ini menjadi target utama analisis rekayasa balik.
+    \item \bo{Aplikasi \f{Benchmark} Performa:} Aplikasi yang dirancang khusus untuk mengukur dampak performa pada tugas komputasi spesifik, yaitu algoritma QuickSort dan enkripsi AES-CBC-256. Sebuah aplikasi minimal dengan data tersemat juga digunakan untuk menilai peningkatan ukuran berkas dasar.
+    \item \bo{Studi Kasus \f{Remote Administration Tool} (RAT):} Klien dari Lilith RAT \cite{LilithRAT}, sebuah RAT \f{open-source}, dianalisis untuk fungsionalitas pasca-virtualisasi dan perubahan profil deteksi pada VirusTotal. Sembilan sampel \f{malware}/PUA tambahan juga dianalisis dampaknya pada deteksi VirusTotal.
+\end{enumerate}
+
+\subsection{Instrumen dan Bahan Penelitian}
+Penelitian ini menggunakan instrumen berikut:
+\begin{itemize}
+    \item \bo{Perangkat Keras:} PC berbasis Windows 11 (64-bit).
+    \item \bo{Perangkat Lunak Pengembangan:} Clang/clang-cl (C++17), CMake, Ninja, VxLang SDK, Qt 6, Dear ImGui, OpenSSL 3.x, libcurl.
+    \item \bo{Alat Analisis:} Ghidra (v11.x) untuk analisis statis, x64dbg (rilis terbaru) untuk analisis dinamis.
+    \item \bo{Pengukuran Performa:} Pustaka C++ \code{std::chrono} untuk waktu, \code{std::filesystem::file\_size} untuk ukuran berkas.
+\end{itemize}
+
+\subsection{Prosedur Pengumpulan Data}
+Pengumpulan data dilakukan melalui beberapa tahapan utama:
+
+\subsubsection{Persiapan Artefak}
+Aplikasi studi kasus dan \f{benchmark} dikompilasi dalam dua versi: asli (tanpa virtualisasi) dan \f{intermediate} (dengan makro VxLang dan tertaut pustaka VxLang). Versi \f{intermediate} kemudian diproses menggunakan \f{tool command-line} \code{vxlang.exe} untuk menghasilkan \f{executable} tervirtualisasi akhir (\code{*\_vxm.exe}).
+
+\subsubsection{Analisis Keamanan}
+Untuk setiap aplikasi autentikasi (asli dan tervirtualisasi):
+\begin{enumerate}
+    \item \bo{Analisis Statis (Ghidra):} Memuat \f{executable}, mencari \f{string} relevan (misalnya, "Gagal", "Sah", potensi kredensial), menganalisis \f{disassembly}/\f{decompilation} di sekitar referensi \f{string} atau titik masuk, mengidentifikasi lompatan kondisional yang mengontrol keberhasilan/kegagalan autentikasi, dan mencoba \f{patching} statis untuk mem-\textit{bypass} logika. Observasi sistematis dicatat.
+    \item \bo{Analisis Dinamis (x64dbg):} Menjalankan \f{executable} di bawah \f{debugger}, mencari \f{string}/\f{pattern} saat \textit{runtime}, mengatur \f{breakpoint} pada lokasi logika yang dicurigai, melangkah melalui eksekusi, mengamati nilai register/memori, dan mencoba manipulasi \textit{runtime} (mem-\textit{patch} lompatan kondisional) untuk mem-\textit{bypass} autentikasi. Observasi sistematis dicatat.
+\end{enumerate}
+Diagram alir prosedur pengujian keamanan autentikasi dapat dilihat pada Gambar \ref{fig:flow_auth_test_proc_jurnal_ui_ana} (diadaptasi dari metodologi skripsi). % Menggunakan referensi ke gambar dari skripsi
+% Anda dapat menyalin gambar relevan ke direktori assets jurnal dan merujuknya secara lokal jika perlu
+% \begin{figure}[H]
+% 	\centering
+% 	\includegraphics[width=0.8\columnwidth]{\Assets/nama_diagram_alur_autentikasi.png}
+% 	\caption{Diagram Alur Prosedur Pengujian Keamanan Autentikasi.}
+% 	\label{fig:flow_auth_test_proc_jurnal_ui_ana}
+% \end{figure}
+
+\subsubsection{Analisis Performa}
+Untuk setiap aplikasi \f{benchmark} (asli dan tervirtualisasi):
+\begin{enumerate}
+    \item \bo{Waktu Eksekusi:} Menjalankan \f{benchmark} QuickSort 100 kali per ukuran data, mencatat waktu individual. Menjalankan \f{benchmark} AES pada data 1GB, mencatat total waktu enkripsi/dekripsi. Menggunakan \code{std::chrono}. Menghitung rata-rata, standar deviasi (untuk QuickSort), dan \f{throughput} (untuk AES).
+    \item \bo{Ukuran Berkas:} Mengukur ukuran \f{executable} akhir dalam \f{byte} menggunakan \code{std::filesystem::file\_size}.
+\end{enumerate}
+
+\subsubsection{Analisis Lilith RAT dan Sampel Malware Lainnya}
+\begin{enumerate}
+    \item \bo{Pengujian Integritas Fungsional (Lilith RAT):} Klien tervirtualisasi diuji untuk fungsionalitas inti RAT (koneksi ke server, eksekusi perintah jarak jauh, akses sistem berkas) terhadap server yang tidak dimodifikasi di jaringan lokal.
+    \item \bo{Analisis VirusTotal:} Kedua versi (\f{executable} asli dan tervirtualisasi) dari klien Lilith RAT dan sembilan sampel \f{malware}/PUA lainnya diunggah ke VirusTotal untuk membandingkan tingkat deteksi dan karakterisasi ancaman.
+\end{enumerate}
+
+\subsection{Teknik Analisis Data}
+\begin{itemize}
+    \item \bo{Analisis Proteksi Keamanan:} Metrik kuantitatif (misalnya, tingkat keberhasilan \textit{bypass}, persentase \f{string} kritis yang berhasil diobfuskasi, pengurangan fungsi yang dapat diidentifikasi) dan analisis deskriptif dari observasi sistematis pada analisis statis dan dinamis.
+    \item \bo{Data Performa:} Perhitungan statistik deskriptif, \f{overhead} persentase untuk waktu eksekusi, perhitungan \f{throughput} (MB/s), dan persentase peningkatan ukuran berkas. Tabel dan grafik komparatif akan digunakan.
+    \item \bo{Analisis \textit{Trade-off}:} Sintesis temuan keamanan dan hasil performa untuk mengevaluasi keseimbangan antara peningkatan proteksi dan biaya performa/ukuran yang ditimbulkan oleh VxLang.
+\end{itemize}

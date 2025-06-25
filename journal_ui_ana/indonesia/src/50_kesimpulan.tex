@@ -1,0 +1,13 @@
+% journal_ui_ana/indonesia/src/50_kesimpulan.tex
+\section{Kesimpulan}
+\label{sec:kesimpulan_jurnal_ui_ana_ringkas}
+
+Penelitian ini menginvestigasi efektivitas virtualisasi kode menggunakan kerangka kerja VxLang untuk mempersulit rekayasa balik perangkat lunak. Implementasi melibatkan penandaan kode sumber, kompilasi menjadi \f{executable intermediate}, dan pemrosesan akhir dengan \f{tool} VxLang untuk menghasilkan biner tervirtualisasi.
+
+Hasil analisis eksperimental menunjukkan bahwa virtualisasi kode VxLang secara signifikan meningkatkan kesulitan rekayasa balik. Analisis statis menggunakan Ghidra terhadap kode tervirtualisasi gagal mengidentifikasi instruksi, fungsi, atau struktur data yang bermakna. Demikian pula, analisis dinamis dengan x64dbg terhambat oleh alur kontrol yang diobfuskasi dan model eksekusi mesin virtual (VM) yang mengaburkan perilaku \textit{runtime} dan upaya \textit{debugging}. Upaya untuk mem-\textit{bypass} logika autentikasi, yang mudah dilakukan pada versi non-virtualisasi, berhasil digagalkan pada biner yang dilindungi VxLang. Namun, implementasi yang efektif memerlukan penempatan makro virtualisasi yang cermat dan iteratif, karena penempatan yang kurang tepat, terutama pada kode dengan I/O atau alur kontrol kompleks, dapat mengganggu fungsionalitas aplikasi, sebagaimana teramati pada studi kasus Lilith RAT.
+
+Analisis terhadap sepuluh sampel \f{malware}/PUA di VirusTotal menunjukkan dampak VxLang yang bervariasi terhadap tingkat deteksi: sekitar separuh sampel mengalami penurunan deteksi, seringkali dengan pergeseran ke \f{flag} generik/heuristik, sementara sisanya menunjukkan peningkatan deteksi, mengindikasikan bahwa lapisan virtualisasi itu sendiri dapat memicu peringatan.
+
+Peningkatan keamanan ini dibarengi dengan \f{overhead} performa yang substansial, teramati pada \f{benchmark} algoritma QuickSort dan enkripsi AES, serta peningkatan signifikan ukuran berkas \f{executable}. Temuan ini menggarisbawahi adanya \textit{trade-off} yang jelas antara proteksi yang kuat terhadap rekayasa balik dengan degradasi performa dan penambahan ukuran berkas. Oleh karena itu, aplikasi praktis VxLang sebaiknya dilakukan secara selektif, menargetkan hanya bagian kode yang paling kritis dan sensitif.
+
+Penelitian selanjutnya dapat difokuskan pada eksplorasi teknik rekayasa balik yang lebih canggih terhadap proteksi berbasis VM, investigasi opsi konfigurasi VxLang untuk keseimbangan keamanan-performa, dan studi komparatif dengan solusi virtualisasi lainnya. Analisis lebih mendalam mengenai interaksi VxLang dengan berbagai jenis \f{malware} dan teknik deteksi antivirus juga akan memberikan wawasan yang berharga.

@@ -1,0 +1,25 @@
+% journal_ui_ana/indonesia/src/10_pendahuluan.tex
+\section{Pendahuluan}
+Perkembangan pesat teknologi perangkat lunak telah mendorong terciptanya aplikasi yang semakin kompleks, namun diiringi oleh peningkatan ancaman keamanan. Rekayasa balik (\f{reverse engineering}), proses menganalisis perangkat lunak untuk memahami cara kerjanya tanpa akses ke kode sumber \cite{Has18}, merupakan kerentanan kritis. Penyerang memanfaatkan rekayasa balik untuk mengungkap algoritma, menemukan celah keamanan, membajak perangkat lunak, dan menyisipkan kode berbahaya \cite{Wak24}. Ukuran keamanan tradisional seringkali tidak memadai terhadap analisis logika program saat berjalan \cite{Sec19}.
+
+Untuk mengatasi ancaman ini, teknik pengaburan kode (\f{code obfuscation}) bertujuan mengubah kode program menjadi bentuk yang lebih sulit dipahami tanpa mengubah fungsionalitasnya \cite{Jin24}. Di antara berbagai strategi pengaburan, virtualisasi kode (\f{code virtualization}) menonjol sebagai pendekatan yang sangat kuat \cite{Ore06, Zho24}. Teknik ini menerjemahkan kode mesin asli menjadi instruksi \f{bytecode} khusus yang dieksekusi oleh mesin virtual (VM) yang tertanam dalam aplikasi \cite{Don20}. Arsitektur Set Instruksi (ISA) unik dari VM ini membuat alat rekayasa balik konvensional seperti \f{disassembler} dan \f{debugger} menjadi tidak efektif karena tidak dapat langsung menginterpretasikan kode yang divirtualisasi \cite{Salwan2018SymbolicDeobfuscation}. Penyerang harus terlebih dahulu menguraikan arsitektur VM dan \f{bytecode}-nya, yang secara substansial meningkatkan upaya dan kompleksitas analisis \cite{Hac24}.
+
+VxLang adalah sebuah kerangka kerja proteksi kode yang menggabungkan kapabilitas virtualisasi kode, menargetkan \f{executable} Windows PE \cite{VxLang}. Kerangka kerja ini menyediakan mekanisme untuk mentransformasi kode asli menjadi format \f{bytecode} internalnya, yang dieksekusi oleh VM yang tersemat. Memahami efektivitas praktis dan biaya terkait dari alat semacam itu sangat penting bagi pengembang yang mencari solusi proteksi perangkat lunak yang tangguh.
+
+Makalah ini menyelidiki efektivitas virtualisasi kode menggunakan VxLang dalam mengurangi upaya rekayasa balik. Kami bertujuan untuk menjawab pertanyaan kunci berikut:
+\begin{enumerate}
+    \item Seberapa efektif virtualisasi kode VxLang mengaburkan logika program terhadap teknik rekayasa balik statis dan dinamis?
+    \item Apa dampak kuantitatif dari virtualisasi VxLang terhadap performa aplikasi (waktu eksekusi) dan ukuran berkas?
+\end{enumerate}
+
+Untuk menjawab pertanyaan-pertanyaan ini, kami mengimplementasikan virtualisasi VxLang pada fungsi-fungsi terpilih dalam aplikasi studi kasus (mensimulasikan autentikasi) dan \f{benchmark} performa (QuickSort, enkripsi AES). Kami kemudian melakukan analisis statis komparatif (menggunakan Ghidra \cite{Nat19}) dan analisis dinamis (menggunakan x64dbg \cite{Dun14}) pada biner asli dan yang telah divirtualisasi. \f{Overhead} performa diukur dengan membandingkan waktu eksekusi dan ukuran \f{executable}, dan dampak pada alat deteksi \f{malware} otomatis dinilai menggunakan analisis VirusTotal pada studi kasus yang relevan.
+
+Kontribusi utama dari penelitian ini adalah:
+\begin{itemize}
+    \item Implementasi dan evaluasi praktis virtualisasi kode VxLang pada segmen kode representatif.
+    \item Analisis kualitatif dan kuantitatif terhadap peningkatan kesulitan yang ditimbulkan pada rekayasa balik statis dan dinamis oleh VxLang.
+    \item Pengukuran dan analisis terhadap \f{overhead} performa dan ukuran berkas yang terkait dengan virtualisasi VxLang.
+    \item Penilaian empiris terhadap \textit{trade-off} keamanan-performa yang ditawarkan oleh kerangka kerja VxLang.
+\end{itemize}
+
+Sisa dari makalah ini diorganisasikan sebagai berikut: Bagian selanjutnya membahas penelitian terkait dalam pengaburan dan virtualisasi kode. Kemudian, metodologi yang digunakan dalam eksperimen kami dirinci. Setelah itu, detail implementasi diuraikan secara singkat. Selanjutnya, hasil eksperimental untuk analisis keamanan dan performa disajikan dan dibahas. Akhirnya, makalah ini ditutup dengan kesimpulan dan saran untuk penelitian di masa mendatang.

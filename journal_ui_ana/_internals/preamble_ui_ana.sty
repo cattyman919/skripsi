@@ -1,0 +1,74 @@
+% journal_ui_ana/_internals/preamble_ui_ana.sty
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{preamble_ui_ana}[2024/07/27 Custom Preamble for UI ANA Journal]
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{booktabs} % For professional quality tables (toprule, midrule, bottomrule) (used in results)
+\usepackage{multirow}
+\usepackage{mathptmx} % Untuk font Times New Roman (atau pengganti dekatnya)
+\usepackage{amsmath}
+\usepackage{pgfplots} % For creating plots within LaTeX (used for QuickSort graph)
+\pgfplotsset{compat=1.18} % Set compatibility for pgfplots (moved from journal.tex)
+\usetikzlibrary{arrows.meta} % Load tikz library if needed by plots
+
+\usepackage{graphicx}
+\usepackage[a4paper, margin=1in]{geometry} % Margin standar, bisa disesuaikan
+\usepackage{setspace} % Untuk mengatur spasi (1, 1.5, 2)
+\usepackage{titlesec} % Untuk kustomisasi judul bagian
+\usepackage{titling} % Untuk kustomisasi \maketitle
+\usepackage{abstract} % Untuk lingkungan abstract kustom
+\usepackage{float} % <<<===== DITAMBAHKAN UNTUK OPSI [H] PADA FIGURE
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=black,
+    urlcolor=black, % Biasanya URL diberi warna biru
+    citecolor=black,
+    pdftitle={Judul Jurnal UI ANA}, % Akan di-override nanti
+    pdfauthor={Nama Penulis},      % Akan di-override nanti
+    bookmarksopen=true,
+    bookmarksnumbered=true,
+    pdfborder={0 0 0}
+}
+
+% Pengaturan Font untuk Judul Bagian (contoh, Times New Roman, Bold)
+\titleformat{\section}{\normalfont\fontsize{12}{15}\bfseries}{\thesection.}{1em}{}
+\titleformat{\subsection}{\normalfont\fontsize{12}{15}\bfseries}{\thesubsection.}{1em}{}
+
+% Atur agar nomor halaman dimulai dari 1 untuk konten utama
+\pagenumbering{arabic}
+
+% Setup Biblatex
+\usepackage[backend=biber, style=numeric, sorting=none, natbib=true, maxnames=6, minnames=1, date=year, doi=false, isbn=false, url=true]{biblatex}
+
+% Kosongkan header dan footer default dari 'article'
+\pagestyle{empty}
+% Jika ingin nomor halaman di kanan atas:
+% \pagestyle{fancy}
+% \fancyhf{}
+% \fancyhead[R]{\thepage}
+% \renewcommand{\headrulewidth}{0pt}
+
+% Alias Font (lebih baik di sini agar konsisten)
+\newcommand{\f}[1]{\textit{#1}}
+\newcommand{\bo}[1]{\textbf{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+%
+%
+%
+\renewcommand{\figurename}{\bo{Gambar}}
+%
+%
+\renewcommand{\tablename}{\bo{Tabel}}
+%
+%
+\newcommand{\pic}{Gambar}
+%
+%
+\newcommand{\tab}{Tabel}
+%
+%
+\newcommand{\equ}{Persamaan}
