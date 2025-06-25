@@ -1,0 +1,25 @@
+% journal_ui_ana/english/src/10_pendahuluan.tex
+\section{Introduction}
+The rapid advancement of software technology has led to increasingly sophisticated applications, yet this progress is paralleled by evolving security threats. Reverse engineering, the process of analyzing software to understand its internal workings without access to source code or original designs \cite{Has18}, represents a critical vulnerability. Attackers leverage reverse engineering to uncover proprietary algorithms, identify security flaws, bypass licensing mechanisms, pirate software, and inject malicious code \cite{Wak24}. Traditional security measures like data encryption or password protection often prove insufficient against determined reverse engineers who can analyze the program's logic once it is running \cite{Sec19}.
+
+To counter this threat, code obfuscation techniques aim to transform program code into a functionally equivalent but significantly harder-to-understand form \cite{Jin24}. Among various obfuscation strategies, code virtualization stands out as a particularly potent approach \cite{Ore06, Zho24}. This technique translates native machine code into custom bytecode instructions executed by a dedicated virtual machine (VM) embedded within the application \cite{Don20}. The unique Instruction Set Architecture (ISA) of this VM renders conventional reverse engineering tools like disassemblers and debuggers largely ineffective, as they cannot directly interpret the virtualized code \cite{Salwan2018SymbolicDeobfuscation}. Attackers must first decipher the VM's architecture and bytecode, substantially increasing the effort and complexity required for analysis \cite{Hac24}.
+
+VxLang is a code protection framework that incorporates code virtualization capabilities, targeting Windows PE executables \cite{VxLang}. It provides mechanisms to transform native code into its internal bytecode format, executed by its embedded VM. Understanding the practical effectiveness and associated costs of such tools is crucial for developers seeking robust software protection solutions.
+
+This paper investigates the effectiveness of code virtualization using VxLang in mitigating reverse engineering efforts. We aim to answer the following key questions:
+\begin{enumerate}
+    \item How effectively does VxLang's code virtualization obscure program logic against static and dynamic reverse engineering techniques?
+    \item What is the quantifiable impact of VxLang's virtualization on application performance (execution time) and file size?
+\end{enumerate}
+
+To address these questions, we implement VxLang's virtualization on selected functions within case study applications (simulating authentication) and performance benchmarks (QuickSort, AES encryption). We then perform comparative static analysis (using Ghidra \cite{Nat19}) and dynamic analysis (using x64dbg \cite{Dun14}) on the original and virtualized binaries. Performance overhead is measured by comparing execution times and executable sizes, and the impact on automated malware detection tools is assessed using VirusTotal analysis on a relevant case study.
+
+The primary contributions of this work are:
+\begin{itemize}
+    \item A practical implementation and evaluation of VxLang's code virtualization on representative code segments.
+    \item Qualitative and quantitative analysis of the increased difficulty imposed on static and dynamic reverse engineering by VxLang.
+    \item Measurement and analysis of the performance and file size overhead associated with VxLang's virtualization.
+    \item An empirical assessment of the security-performance trade-off offered by the VxLang framework.
+\end{itemize}
+
+The remainder of this paper is organized as follows: The next section discusses related work in code obfuscation and virtualization. Then, the methodology employed in our experiments is detailed. Following that, the implementation details are briefly outlined. Subsequently, the experimental results for both security and performance analysis are presented and discussed. Finally, the paper concludes with a summary and suggestions for future research.

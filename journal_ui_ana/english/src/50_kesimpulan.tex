@@ -1,0 +1,13 @@
+% journal_ui_ana/english/src/50_kesimpulan.tex
+\section{Conclusion}
+\label{sec:conclusion_jurnal_ui_ana_en_condensed}
+
+This study investigated the effectiveness of code virtualization using the VxLang framework to complicate software reverse engineering. Implementation involved marking source code, compiling intermediate executables, and processing them with the VxLang tool to generate virtualized binaries.
+
+Experimental analysis demonstrated that VxLang's code virtualization significantly increases the difficulty of reverse engineering. Static analysis using Ghidra on virtualized code failed to identify meaningful instructions, functions, or data structures. Similarly, dynamic analysis with x64dbg was hampered by obfuscated control flow and the virtual machine's (VM) execution model, which obscured runtime behavior and debugging attempts. Efforts to bypass authentication logic, trivial in non-virtualized versions, were successfully thwarted in VxLang-protected binaries. However, effective implementation requires careful and iterative placement of virtualization macros, as improper placement, especially in code with I/O or complex control flows, can disrupt application functionality, as observed in the Lilith RAT case study.
+
+Analysis of ten malware/PUA samples on VirusTotal showed varied impacts of VxLang on detection rates: approximately half of the samples exhibited a decrease in detections, often with a shift to generic/heuristic flags, while the remainder showed an increase in detections, indicating the virtualization layer itself can trigger alerts.
+
+This enhanced security comes with substantial performance overhead, observed in QuickSort algorithm and AES encryption benchmarks, along with a significant increase in executable file size. The findings underscore a clear trade-off: strong protection against reverse engineering at the cost of performance degradation and increased file size. Therefore, practical application of VxLang should likely be selective, targeting only the most critical and sensitive code sections.
+
+Future research could focus on exploring more advanced reverse engineering techniques against VM-based protections, investigating VxLang configuration options for security-performance balance, and comparative studies with other virtualization solutions. Deeper analysis of VxLang's interaction with various malware types and antivirus detection techniques would also yield valuable insights.

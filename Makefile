@@ -30,7 +30,7 @@ OUTPUT_JOURNAL_IEEE_NAME = $(NAME)_Journal_IEEE
 OUTPUT_JOURNAL_UI_ANA_NAME = $(NAME)_Journal_UI_ANA
 
 # Targets
-all: $(SKRIPSI) $(JOURNAL_IEEE)
+all: $(SKRIPSI) $(JOURNAL_IEEE) $(JOURNAL_UI_ANA)
 
 $(SKRIPSI): $(SKRIPSI)/$(SKRIPSI).tex $(SOURCES) $(SKRIPSI)/istilah.tex
 	@echo "Memulai kompilasi $(SKRIPSI).pdf ke direktori out ..." && \
@@ -47,10 +47,10 @@ $(JOURNAL_IEEE): $(JOURNAL_IEEE)/$(JOURNAL_IEEE).tex $(SOURCES)
 $(JOURNAL_UI_ANA): $(SOURCES)
 	@echo "Memulai kompilasi $(JOURNAL_UI_ANA).pdf ke direktori out ..." && \
 	cd $(JOURNAL_UI_ANA)/indonesia && \
-	$(LATEXMK) $(BUILD_FLAGS) -jobname="$(OUTPUT_JOURNAL_UI_ANA_NAME)_indonesia" $(JOURNAL_UI_ANA)_indonesia
-	# cd ../indonesia && \
-	# $(LATEXMK) $(BUILD_FLAGS) -jobname=$(OUTPUT_JOURNAL_UI_ANA_NAME)_indonesia $(JOURNAL_UI_ANA)_indonesia && \
-	# echo "Kompilasi selesai: $(JOURNAL_UI_ANA)"
+	$(LATEXMK) $(BUILD_FLAGS) -jobname="$(OUTPUT_JOURNAL_UI_ANA_NAME)_indonesia" $(JOURNAL_UI_ANA)_indonesia && \
+	cd ../english && \
+	$(LATEXMK) $(BUILD_FLAGS) -jobname="$(OUTPUT_JOURNAL_UI_ANA_NAME)_english" $(JOURNAL_UI_ANA)_english && \
+	echo "Kompilasi selesai: $(JOURNAL_UI_ANA)"
 
 pvc_skripsi:
 	@echo "Memulai mode Preview Continuously (PVC)... Tekan Ctrl+C untuk berhenti." && \
@@ -64,18 +64,32 @@ pvc_journal:
 
 clean_skripsi:
 	@echo "Membersihkan semua file hasil kompilasi $(SKRIPSI)..."
-	@$(RM) "out$(SLASH)$(OUTPUT_SKRIPSI_NAME).*"
+	@$(RM) "out$(SLASH)$(OUTPUT_SKRIPSI_NAME).pdf"
+	@$(RM) "out$(SLASH)$(OUTPUT_SKRIPSI_NAME).gz"
+	@$(RM) "out$(SLASH)$(OUTPUT_SKRIPSI_NAME).synctex.gz"
 	@echo "$(OUTPUT_SKRIPSI_NAME) telah dibersihkan"
 
-clean_journal:
+clean_journal_ieee:
 	@echo "Membersihkan semua file hasil kompilasi $(JOURNAL_IEEE)..."
-	@$(RM) "out$(SLASH)$(OUTPUT_JOURNAL_IEEE_NAME).*"
+	@$(RM) "out$(SLASH)$(OUTPUT_JOURNAL_IEEE_NAME).pdf"
+	@$(RM) "out$(SLASH)$(OUTPUT_JOURNAL_IEEE_NAME).synctex.gz"
+	@$(RM) "out$(SLASH)$(OUTPUT_JOURNAL_IEEE_NAME).gz"
 	@echo "$(OUTPUT_JOURNAL_IEEE_NAME) telah dibersihkan"
 
-clean: clean_skripsi clean_journal
+clean_journal_ui_ana:
+	@echo "Membersihkan semua file hasil kompilasi $(JOURNAL_UI_ANA)..."
+	@$(RM) "out$(SLASH)$(OUTPUT_JOURNAL_UI_ANA_NAME)_indonesia.pdf"
+	@$(RM) "out$(SLASH)$(OUTPUT_JOURNAL_UI_ANA_NAME)_indonesia.gz"
+	@$(RM) "out$(SLASH)$(OUTPUT_JOURNAL_UI_ANA_NAME)_indonesia.synctex.gz"
+	@$(RM) "out$(SLASH)$(OUTPUT_JOURNAL_UI_ANA_NAME)_english.pdf"
+	@$(RM) "out$(SLASH)$(OUTPUT_JOURNAL_UI_ANA_NAME)_english.synctex.gz"
+	@$(RM) "out$(SLASH)$(OUTPUT_JOURNAL_UI_ANA_NAME)_english.gz"
+	@echo "$(OUTPUT_JOURNAL_UI_ANA_NAME) telah dibersihkan"
+
+clean: clean_skripsi clean_journal_ieee clean_journal_ui_ana
 
 # Phony targets (targets that are not files)
-.PHONY: all $(SKRIPSI) $(JOURNAL_IEEE) $(JOURNAL_UI_ANA) mostlyclean clean 
+.PHONY: all $(SKRIPSI) $(JOURNAL_IEEE) $(JOURNAL_UI_ANA) mostlyclean clean clean_skripsi clean_journal_ieee clean_journal_ui_ana
 
 # Suppress echoing of commands
 #.SILENT:

@@ -2,7 +2,7 @@
 
 - LateXMK
 - Makefile
-- All required LaTex packages (read the .sty files)
+- All required LaTex packages (read the `.sty` files)
   - minted (code blocks)
   - tocbibind
   - fancyhdr
@@ -28,16 +28,22 @@ the output files will be in the `out` folder
 
 This LaTex project is already configured to output these files:
 
-- Thesis
-- Journal IEEE
-- Journal UI ANA (English)
-- Journal UI ANA (Indonesia)
+- Thesis (`skripsi`)
+- Journal IEEE (`journal_iee`)
+- Journal UI ANA (English) (`journal_ui_ana/english`)
+- Journal UI ANA (Indonesia) (`journal_ui_ana/indonesia`)
 
 # Github Actions for Releases (Optional)
 
-Thesis files can be access in a google drive and release if github action is configured correctly. It uploads all \*.pdf files in the out folder everytime we make a release tag. Thesis can be accessed here: [Google Drive](https://drive.google.com/drive/folders/140Il7vJkaAsBiTb5aikSA64-WBHhvqav?usp=drive_link).
+Thesis files can be access in a google drive and release build if github action is configured correctly. It uploads all \*.pdf files in the out folder everytime we make a release tag. Thesis can be accessed here: [Google Drive](https://drive.google.com/drive/folders/140Il7vJkaAsBiTb5aikSA64-WBHhvqav?usp=drive_link).
 
 read the `.github/workflows/main.yaml`
+
+create a `.secrets` file and configure the environment values :
+
+- DRIVE_CREDENTIALS
+- FOLDER_ID
+- GITHUB_TOKEN
 
 # Converting to Docx
 
@@ -55,7 +61,7 @@ Note: using `pandoc` to convert to docx broke the layout of the pdf
 
 # Tools
 
-- use [Repomix](https://repomix.com/) cli and just copy paste the xml file to an LLM so it can understand this repo easily and help fill the content if you want.
+- use [Repomix](https://repomix.com/) cli and just copy paste the xml file to an LLM so it can understand this repo easily and help fill the content if you want. Recommended to modify the repomix.config.json for exclude unnecessary files/folders so that it reduces token count.
 
 # UI Style
 

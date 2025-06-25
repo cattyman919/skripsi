@@ -1,0 +1,70 @@
+% journal_ui_ana/english/src/30_desain_penelitian.tex
+\section{Research Design and Methodology}
+
+This research employs a quantitative experimental approach to evaluate the effectiveness of code virtualization using VxLang in complicating reverse engineering efforts and to analyze the performance overhead it incurs.
+
+\subsection{Experimental Design}
+The experimental design used is a comparison between a control group and an experimental group.
+\begin{itemize}
+    \item \bo{Control Group:} Case study applications and benchmarks compiled normally without the application of VxLang code virtualization.
+    \item \bo{Experimental Group:} The same applications and benchmarks, but with critical code sections processed using VxLang code virtualization.
+\end{itemize}
+The independent variable is the application of VxLang code virtualization, while the dependent variables include the difficulty level of reverse engineering (static and dynamic analysis) and performance impact (execution time and file size).
+
+\subsection{Study Objects}
+The study objects in this research include:
+\begin{enumerate}
+    \item \bo{Authentication Case Study Applications:} User login simulation applications were developed in several interface variants (Console, Qt, Dear ImGui) and two authentication mechanisms (hardcoded credentials and cloud-based validation). These applications serve as the primary targets for reverse engineering analysis.
+    \item \bo{Performance Benchmark Applications:} Applications specifically designed to measure the performance impact on specific computational tasks, namely the QuickSort algorithm and AES-CBC-256 encryption. A minimal application with embedded data was also used to assess the baseline file size increase.
+    \item \bo{Remote Administration Tool (RAT) Case Study:} The client component of Lilith RAT \cite{LilithRAT}, an open-source RAT, was analyzed for post-virtualization functionality and changes in detection profiles on VirusTotal. Nine additional malware/PUA samples were also analyzed for their impact on VirusTotal detection.
+\end{enumerate}
+
+\subsection{Research Instruments and Materials}
+This research utilizes the following instruments:
+\begin{itemize}
+    \item \bo{Hardware:} Windows 11 (64-bit) based PC.
+    \item \bo{Development Software:} Clang/clang-cl (C++17), CMake, Ninja, VxLang SDK, Qt 6, Dear ImGui, OpenSSL 3.x, libcurl.
+    \item \bo{Analysis Tools:} Ghidra (v11.x) for static analysis, x64dbg (latest release) for dynamic analysis.
+    \item \bo{Performance Measurement:} C++ \code{std::chrono} library for time, \code{std::filesystem::file\_size} for file size.
+\end{itemize}
+
+\subsection{Data Collection Procedure}
+Data collection was carried out through several main stages:
+
+\subsubsection{Artifact Preparation}
+The case study applications and benchmarks were compiled in two versions: original (without virtualization) and intermediate (with VxLang macros and linked VxLang library). The intermediate version was then processed using the \code{vxlang.exe} command-line tool to generate the final virtualized executable (\code{*\_vxm.exe}).
+
+\subsubsection{Security Analysis}
+For each authentication application (original and virtualized):
+\begin{enumerate}
+    \item \bo{Static Analysis (Ghidra):} Load executable, search for relevant strings (e.g., "Failed", "Authorized", potential credentials), analyze disassembly/decompilation around string references or entry points, identify conditional jumps controlling authentication success/failure, and attempt static patching to bypass logic. Systematic observations were recorded.
+    \item \bo{Dynamic Analysis (x64dbg):} Run executable under debugger, search for strings/patterns at runtime, set breakpoints at suspected logic locations, step through execution, observe register/memory values, and attempt runtime manipulation (patching conditional jumps) to bypass authentication. Systematic observations were recorded.
+\end{enumerate}
+% A flowchart of the authentication security testing procedure can be seen in Figure \ref{fig:flow_auth_test_proc_jurnal_ui_ana_en} (adapted from the thesis methodology).
+% You can copy the relevant image to the journal's assets directory and refer to it locally if needed.
+% \begin{figure}[H]
+% 	\centering
+% 	\includegraphics[width=0.8\columnwidth]{\Assets/authentication_flow_diagram_name.png}
+% 	\caption{Authentication Security Testing Procedure Flowchart.}
+% 	\label{fig:flow_auth_test_proc_jurnal_ui_ana_en}
+% \end{figure}
+
+\subsubsection{Performance Analysis}
+For each benchmark application (original and virtualized):
+\begin{enumerate}
+    \item \bo{Execution Time:} Run QuickSort benchmark 100 times per data size, record individual times. Run AES benchmark on 1GB data, record total encryption/decryption time. Use \code{std::chrono}. Calculate average, standard deviation (for QuickSort), and throughput (for AES).
+    \item \bo{File Size:} Measure the size of the final executable file in bytes using \code{std::filesystem::file\_size}.
+\end{enumerate}
+
+\subsubsection{Lilith RAT and Other Malware Samples Analysis}
+\begin{enumerate}
+    \item \bo{Functional Integrity Testing (Lilith RAT):} The virtualized client was tested for core RAT functionalities (connection to server, remote command execution, file system access) against an unmodified server on a local network.
+    \item \bo{VirusTotal Analysis:} Both original and virtualized executables of the Lilith RAT client and nine other malware/PUA samples were submitted to VirusTotal to compare detection rates and threat characterizations.
+\end{enumerate}
+
+\subsection{Data Analysis Techniques}
+\begin{itemize}
+    \item \bo{Security Protection Analysis:} Quantitative metrics (e.g., bypass success rates, percentage of critical strings successfully obfuscated, reduction in identifiable functions) and descriptive analysis of systematically recorded observations from static and dynamic analysis.
+    \item \bo{Performance Data:} Calculation of descriptive statistics, percentage overhead for execution time, throughput calculation (MB/s), and percentage increase in file size. Comparative tables and graphs will be used.
+    \item \bo{Trade-off Analysis:} Synthesis of security findings and performance results to evaluate the balance between protection enhancement and performance/size costs introduced by VxLang.
+\end{itemize}

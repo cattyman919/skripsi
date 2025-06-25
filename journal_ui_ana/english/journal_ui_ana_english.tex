@@ -1,0 +1,52 @@
+\documentclass[12pt, a4paper]{article} % Kelas standar artikel
+\usepackage{../_internals/preamble_ui_ana} % Preamble baru kita
+
+\input{commands} % Variabel khusus dokumen ini
+
+\addbibresource{../../pustaka.bib} % Path ke file .bib utama Anda
+
+\begin{document}
+
+% --- Blok Judul dan Penulis ---
+\input{src/00_judul_penulis_blok.tex}
+
+% --- Abstrak Indonesia ---
+\begin{singlespace} % Spasi 1 untuk blok abstrak
+    \input{src/01_abstrak_indonesia.tex}
+\end{singlespace}
+
+% --- Judul Inggris ---
+\input{src/02_title_english.tex}
+% --- Abstrak Inggris ---
+\begin{singlespace} % Spasi 1 untuk blok abstrak
+    \input{src/03_abstract_english.tex}
+\end{singlespace}
+
+% --- Keywords ---
+\input{src/04_keywords_english.tex}
+
+\vspace{1cm} % Spasi sebelum konten utama
+
+% --- Konten Utama ---
+\onehalfspacing % Spasi 1.5 untuk konten utama (TNR 12 dari class)
+
+\input{src/10_pendahuluan.tex}
+% Ganti nama file berikut sesuai dengan struktur yang Anda inginkan,
+% ini hanya contoh berdasarkan PDF dan file Anda yang ada
+\input{src/20_pengembangan_hipotesis.tex} % atau tinjauan_pustaka.tex (related_work.tex)
+\input{src/30_desain_penelitian.tex}    % atau metodologi.tex (methodology.tex)
+% \input{src/implementation_details.tex} % Mungkin digabung atau jadi sub-bagian metodologi
+\input{src/40_hasil_pembahasan.tex}     % (results_discussion.tex)
+\input{src/50_kesimpulan.tex}           % (conclusion.tex)
+% \input{src/acknowledgment.tex} % Jika ada
+
+% --- Daftar Pustaka ---
+\clearpage
+\begin{singlespace} % Biasanya referensi spasi tunggal
+    \fontsize{10}{12}\selectfont % Font TNR 10 untuk referensi
+    \printbibliography[heading=bibintoc, title={\fontsize{10}{12}\textbf{REFERENCES}}]
+    % Atau jika ingin tanpa nomor section dan bold:
+    % \printbibliography[heading=none, title=\centerline{\fontsize{10}{12}\selectfont\textbf{REFERENCES}}]
+\end{singlespace}
+
+\end{document}
